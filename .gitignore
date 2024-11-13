@@ -146,3 +146,10 @@ Desktop.ini
 # ESLint
 ######################
 .eslintcache
+
+#
+# Terraform
+#
+src/main/terraform/identity/.terraform/
+src/main/terraform/.terraform/
+.terraform.lock.hcl
