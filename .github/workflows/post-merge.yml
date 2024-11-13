@@ -1,0 +1,266 @@
+name: Post-merge/release workflow
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  post_merge:
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+
+    runs-on: ubuntu-22.04
+
+    environment: cstar-d-rtp
+
+    permissions:
+      id-token: write # Get OIDC token to authenticate to Azure.
+      packages: write # Push container imaged to GHCR.
+      contents: write # Create a new release.
+
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      image: ${{ steps.stable_image.outputs.image }}
+
+    steps:
+      #
+      # Checkout the source code.
+      #
+      - name: Checkout the source code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+        with:
+          token: ${{ secrets.GIT_PAT }}
+          fetch-depth: 0
+
+      #
+      # Install Node.
+      #
+      - name: Install Node
+        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c
+        with:
+          node-version: "20.18.0"
+
+      #
+      # Calculate of the new version (dry-run).
+      #
+      - name: Calculate of the new version (dry-run)
+        uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # 4.1.1
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          semantic_version: 21.1.1
+          branch: main
+          extra_plugins: |
+            @semantic-release/release-notes-generator@14.0.1 # 44c780c6f9c1bf2643fe48b6718bd9a84b820132
+            @semantic-release/git@10.0.1 # 3e934d45f97fd07a63617c0fc098c9ed3e67d97a
+          dry_run: true
+
+      #
+      # Setup Java
+      #
+      - name: Setup Java
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
+        with:
+          distribution: ‘corretto’
+          java-version: ‘21’
+          cache: ‘gradle’
+
+      #
+      # RELEASE CANDIDATE - Update of pom.xml and openapi.yaml with the RC new version.
+      #
+      - name: RELEASE CANDIDATE - Update of pom.xml and openapi.yaml with the new version
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          yq -i ".info.version = \"${{ steps.semantic.outputs.new_release_version }}-RC\"" "src/main/resources/META-INF/openapi.yaml"
+          sed -i -e "s/version=.*/version=${{ steps.semantic.outputs.new_release_version }}-RC/g" gradle.properties
+
+# todo sonar
+      #
+      # RELEASE CANDIDATE - Build and push native container image.
+      #
+      - name: Log in to the Container registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+
+      - name: Build the app image
+        uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
+        with:
+          push: true
+          context: .
+          file: src/main/docker/Dockerfile
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository }}:latest, ghcr.io/${{ github.repository }}:${{ steps.semantic.outputs.new_release_version }}-RC
+          secrets: |
+            "gh_token=${{ secrets.GIT_PAT }}"
+
+      #
+      # Setup Terraform
+      #
+      - name: Setup Terraform
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.9.7
+
+      #
+      # RELEASE CANDIDATE - Update Container App.
+      #
+      - name: RELEASE CANDIDATE - Update Container App
+        if: steps.semantic.outputs.new_release_published == 'true'
+        shell: bash
+        working-directory: src/main/terraform
+        env:
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+          ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+        run: |
+          terraform init -backend-config="env/dev-cd/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/dev-cd/terraform.tfvars" -var="rtp_activator_image=${{ steps.rc_image.outputs.image }}" -auto-approve -lock-timeout=300s
+
+      #
+      # Install Newman.
+      #
+      - name: Install Newman
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: npm install -g newman
+
+      #
+      # Run Postman collection.
+      #
+      - name: Run Postman collection
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          newman run src/test/postman/mil-auth.postman_collection.json \
+            -e src/test/postman/dev.postman_environment.json \
+            --env-var "correctPassword=${{ secrets.NEWMAN_IT__CORRECTPASSWORD }}" \
+            --env-var "correctClientSecret=${{ secrets.NEWMAN_IT__CORRECTCLIENTSECRET }}" \
+            --env-var "correctClientSecretForVasLayer=${{ secrets.NEWMAN_IT__CORRECTCLIENTSECRETFORVASLAYER }}" \
+            --env-var "clientSecretForMilDebtPosition=${{ secrets.NEWMAN_IT__CLIENTSECRETFORMILDEBTPOSITION }}"
+
+      #
+      # STABLE - Update of pom.xml and openapi.yaml with the new version.
+      #
+      - name: STABLE - Update of pom.xml and openapi.yaml with the new version
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          ${{ runner.temp }}/maven/bin/mvn versions:set -DnewVersion=${{ steps.semantic.outputs.new_release_version }} -s ${{ runner.temp }}/settings.xml --no-transfer-progress
+          yq -i ".info.version = \"${{ steps.semantic.outputs.new_release_version }}\"" "src/main/resources/META-INF/openapi.yaml"
+          git config user.name "GitHub Workflow"
+          git config user.email "<>"
+          git add pom.xml
+          git add src/main/resources/META-INF/openapi.yaml
+          git commit -m "Updated with new version ${{ steps.semantic.outputs.new_release_version }}"
+          git push origin main
+
+      #
+      # Calculation of the new version (again) with tagging + releasing + etc.
+      #
+      - name: Calculation of the new version (w/o dry_run) and put tag
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # 4.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          semantic_version: 21.1.1
+          branch: main
+          extra_plugins: |
+            @semantic-release/release-notes-generator@14.0.1 # 44c780c6f9c1bf2643fe48b6718bd9a84b820132
+            @semantic-release/git@10.0.1 # 3e934d45f97fd07a63617c0fc098c9ed3e67d97a
+          dry_run: false
+
+      #
+      # STABLE - Build and push native container image.
+      #
+      - name: Log in to the Container registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+
+      - name: Build the app image
+        uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
+        with:
+          push: true
+          context: .
+          file: src/main/docker/Dockerfile
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository }}:latest, ghcr.io/${{ github.repository }}:${{ steps.semantic.outputs.new_release_version }}-RC
+          secrets: |
+            "gh_token=${{ secrets.GIT_PAT }}"
+
+      #
+      # STABLE - Update Container App.
+      #
+      - name: STABLE - Update Container App
+        if: steps.semantic.outputs.new_release_published == 'true'
+        shell: bash
+        working-directory: src/main/terraform
+        env:
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+          ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+        run: |
+          terraform init -backend-config="env/dev-cd/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/dev-cd/terraform.tfvars" -var="rtp_activator_image=${{ steps.stable_image.outputs.image }}" -auto-approve -lock-timeout=300s
+
+
+  uat_deployment:
+    needs: post_merge
+
+    if: needs.post_merge.outputs.new_release_published == 'true'
+
+    runs-on: ubuntu-22.04
+
+    environment: cstar-u-rtp
+
+    permissions:
+      id-token: write
+
+    steps:
+      #
+      # Checkout the source code.
+      #
+      - name: Checkout the source code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+
+      #
+      # Setup Terraform
+      #
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.9.7
+
+      #
+      # Update Container App.
+      #
+      - name: STABLE - Update Container App
+        shell: bash
+        working-directory: src/main/terraform
+        env:
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+          ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+        run: |
+          terraform init -backend-config="env/uat-cd/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/uat-cd/terraform.tfvars" -var="rtp_activator_image=${{ needs.post_merge.outputs.image }}" -auto-approve -lock-timeout=300s

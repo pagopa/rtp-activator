@@ -1,0 +1,88 @@
+name: Build, push and update
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip-unit-test:
+        type: boolean
+        required: true
+        description: Skip unit-test
+
+jobs:
+  build_push_update:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      packages: write
+      contents: write
+
+    steps:
+      #
+      # Checkout the source code.
+      #
+      - name: Checkout the source code
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+        with:
+          token: ${{ secrets.GIT_PAT }}
+          fetch-depth: 0
+
+      #
+      # Setup JDK. todo
+      #
+      - name: Setup JDK
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
+        with:
+          distribution: "jdkfile"
+          jdkFile: "${{ runner.temp }}/jdk_setup.tar.gz"
+          java-version: "21"
+          cache: maven
+
+      #
+      # Build native executable. todo skip test
+      #
+      - name: Build native executable
+#        run: ${{ runner.temp }}/maven/bin/mvn clean package -Pnative -Dmaven.test.skip=${{ github.event.inputs.skip-unit-test }} -Dquarkus.native.container-build=true -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image@sha256:05baf3fd2173f6f25ad35216b6b066c35fbfb97f06daba75efb5b22bc0a85b9c -s ${{ runner.temp }}/settings.xml --no-transfer-progress
+        run: ./gradlew nativeCompile
+
+      #
+      # Build Docker image. todo replace da build and push docker
+      #
+      - name: Build Docker image
+        run: |
+          BRANCH_NAME="${GITHUB_REF////_}"
+          docker build -f src/main/docker/Dockerfile.native-micro -t ghcr.io/${{ github.repository }}:$BRANCH_NAME .
+
+      #
+      # Push Docker image. todo replace da build and push docker
+      #
+      - name: Push Docker image
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push -a ghcr.io/${{ github.repository }}
+
+      #
+      # Get Docker image with sha256. todo remove, prendere output da action precedente
+      #
+      - name: Get Docker image with sha256
+        run: echo "image_sha256=$(docker image inspect -f '{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}:$BRANCH_NAME)" >> "$GITHUB_ENV"
+
+      #
+      # Login to Azure.
+      #
+      - name: Login to Azure
+        uses: azure/login@92a5484dfaf04ca78a94597f4f19fea633851fa2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      #
+      # Update Container App.
+      #
+      - name: Update Container App
+        uses: azure/CLI@fa0f960f00db49b95fdb54328a767aee31e80105
+        with:
+          inlineScript: |
+            az config set extension.use_dynamic_install=yes_without_prompt
+            az containerapp update -n ${{ secrets.AZURE_CONTAINER_APP_NAME }} -g ${{ secrets.AZURE_RESOURCE_GROUP_NAME }} --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} -i ${{ env.image_sha256 }}
