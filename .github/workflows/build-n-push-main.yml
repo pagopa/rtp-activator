@@ -2,87 +2,66 @@ name: Build, push and update
 
 on:
   workflow_dispatch:
-    inputs:
-      skip-unit-test:
-        type: boolean
-        required: true
-        description: Skip unit-test
+#    inputs:
+#      skip-unit-test:
+#        type: boolean
+#        required: true
+#        description: Skip unit-test
 
 jobs:
   build_push_update:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+
+    environment: dev-cd
 
     permissions:
       id-token: write
       packages: write
-      contents: write
 
     steps:
       #
       # Checkout the source code.
       #
       - name: Checkout the source code
-        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+
+      #
+      # Build and push native container image.
+      #
+      - name: Log in to the Container registry
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
-          token: ${{ secrets.GIT_PAT }}
-          fetch-depth: 0
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      #
-      # Setup JDK. todo
-      #
-      - name: Setup JDK
-        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+
+      - name: Build the app image
+        uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
         with:
-          distribution: "jdkfile"
-          jdkFile: "${{ runner.temp }}/jdk_setup.tar.gz"
-          java-version: "21"
-          cache: maven
-
-      #
-      # Build native executable. todo skip test
-      #
-      - name: Build native executable
-#        run: ${{ runner.temp }}/maven/bin/mvn clean package -Pnative -Dmaven.test.skip=${{ github.event.inputs.skip-unit-test }} -Dquarkus.native.container-build=true -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image@sha256:05baf3fd2173f6f25ad35216b6b066c35fbfb97f06daba75efb5b22bc0a85b9c -s ${{ runner.temp }}/settings.xml --no-transfer-progress
-        run: ./gradlew nativeCompile
-
-      #
-      # Build Docker image. todo replace da build and push docker
-      #
-      - name: Build Docker image
-        run: |
-          BRANCH_NAME="${GITHUB_REF////_}"
-          docker build -f src/main/docker/Dockerfile.native-micro -t ghcr.io/${{ github.repository }}:$BRANCH_NAME .
-
-      #
-      # Push Docker image. todo replace da build and push docker
-      #
-      - name: Push Docker image
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push -a ghcr.io/${{ github.repository }}
-
-      #
-      # Get Docker image with sha256. todo remove, prendere output da action precedente
-      #
-      - name: Get Docker image with sha256
-        run: echo "image_sha256=$(docker image inspect -f '{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}:$BRANCH_NAME)" >> "$GITHUB_ENV"
-
-      #
-      # Login to Azure.
-      #
-      - name: Login to Azure
-        uses: azure/login@92a5484dfaf04ca78a94597f4f19fea633851fa2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          push: true
+          context: .
+          file: src/main/docker/Dockerfile
+          platforms: linux/amd64
+          tags: ghcr.io/${{ github.repository }}:latest, ghcr.io/${{ github.repository }}:${{ steps.semantic.outputs.new_release_version }}-RC
+          secrets: |
+            "gh_token=${{ secrets.GIT_PAT }}"
 
       #
       # Update Container App.
       #
       - name: Update Container App
-        uses: azure/CLI@fa0f960f00db49b95fdb54328a767aee31e80105
-        with:
-          inlineScript: |
-            az config set extension.use_dynamic_install=yes_without_prompt
-            az containerapp update -n ${{ secrets.AZURE_CONTAINER_APP_NAME }} -g ${{ secrets.AZURE_RESOURCE_GROUP_NAME }} --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} -i ${{ env.image_sha256 }}
+        shell: bash
+        working-directory: src/main/terraform
+        env:
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+          ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+        run: |
+          terraform init -backend-config="env/dev-cd/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/dev-cd/terraform.tfvars" -var="rtp_activator_image=${{ steps.build_image.outputs.image }}" -auto-approve -lock-timeout=300s

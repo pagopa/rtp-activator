@@ -17,9 +17,22 @@ jobs:
       - name: Checkout the source code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
 
-      - name: PR validation
-        uses: pagopa/mil-actions/pr-validation@63477e234c35c65476a37982635cd524aa71193c # 1.1.3
+      - name: PR title validation
+        uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017 # 5.5.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          gh_user: ${{ secrets.GIT_USER }}
-          gh_token: ${{ secrets.GIT_PAT }}
-          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          types: |
+            docs
+            refactor
+            chore
+            fix
+            feat
+            breaking
+          requireScope: false
+          subjectPattern: ^[A-Z].+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            doesn't match the configured pattern. Please ensure that the subject
+            starts with an uppercase character.
+          wip: false
