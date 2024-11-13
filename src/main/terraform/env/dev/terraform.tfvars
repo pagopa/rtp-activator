@@ -35,8 +35,8 @@ id_resource_group_name         = "cstar-d-tier-0-identity-rg"
 # ------------------------------------------------------------------------------
 rtp_activator_app_log_level                     = "DEBUG"
 rtp_activator_image                             = "ghcr.io/pagopa/rtp-activator:latest"
-rtp_activator_cpu                               = 0.1
-rtp_activator_memory                            = "300Mi"
+rtp_activator_cpu                               = 0.25
+rtp_activator_memory                            = "0.5Gi"
 rtp_activator_max_replicas                      = 5
 rtp_activator_min_replicas                      = 1
 rtp_activator_base_url                          = "https://mil-d-apim.azure-api.net/rtp-activator"
