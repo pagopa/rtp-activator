@@ -10,9 +10,9 @@ resource "azurerm_container_app" "rtp-activator" {
   template {
     container {
       name   = "rtp-activator"
-      image  = var.mil_auth_image
-      cpu    = var.mil_auth_cpu
-      memory = var.mil_auth_memory
+      image  = var.rtp_activator_image
+      cpu    = var.rtp_activator_cpu
+      memory = var.rtp_activator_memory
 
       env {
         name  = "TZ"
@@ -21,7 +21,7 @@ resource "azurerm_container_app" "rtp-activator" {
 
       env {
         name  = "auth.app-log-level"
-        value = var.mil_auth_app_log_level
+        value = var.rtp_activator_app_log_level
       }
 
       env {
@@ -30,18 +30,18 @@ resource "azurerm_container_app" "rtp-activator" {
       }
     }
 
-    max_replicas = var.mil_auth_max_replicas
-    min_replicas = var.mil_auth_min_replicas
+    max_replicas = var.rtp_activator_max_replicas
+    min_replicas = var.rtp_activator_min_replicas
   }
 
   secret {
     name  = "identity-client-id"
-    value = "${data.azurerm_user_assigned_identity.auth.client_id}"
+    value = "${data.azurerm_user_assigned_identity.rtp-activator.client_id}"
   }
 
   identity {
     type = "UserAssigned"
-    identity_ids = [data.azurerm_user_assigned_identity.auth.id]
+    identity_ids = [data.azurerm_user_assigned_identity.rtp-activator.id]
   }
 
   ingress {
