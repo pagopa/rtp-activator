@@ -12,7 +12,7 @@ jobs:
   build_push_update:
     runs-on: ubuntu-22.04
 
-    environment: dev-cd
+    environment: cstar-d-weu-rtp
 
     permissions:
       id-token: write
