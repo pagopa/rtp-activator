@@ -63,5 +63,5 @@ jobs:
           ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
-          terraform init -backend-config="env/dev-cd/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/dev-cd/terraform.tfvars" -var="rtp_activator_image=${{ steps.build_image.outputs.image }}" -auto-approve -lock-timeout=300s
+          terraform init -backend-config="env/dev/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=${{ steps.build_image.outputs.image }}" -auto-approve -lock-timeout=300s
