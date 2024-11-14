@@ -14,7 +14,7 @@ jobs:
 
     runs-on: ubuntu-22.04
 
-    environment: cstar-d-rtp
+    environment: cstar-d-weu-rtp
 
     permissions:
       id-token: write # Get OIDC token to authenticate to Azure.
@@ -231,7 +231,7 @@ jobs:
 
     runs-on: ubuntu-22.04
 
-    environment: cstar-u-rtp
+    environment: cstar-u-weu-rtp
 
     permissions:
       id-token: write
