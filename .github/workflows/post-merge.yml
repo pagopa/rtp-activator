@@ -5,12 +5,15 @@ on:
   pull_request:
     types:
       - closed
+      - opened
+      - edited
+      - synchronize
     branches:
       - main
 
 jobs:
   post_merge:
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    #if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
 
     runs-on: ubuntu-22.04
 
