@@ -56,12 +56,11 @@ jobs:
           dry_run: true
 
       #
-      # RELEASE CANDIDATE - Update of pom.xml and openapi.yaml with the RC new version.
+      # RELEASE CANDIDATE - Update of pom.xml with the RC new version.
       #
-      - name: RELEASE CANDIDATE - Update of pom.xml and openapi.yaml with the new version
+      - name: RELEASE CANDIDATE - Update of pom.xml with the new version
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
-          yq -i ".info.version = \"${{ steps.semantic.outputs.new_release_version }}-RC\"" "src/main/resources/META-INF/openapi.yaml"
           sed -i -e "s/version=.*/version=${{ steps.semantic.outputs.new_release_version }}-RC/g" gradle.properties
 
 # todo sonar
@@ -137,17 +136,15 @@ jobs:
 #            --env-var "clientSecretForMilDebtPosition=${{ secrets.NEWMAN_IT__CLIENTSECRETFORMILDEBTPOSITION }}"
 
       #
-      # STABLE - Update of pom.xml and openapi.yaml with the new version.
+      # STABLE - Update of pom.xml with the new version.
       #
-      - name: STABLE - Update of pom.xml and openapi.yaml with the new version
+      - name: STABLE - Update of pom.xml with the new version
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           ${{ runner.temp }}/maven/bin/mvn versions:set -DnewVersion=${{ steps.semantic.outputs.new_release_version }} -s ${{ runner.temp }}/settings.xml --no-transfer-progress
-          yq -i ".info.version = \"${{ steps.semantic.outputs.new_release_version }}\"" "src/main/resources/META-INF/openapi.yaml"
           git config user.name "GitHub Workflow"
           git config user.email "<>"
           git add pom.xml
-          git add src/main/resources/META-INF/openapi.yaml
           git commit -m "Updated with new version ${{ steps.semantic.outputs.new_release_version }}"
           git push origin main
 
