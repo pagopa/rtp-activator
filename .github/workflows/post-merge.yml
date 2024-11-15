@@ -60,16 +60,6 @@ jobs:
           dry_run: true
 
       #
-      # Setup Java
-      #
-      - name: Setup Java
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
-        with:
-          distribution: ‘corretto’
-          java-version: ‘21’
-          cache: ‘gradle’
-
-      #
       # RELEASE CANDIDATE - Update of pom.xml and openapi.yaml with the RC new version.
       #
       - name: RELEASE CANDIDATE - Update of pom.xml and openapi.yaml with the new version
