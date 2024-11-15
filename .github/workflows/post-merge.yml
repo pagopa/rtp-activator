@@ -39,7 +39,7 @@ jobs:
       # Install Node.
       #
       - name: Install Node
-        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
         with:
           node-version: "20.18.0"
 
@@ -58,16 +58,6 @@ jobs:
             @semantic-release/release-notes-generator@14.0.1 # 44c780c6f9c1bf2643fe48b6718bd9a84b820132
             @semantic-release/git@10.0.1 # 3e934d45f97fd07a63617c0fc098c9ed3e67d97a
           dry_run: true
-
-      #
-      # Setup Java
-      #
-      - name: Setup Java
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93
-        with:
-          distribution: ‘corretto’
-          java-version: ‘21’
-          cache: ‘gradle’
 
       #
       # RELEASE CANDIDATE - Update of pom.xml and openapi.yaml with the RC new version.
