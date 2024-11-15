@@ -30,7 +30,7 @@ jobs:
             feat
             breaking
           requireScope: false
-          subjectPattern: ^[A-Z].+$
+          subjectPattern: '\[SRTP(-[0-9]{2,4})?\] .+'
           subjectPatternError: |
             The subject "{subject}" found in the pull request title "{title}"
             doesn't match the configured pattern. Please ensure that the subject
