@@ -20,10 +20,10 @@ tags = {
 # ------------------------------------------------------------------------------
 # External resources.
 # ------------------------------------------------------------------------------
-cae_name                       = "cstar-u-tier-0-cae"
-cae_resource_group_name        = "cstar-u-tier-0-app-rg"
-id_name                        = "cstar-u-tier-0-auth-id"
-id_resource_group_name         = "cstar-u-tier-0-identity-rg"
+cae_name                       = "cstar-u-mcshared-cae"
+cae_resource_group_name        = "cstar-u-mcshared-app-rg"
+id_name                        = "cstar-u-mcshared-auth-id"
+id_resource_group_name         = "cstar-u-mcshared-identity-rg"
 
 # ------------------------------------------------------------------------------
 # Names of key vault secrets.
