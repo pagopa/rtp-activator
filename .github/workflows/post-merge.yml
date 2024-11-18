@@ -143,7 +143,7 @@ jobs:
       - name: STABLE - Update of gradle.properties with the new version
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
-          sed -i -e "s/version=.*/version=${{ steps.semantic.outputs.new_release_version }}/g" gradle.properties          
+          sed -i -e "s/version=.*/version=${{ steps.semantic.outputs.new_release_version }}/g" gradle.properties
           git config user.name "GitHub Workflow"
           git config user.email "<>"
           git add gradle.properties
