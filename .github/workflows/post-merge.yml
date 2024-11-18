@@ -57,9 +57,9 @@ jobs:
           dry_run: true
 
       #
-      # RELEASE CANDIDATE - Update of pom.xml with the RC new version.
+      # RELEASE CANDIDATE - Update of gradle.properties with the RC new version.
       #
-      - name: RELEASE CANDIDATE - Update of pom.xml with the new version
+      - name: RELEASE CANDIDATE - Update of gradle.properties with the new version
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           sed -i -e "s/version=.*/version=${{ steps.semantic.outputs.new_release_version }}-RC/g" gradle.properties
@@ -138,15 +138,15 @@ jobs:
 #            --env-var "clientSecretForMilDebtPosition=${{ secrets.NEWMAN_IT__CLIENTSECRETFORMILDEBTPOSITION }}"
 
       #
-      # STABLE - Update of pom.xml with the new version.
+      # STABLE - Update of gradle.properties with the new version.
       #
-      - name: STABLE - Update of pom.xml with the new version
+      - name: STABLE - Update of gradle.properties with the new version
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
-          ${{ runner.temp }}/maven/bin/mvn versions:set -DnewVersion=${{ steps.semantic.outputs.new_release_version }} -s ${{ runner.temp }}/settings.xml --no-transfer-progress
+          sed -i -e "s/version=.*/version=${{ steps.semantic.outputs.new_release_version }}/g" gradle.properties          
           git config user.name "GitHub Workflow"
           git config user.email "<>"
-          git add pom.xml
+          git add gradle.properties
           git commit -m "Updated with new version ${{ steps.semantic.outputs.new_release_version }}"
           git push origin main
 
