@@ -81,6 +81,7 @@ jobs:
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
 
       - name: Build the app image
+        id: rc-image
         uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
         with:
           push: true
@@ -113,7 +114,7 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/dev/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=${{ steps.rc_image.outputs.image }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=${{ steps.rc-image.outputs.imageid }}" -auto-approve -lock-timeout=300s
 
 #      #
 #      # Install Newman.
@@ -181,6 +182,7 @@ jobs:
         uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
 
       - name: Build the app image
+        id: stable-image
         uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
         with:
           push: true
@@ -204,7 +206,7 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/dev/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=${{ steps.stable_image.outputs.image }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=${{ steps.stable_image.outputs.imageid }}" -auto-approve -lock-timeout=300s
 
 
   uat_deployment:
