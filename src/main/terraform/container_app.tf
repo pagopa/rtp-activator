@@ -2,7 +2,7 @@
 # Container app.
 # ------------------------------------------------------------------------------
 resource "azurerm_container_app" "rtp-activator" {
-  name                         = "${local.project}-auth-ca"
+  name                         = "${local.project}-activator-ca"
   container_app_environment_id = data.azurerm_container_app_environment.rtp-cae.id
   resource_group_name          = data.azurerm_container_app_environment.rtp-cae.resource_group_name
   revision_mode                = "Single"

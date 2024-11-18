@@ -19,7 +19,8 @@ jobs:
 
     outputs:
       new_release_published: ${{ steps.semantic.outputs.new_release_published }}
-      image: ${{ steps.stable_image.outputs.image }}
+      new_version: ${{ steps.semantic.outputs.new_release_version }}
+      digest: ${{ steps.stable_image.outputs.digest }}
 
     steps:
       #
@@ -114,7 +115,7 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/dev/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=${{ steps.rc-image.outputs.imageid }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ steps.semantic.outputs.new_release_version }}-RC@${{ steps.rc-image.outputs.digest }}" -auto-approve -lock-timeout=300s
 
 #      #
 #      # Install Newman.
@@ -189,7 +190,7 @@ jobs:
           context: .
           file: src/main/docker/Dockerfile
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository }}:latest, ghcr.io/${{ github.repository }}:${{ steps.semantic.outputs.new_release_version }}-RC
+          tags: ghcr.io/${{ github.repository }}:latest, ghcr.io/${{ github.repository }}:${{ steps.semantic.outputs.new_release_version }}
           secrets: |
             "gh_token=${{ secrets.GIT_PAT }}"
 
@@ -206,7 +207,7 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/dev/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=${{ steps.stable_image.outputs.imageid }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ steps.semantic.outputs.new_release_version }}@${{ steps.stable_image.outputs.digest }}" -auto-approve -lock-timeout=300s
 
 
   uat_deployment:
@@ -248,4 +249,4 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/uat/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/uat/terraform.tfvars" -var="rtp_activator_image=${{ needs.post_merge.outputs.image }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/uat/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}@${{ needs.post_merge.outputs.digest }}" -auto-approve -lock-timeout=300s
