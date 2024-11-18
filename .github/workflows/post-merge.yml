@@ -126,8 +126,8 @@ jobs:
           ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
-          terraform init -backend-config="env/dev/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}-RC@${{ steps.rc-image.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform init -backend-config="env/cstar-d-weu-rtp/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/cstar-d-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}-RC@${{ steps.rc-image.outputs.digest }}" -auto-approve -lock-timeout=300s
 
 #      #
 #      # Install Newman.
@@ -215,8 +215,8 @@ jobs:
           ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
-          terraform init -backend-config="env/dev/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/dev/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}@${{ steps.stable-image.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform init -backend-config="env/cstar-d-weu-rtp/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/cstar-d-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}@${{ steps.stable-image.outputs.digest }}" -auto-approve -lock-timeout=300s
 
   uat_deployment:
     needs: [ post_merge, dev_deployment]
@@ -256,5 +256,5 @@ jobs:
           ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
-          terraform init -backend-config="env/uat/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/uat/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}@${{ needs.dev_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform init -backend-config="env/cstar-u-weu-rtp/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/cstar-u-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}@${{ needs.dev_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
