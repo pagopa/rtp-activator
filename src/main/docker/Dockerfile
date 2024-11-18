@@ -6,7 +6,7 @@ COPY . .
 RUN chmod +x ./gradlew && ./gradlew :nativeCompile
 
 FROM ubuntu:noble-20241011@sha256:99c35190e22d294cdace2783ac55effc69d32896daaa265f0bbedbcde4fbe3e5 AS cve
-COPY --from=builder /build/target/rtd-ms-file-register*.jar .
+COPY --from=builder /code/build/libs/rtp-activator-*.jar .
 
 FROM ubuntu:noble-20241011@sha256:99c35190e22d294cdace2783ac55effc69d32896daaa265f0bbedbcde4fbe3e5 AS runtime
 
@@ -14,7 +14,7 @@ WORKDIR /work/
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \
     && chown 1001:root /work
-COPY --from=builder --chown=1001:root --chmod=0755 /code/build/*-runner /work/application
+COPY --from=builder --chown=1001:root --chmod=0755 /code/build/native/nativeCompile/rtp-activator /work/application
 
 RUN useradd --uid 10000 runner
 USER 10000
