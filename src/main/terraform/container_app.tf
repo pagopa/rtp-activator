@@ -14,6 +14,18 @@ resource "azurerm_container_app" "rtp-activator" {
       cpu    = var.rtp_activator_cpu
       memory = var.rtp_activator_memory
 
+      liveness_probe {
+        port = 8080
+        path = /actuator/health
+        transport = HTTP
+      }
+
+      readiness_probe {
+        port = 8080
+        path = /actuator/health
+        transport = HTTP
+      }
+
       env {
         name  = "TZ"
         value = "Europe/Rome"
