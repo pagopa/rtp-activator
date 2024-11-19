@@ -16,14 +16,14 @@ resource "azurerm_container_app" "rtp-activator" {
 
       liveness_probe {
         port = 8080
-        path = /actuator/health
-        transport = HTTP
+        path = "/actuator/health"
+        transport = "HTTP"
       }
 
       readiness_probe {
         port = 8080
-        path = /actuator/health
-        transport = HTTP
+        path = "/actuator/health"
+        transport = "HTTP"
       }
 
       env {
