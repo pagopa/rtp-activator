@@ -1,0 +1,67 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: environment
+        description: Environment where to deploy
+      image-hash:
+        type: string
+        required: false
+        default: ''
+        description: SHA256 of the image to deploy
+      image-tag:
+        type: string
+        required: false
+        default: 'latest'
+        description: Tag of the image to deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+
+    environment: ${{ inputs.environment }}
+
+    permissions:
+      id-token: write
+
+    steps:
+      #
+      # Setup Terraform
+      #
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.9.7
+
+      #
+      # Checkout the source code
+      #
+      - name: Checkout the source code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+
+      #
+      # Terraform
+      #
+      - name: Terraform
+        shell: bash
+        working-directory: src/main/terraform
+        env:
+          IMAGE_HASH: "${{ inputs.image-hash }}"
+          IMAGE_TAG: "${{ inputs.image-tag }}"
+          ENVIRONMENT: "${{ inputs.environment }}"
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+          ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+        run: |
+          if [ -n "$IMAGE_HASH" ]; then
+            IMAGE="ghcr.io/${{ github.repository }}:$IMAGE_TAG@sha256:$IMAGE_HASH"
+          else
+            IMAGE="ghcr.io/${{ github.repository }}:$IMAGE_TAG"
+          fi
+          echo "[$IMAGE] will be deployed."
+          
+          terraform init -backend-config="env/$ENVIRONMENT/backend.tfvars" -reconfigure
+
+          terraform apply -var-file="env/$ENVIRONMENT/terraform.tfvars" -var="rtp_activator_image=$IMAGE" -auto-approve -lock-timeout=300s
