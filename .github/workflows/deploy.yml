@@ -64,4 +64,4 @@ jobs:
           
           terraform init -backend-config="env/$ENVIRONMENT/backend.tfvars" -reconfigure
 
-          terraform apply -var-file="env/$ENVIRONMENT/terraform.tfvars" -var="mil_auth_image=$IMAGE" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/$ENVIRONMENT/terraform.tfvars" -var="rtp_activator_image=$IMAGE" -auto-approve -lock-timeout=300s
