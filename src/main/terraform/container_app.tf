@@ -26,6 +26,12 @@ resource "azurerm_container_app" "rtp-activator" {
         transport = "HTTP"
       }
 
+      startup_probe {
+        port = 8080
+        path = "/actuator/health"
+        transport = "HTTP"
+      }
+
       env {
         name  = "TZ"
         value = "Europe/Rome"
