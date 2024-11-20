@@ -2,7 +2,7 @@
 # Container app.
 # ------------------------------------------------------------------------------
 resource "azurerm_container_app" "rtp-activator" {
-  name                         = "${local.project}-auth-ca"
+  name                         = "${local.project}-activator-ca"
   container_app_environment_id = data.azurerm_container_app_environment.rtp-cae.id
   resource_group_name          = data.azurerm_container_app_environment.rtp-cae.resource_group_name
   revision_mode                = "Single"
@@ -13,6 +13,24 @@ resource "azurerm_container_app" "rtp-activator" {
       image  = var.rtp_activator_image
       cpu    = var.rtp_activator_cpu
       memory = var.rtp_activator_memory
+
+      liveness_probe {
+        port = 8080
+        path = "/actuator/health"
+        transport = "HTTP"
+      }
+
+      readiness_probe {
+        port = 8080
+        path = "/actuator/health"
+        transport = "HTTP"
+      }
+
+      startup_probe {
+        port = 8080
+        path = "/actuator/health"
+        transport = "HTTP"
+      }
 
       env {
         name  = "TZ"

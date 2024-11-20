@@ -2,15 +2,15 @@
 # General variables.
 # ------------------------------------------------------------------------------
 prefix         = "cstar"
-env_short      = "u"
-env            = "uat"
+env_short      = "d"
+env            = "dev"
 location       = "westeurope" # this will be "italynorth"
 location_short = "weu"        # this will be "itn"
 domain         = "rtp"
 
 tags = {
   CreatedBy   = "Terraform"
-  Environment = "uat"
+  Environment = "dev"
   Owner       = "cstar"
   Source      = "https://github.com/pagopa/rtp-activator/tree/main/src/main/terraform"
   CostCenter  = "TS310 - PAGAMENTI & SERVIZI"
@@ -20,10 +20,10 @@ tags = {
 # ------------------------------------------------------------------------------
 # External resources.
 # ------------------------------------------------------------------------------
-cae_name                       = "cstar-u-tier-0-cae"
-cae_resource_group_name        = "cstar-u-tier-0-app-rg"
-id_name                        = "cstar-u-tier-0-auth-id"
-id_resource_group_name         = "cstar-u-tier-0-identity-rg"
+cae_name                       = "cstar-d-mcshared-cae"
+cae_resource_group_name        = "cstar-d-mcshared-app-rg"
+id_name                        = "cstar-d-mcshared-auth-id"
+id_resource_group_name         = "cstar-d-mcshared-identity-rg"
 
 # ------------------------------------------------------------------------------
 # Names of key vault secrets.
