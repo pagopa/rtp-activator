@@ -75,9 +75,13 @@ openApiGenerate {
 	apiPackage.set("it.gov.pagopa.rtp.activator.controller.generated")
 	modelPackage.set("it.gov.pagopa.rtp.activator.model.generated")
 	modelNameSuffix.set("Dto")
+	generateApiTests.set(false)
+	generateApiDocumentation.set(false)
+	generateApiTests.set(false)
+	generateModelTests.set(false)
+	library.set("spring-boot")
     configOptions.set([
         "dateLibrary"                         : "java8",
-        "requestMappingMode"                  : "api_interface",
         "useSpringBoot3"                      : "true",
         "interfaceOnly"                       : "true",
         "useTags"                             : "true",
@@ -85,6 +89,7 @@ openApiGenerate {
 		"reactive"							  : "true",
 		"swaggerAnnotations"				  : "false",
 		"skipDefaultInterface"				  : "true",
+		"openApiNullable" 					  : "true",
     ])
     typeMappings.set([
         "DateTime"        : "java.time.LocalDateTime",

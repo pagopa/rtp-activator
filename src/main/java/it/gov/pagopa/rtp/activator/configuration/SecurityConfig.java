@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 
 @Configuration
 @EnableWebFluxSecurity
-@EnableReactiveMethodSecurity // allows to use @PreAuthorize with roles
+@EnableReactiveMethodSecurity(proxyTargetClass = true) // allows to use @PreAuthorize with roles
 public class SecurityConfig {
 
     @Bean

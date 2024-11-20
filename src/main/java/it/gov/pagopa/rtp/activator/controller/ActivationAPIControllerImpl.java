@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.controller;
 
+import java.net.URI;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -16,8 +17,8 @@ import reactor.core.publisher.Mono;
 @Validated
 public class ActivationAPIControllerImpl implements CreateApi {
 
-    @PreAuthorize("hasRole('write_rtp_activations')")
     @Override
+    @PreAuthorize("hasRole('write_rtp_activations')")
     public Mono<ResponseEntity<Void>> activate(
             UUID requestId,
             String version,
@@ -25,7 +26,7 @@ public class ActivationAPIControllerImpl implements CreateApi {
             ServerWebExchange exchange
     ) {
         return activationReqDto.flatMap(
-                request -> Mono.just(ResponseEntity.ok().build())
+                request -> Mono.just(ResponseEntity.created(URI.create("http://localhost")).build())
         );
     }
 }
