@@ -445,7 +445,7 @@ components:
       pattern: "^[ -~]{1,64}$"
       minLength: 1
       maxLength: 64
-      example: "1.0.0-alpha-a.b-c-somethinglong+build.1-aef.1-its-okay"
+      example: "v1"
 
     # --------------------------------------------------------------------------
     # Domain specific basic types.

@@ -19,13 +19,21 @@ repositories {
 	mavenCentral()
 }
 
-//ext {
-//	set('springCloudAzureVersion', "5.18.0")
-//}
+ext {
+	set('springCloudAzureVersion', "5.18.0")
+}
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+//   spring security + oauth2 resource server
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.security:spring-security-oauth2-jose'
+
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+
 //	implementation 'com.azure.spring:spring-cloud-azure-starter-actuator'
 	implementation 'com.azure.spring:spring-cloud-azure-starter-data-cosmos'
 	implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
@@ -33,13 +41,14 @@ dependencies {
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'io.projectreactor:reactor-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 dependencyManagement {
 	imports {
-//		mavenBom "com.azure.spring:spring-cloud-azure-dependencies:${springCloudAzureVersion}"
+		mavenBom "com.azure.spring:spring-cloud-azure-dependencies:${springCloudAzureVersion}"
 	}
 }
 
@@ -66,9 +75,13 @@ openApiGenerate {
 	apiPackage.set("it.gov.pagopa.rtp.activator.controller.generated")
 	modelPackage.set("it.gov.pagopa.rtp.activator.model.generated")
 	modelNameSuffix.set("Dto")
+	generateApiTests.set(false)
+	generateApiDocumentation.set(false)
+	generateApiTests.set(false)
+	generateModelTests.set(false)
+	library.set("spring-boot")
     configOptions.set([
         "dateLibrary"                         : "java8",
-        "requestMappingMode"                  : "api_interface",
         "useSpringBoot3"                      : "true",
         "interfaceOnly"                       : "true",
         "useTags"                             : "true",
@@ -76,6 +89,7 @@ openApiGenerate {
 		"reactive"							  : "true",
 		"swaggerAnnotations"				  : "false",
 		"skipDefaultInterface"				  : "true",
+		"openApiNullable" 					  : "true",
     ])
     typeMappings.set([
         "DateTime"        : "java.time.LocalDateTime",
