@@ -422,9 +422,6 @@ components:
       description: Identifier of the RTP activation resource.
       type: string
       format: uuid
-      pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-      minLength: 36
-      maxLength: 36
       example: "d0d654e6-97da-4848-b568-99fedccb642b"
 
     ActivationLocation:
@@ -440,9 +437,6 @@ components:
       description: Identifier of the request.
       type: string
       format: uuid
-      pattern: "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-      minLength: 36
-      maxLength: 36
       example: "bd615b4a-066d-443e-8dd2-a28a39931fef"
 
     Version:
