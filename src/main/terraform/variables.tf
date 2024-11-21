@@ -107,3 +107,8 @@ variable "rtp_activator_memory" {
 variable "rtp_activator_image" {
   type = string
 }
+
+variable "rtp_environment_config" {
+  type = map(any)
+  default = {}
+}

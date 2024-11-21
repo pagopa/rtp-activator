@@ -46,6 +46,14 @@ resource "azurerm_container_app" "rtp-activator" {
         name        = "IDENTITY_CLIENT_ID"
         secret_name = "identity-client-id"
       }
+
+      dynamic "env" {
+        for_each = var.rtp_environment_config
+        content {
+          name = env.key
+          value = env.value
+        }
+      }
     }
 
     max_replicas = var.rtp_activator_max_replicas

@@ -19,9 +19,10 @@ repositories {
 	mavenCentral()
 }
 
-//ext {
-//	set('springCloudAzureVersion', "5.18.0")
-//}
+ext {
+	set('springCloudAzureVersion', "5.18.0")
+	set('otelInstrumentationVersion','2.10.0')
+}
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -40,6 +41,12 @@ dependencies {
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
+
+	// opentelemetry
+	// implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
+	// provides the same functionality of spring-boot-starter but configure the azure exporter
+	implementation("com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6")
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'io.projectreactor:reactor-test'
@@ -48,7 +55,8 @@ dependencies {
 
 dependencyManagement {
 	imports {
-//		mavenBom "com.azure.spring:spring-cloud-azure-dependencies:${springCloudAzureVersion}"
+		mavenBom "com.azure.spring:spring-cloud-azure-dependencies:${springCloudAzureVersion}"
+		mavenBom "io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:${otelInstrumentationVersion}"
 	}
 }
 
