@@ -7,11 +7,16 @@ import java.lang.annotation.RetentionPolicy;
 
 public class Users {
 
+    public static final String SERVICE_PROVIDER_ID = "1234";
+
+    public static final String ACTIVATION_WRITE_ROLE = "write_rtp_activations";
+    public static final String ACTIVATION_READ_ROLE = "read_rtp_activations";
+
     @Retention(RetentionPolicy.RUNTIME)
-    @WithMockUser(value = "writer", roles = "write_rtp_activations")
+    @WithMockUser(value = SERVICE_PROVIDER_ID, roles = ACTIVATION_WRITE_ROLE)
     public @interface RtpWriter { }
 
     @Retention(RetentionPolicy.RUNTIME)
-    @WithMockUser(value = "reader", roles = "read_rtp_activations")
+    @WithMockUser(value = SERVICE_PROVIDER_ID, roles = ACTIVATION_READ_ROLE)
     public @interface RtpReader { }
 }

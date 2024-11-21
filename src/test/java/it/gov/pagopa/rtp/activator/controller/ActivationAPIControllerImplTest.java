@@ -19,6 +19,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.UUID;
 
+import static it.gov.pagopa.rtp.activator.utils.Users.SERVICE_PROVIDER_ID;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 
@@ -54,6 +55,18 @@ class ActivationAPIControllerImplTest {
     }
 
     @Test
+    @WithMockUser(value = "another", roles = Users.ACTIVATION_WRITE_ROLE)
+    void authorizedUserShouldNotActivateForAnotherServiceProvider() {
+        web.post()
+                .uri("/activations")
+                .header("RequestId", UUID.randomUUID().toString())
+                .header("Version", "v1")
+                .bodyValue(generateActivationRequest())
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
     @WithMockUser
     void userWithoutEnoughPermissionShouldNotCreateNewActivation() {
         web.post()
@@ -66,6 +79,6 @@ class ActivationAPIControllerImplTest {
     }
 
     private ActivationReqDto generateActivationRequest() {
-        return new ActivationReqDto(new PayerDto("RSSMRA85T10A562S", "134"));
+        return new ActivationReqDto(new PayerDto("RSSMRA85T10A562S", SERVICE_PROVIDER_ID));
     }
 }
