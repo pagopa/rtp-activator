@@ -39,7 +39,7 @@ public class ActivationAPIControllerImpl implements CreateApi {
     ) {
         activationPayerService.activatePayer(activationReqDto.block().getPayer().getFiscalCode(),activationReqDto.block().getPayer().getRtpSpId().toString());
 
-        return verifySubjectRequest(activationReqDto, it -> it.toString())
+        return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
                 .map(request -> ResponseEntity.created(URI.create("http://localhost")).build());
     }
 }
