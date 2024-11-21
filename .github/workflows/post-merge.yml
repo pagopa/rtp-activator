@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  post_merge:
+  versioning:
     runs-on: ubuntu-22.04
 
     permissions:
@@ -42,8 +42,8 @@ jobs:
           dry_run: true
 
   dev_deployment:
-    needs: post_merge
-    if: needs.post_merge.outputs.new_release_published == 'true'
+    needs: versioning
+    if: needs.versioning.outputs.new_release_published == 'true'
     runs-on: ubuntu-22.04
     environment: cstar-d-weu-rtp
 
@@ -61,7 +61,7 @@ jobs:
 
       - name: "Update of gradle.properties with the new version"
         run: |
-          sed -i -e "s/version=.*/version=${{ needs.post_merge.outputs.new_version }}/g" gradle.properties
+          sed -i -e "s/version=.*/version=${{ needs.versioning.outputs.new_version }}/g" gradle.properties
 
       #
       # RELEASE CANDIDATE - Build and push native container image.
@@ -87,7 +87,7 @@ jobs:
           context: .
           file: src/main/docker/Dockerfile
           platforms: linux/amd64
-          tags: ghcr.io/${{ github.repository }}:latest, ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}-RC
+          tags: ghcr.io/${{ github.repository }}:latest, ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC
           secrets: |
             "gh_token=${{ secrets.GIT_PAT }}"
 
@@ -108,7 +108,7 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/cstar-d-weu-rtp/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/cstar-d-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}-RC@${{ steps.image.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/cstar-d-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC@${{ steps.image.outputs.digest }}" -auto-approve -lock-timeout=300s
 
 #      #
 #      # Install Newman.
@@ -135,7 +135,7 @@ jobs:
           git config user.name "GitHub Workflow"
           git config user.email "<>"
           git add gradle.properties
-          git commit -m "Updated with new version ${{ needs.post_merge.outputs.new_version }}"
+          git commit -m "Updated with new version ${{ needs.versioning.outputs.new_version }}"
           git push origin main
 
       - name: "Calculation of the new version (w/o dry_run) and put tag"
@@ -155,9 +155,9 @@ jobs:
       #
       - name: Re-tag the app image
         run: |
-          docker image tag ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}
-          docker rmi ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}-RC
-          docker image push --all-tags ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}
+          docker image tag ghcr.io/${{ github.repository }}:latest ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}
+          docker rmi ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC
+          docker image push --all-tags ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}
 
       - name: "STABLE - Update Container App"
         shell: bash
@@ -168,12 +168,12 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/cstar-d-weu-rtp/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/cstar-d-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}@${{ steps.image.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/cstar-d-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ steps.image.outputs.digest }}" -auto-approve -lock-timeout=300s
 
   uat_deployment:
-    needs: [ post_merge, dev_deployment]
+    needs: [ versioning, dev_deployment]
 
-    if: needs.post_merge.outputs.new_release_published == 'true'
+    if: needs.versioning.outputs.new_release_published == 'true'
 
     runs-on: ubuntu-22.04
 
@@ -203,4 +203,4 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/cstar-u-weu-rtp/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/cstar-u-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.post_merge.outputs.new_version }}@${{ needs.dev_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/cstar-u-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ needs.dev_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
