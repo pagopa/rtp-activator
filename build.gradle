@@ -107,3 +107,13 @@ graalvmNative {
 		}
 	}
 }
+
+bootRun {
+	jvmArgs = [
+			'-Djava.security.properties=src/main/resources/custom.security'
+	]
+}
+
+tasks.withType(JavaExec) {
+	jvmArgs += '-Djava.security.properties=src/main/resources/custom.security'
+}
