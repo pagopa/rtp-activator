@@ -104,3 +104,12 @@ openApiGenerate {
         "zoned-date-time" : "java.time.ZonedDateTime"
     ])
 }
+
+graalvmNative {
+	binaries {
+		main {
+			buildArgs.add("--initialize-at-build-time=org.slf4j.helpers")
+			jvmArgs.add("-Djava.security.properties=${file("${projectDir}/src/main/resources/custom.security").absolutePath}")
+		}
+	}
+}
