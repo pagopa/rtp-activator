@@ -43,7 +43,8 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'io.projectreactor:reactor-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	compileOnly 'org.projectlombok:lombok:1.18.36'
+	annotationProcessor("org.projectlombok:lombok")
+	compileOnly("org.projectlombok:lombok")
 }
 
 dependencyManagement {
@@ -95,4 +96,14 @@ openApiGenerate {
         "DateTime"        : "java.time.LocalDateTime",
         "zoned-date-time" : "java.time.ZonedDateTime"
     ])
+}
+
+
+graalvmNative {
+	binaries {
+		main {
+			buildArgs.add("--initialize-at-build-time=org.slf4j.helpers")
+			jvmArgs.add("-Djava.security.properties=${file("${projectDir}/src/main/resources/custom.security").absolutePath}")
+		}
+	}
 }

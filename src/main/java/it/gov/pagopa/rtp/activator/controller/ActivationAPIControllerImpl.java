@@ -46,7 +46,7 @@ public class ActivationAPIControllerImpl implements CreateApi {
                 .flatMap(t -> activationPayerService.activatePayer(t.getPayer().getRtpSpId(),
                         t.getPayer().getFiscalCode()))
                 .<ResponseEntity<Void>>map(payer -> ResponseEntity
-                        .created(URI.create(activationPropertiesConfig.baseUrl() + payer.payerID().toString()))
+                        .created(URI.create(activationPropertiesConfig.getBaseUrl() + payer.payerID().toString()))
                         .build())
                 .onErrorReturn(PayerAlreadyExists.class, ResponseEntity.status(409).build());
     }

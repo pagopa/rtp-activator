@@ -1,6 +1,8 @@
 package it.gov.pagopa.rtp.activator.configuration;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,16 +13,15 @@ import com.azure.spring.data.cosmos.config.AbstractCosmosConfiguration;
 import com.azure.spring.data.cosmos.repository.config.EnableCosmosRepositories;
 
 @Configuration
-@ConfigurationProperties(prefix = "cosmos.credential")
 @EnableCosmosRepositories
-public class CosmosConfig extends AbstractCosmosConfiguration {
+public class CosmosDBConfig extends AbstractCosmosConfiguration {
 
-    private String dbName;
-    private String endpoint;
+    @Autowired
+    private CosmosPropertiesConfig cosmosPropertiesConfig;
 
     @Override
     protected String getDatabaseName() {
-        return dbName;
+        return cosmosPropertiesConfig.getDbName();
     }
 
     @Bean
@@ -29,8 +30,7 @@ public class CosmosConfig extends AbstractCosmosConfiguration {
                 .build();
 
         return new CosmosClientBuilder()
-                //endpoint to move
-                .endpoint(endpoint)
+                .endpoint(cosmosPropertiesConfig.getEndpoint())
                 .credential(credential);
     }
 
