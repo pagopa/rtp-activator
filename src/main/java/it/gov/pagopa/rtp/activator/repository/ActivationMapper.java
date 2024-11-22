@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.repository;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;

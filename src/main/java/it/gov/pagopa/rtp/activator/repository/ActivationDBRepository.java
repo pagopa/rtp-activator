@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.repository;
 
-import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
