@@ -89,7 +89,7 @@ openApiGenerate {
 		"reactive"							  : "true",
 		"swaggerAnnotations"				  : "false",
 		"skipDefaultInterface"				  : "true",
-		//"openApiNullable" 					  : "true",
+		"openApiNullable" 					  : "true",
     ])
     typeMappings.set([
         "DateTime"        : "java.time.LocalDateTime",
