@@ -108,7 +108,12 @@ variable "rtp_activator_image" {
   type = string
 }
 
-variable "rtp_environment_config" {
+variable "rtp_environment_configs" {
+  type = map(any)
+  default = {}
+}
+
+variable "rtp_environment_secrets" {
   type = map(any)
   default = {}
 }

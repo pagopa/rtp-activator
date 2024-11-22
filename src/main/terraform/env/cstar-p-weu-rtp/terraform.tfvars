@@ -41,6 +41,10 @@ rtp_activator_max_replicas                      = 5
 rtp_activator_min_replicas                      = 1
 rtp_activator_base_url                          = "https://mil-d-apim.azure-api.net/rtp_activator"
 
-rtp_environment_config = {
+rtp_environment_configs = {
   OTEL_TRACES_SAMPLER: "always_on"
+}
+
+rtp_environment_secrets = {
+  APPLICATIONINSIGHTS_CONNECTION_STRING: "appinsights-connection-string"
 }
