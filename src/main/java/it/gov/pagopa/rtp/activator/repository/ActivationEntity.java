@@ -1,8 +1,9 @@
 package it.gov.pagopa.rtp.activator.repository;
 
+import java.time.Instant;
+
 import com.azure.spring.data.cosmos.core.mapping.Container;
 import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
-import java.util.Date;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class ActivationEntity {
     private String id;
     private String rtpSpId;
-    private Date effectiveActivationDate;
+    private Instant effectiveActivationDate;
 
     @PartitionKey
     private String fiscalCode;

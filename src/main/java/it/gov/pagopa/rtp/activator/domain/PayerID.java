@@ -7,15 +7,15 @@ import lombok.Getter;
 @Getter
 public class PayerID {
 
-  private final UUID id;
+    private final UUID id;
 
-  public PayerID(UUID uuid) {
-    this.id = uuid;
-  }
+    public PayerID(UUID uuid) {
+        this.id = uuid;
+    }
 
-  public static PayerID createNew() {
-    UUID uuid = UUID.randomUUID();
-    return new PayerID(uuid);
-  }
+    public static PayerID createNew() {
+        UUID uuid = UUID.randomUUID();
+        return new PayerID(uuid);
+    }
 
 }

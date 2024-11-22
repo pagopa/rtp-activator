@@ -7,7 +7,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 
+import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.CreateApi;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.model.generated.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.service.ActivationPayerService;
 import reactor.core.publisher.Mono;
@@ -15,7 +17,6 @@ import reactor.core.publisher.Mono;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.net.URI;
-
 
 import static it.gov.pagopa.rtp.activator.utils.Authorizations.verifySubjectRequest;
 
@@ -25,8 +26,12 @@ public class ActivationAPIControllerImpl implements CreateApi {
 
     private final ActivationPayerService activationPayerService;
 
-    public ActivationAPIControllerImpl(ActivationPayerService activationPayerService){
+    private final ActivationPropertiesConfig activationPropertiesConfig;
+
+    public ActivationAPIControllerImpl(ActivationPayerService activationPayerService,
+            ActivationPropertiesConfig activationPropertiesConfig) {
         this.activationPayerService = activationPayerService;
+        this.activationPropertiesConfig = activationPropertiesConfig;
     }
 
     @Override
@@ -35,11 +40,14 @@ public class ActivationAPIControllerImpl implements CreateApi {
             UUID requestId,
             String version,
             Mono<ActivationReqDto> activationReqDto,
-            ServerWebExchange exchange
-    ) {
-        activationPayerService.activatePayer(activationReqDto.block().getPayer().getFiscalCode(),activationReqDto.block().getPayer().getRtpSpId().toString());
+            ServerWebExchange exchange) {
 
         return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
-                .map(request -> ResponseEntity.created(URI.create("http://localhost")).build());
+                .flatMap(t -> activationPayerService.activatePayer(t.getPayer().getRtpSpId(),
+                        t.getPayer().getFiscalCode()))
+                .<ResponseEntity<Void>>map(payer -> ResponseEntity
+                        .created(URI.create(activationPropertiesConfig.baseUrl() + payer.payerID().toString()))
+                        .build())
+                .onErrorReturn(PayerAlreadyExists.class, ResponseEntity.status(409).build());
     }
 }

@@ -1,7 +1,8 @@
 package it.gov.pagopa.rtp.activator.service;
 
-import it.gov.pagopa.rtp.activator.model.generated.ActivationDto;
+import it.gov.pagopa.rtp.activator.domain.Payer;
+import reactor.core.publisher.Mono;
 
 public interface ActivationPayerService {
-    ActivationDto activatePayer(String payer, String fiscalCode);
+   Mono<Payer> activatePayer(String payer, String fiscalCode);
 }

@@ -1,6 +1,6 @@
 package it.gov.pagopa.rtp.activator.domain;
 
-import java.util.Date;
+import java.time.Instant;
 
-public record Payer(PayerID payerID, String rtpSpId, String fiscalCode, Date effectiveActivationDate)  {
+public record Payer(PayerID payerID, String rtpSpId, String fiscalCode, Instant effectiveActivationDate)  {
 }
