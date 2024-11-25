@@ -9,8 +9,8 @@ on:
       - opened
       - edited
       - synchronize
-#    paths:
-#      - 'src/*'
+    paths:
+      - 'src/*'
 
 env:
   DOCKERFILE: src/main/docker/Dockerfile
