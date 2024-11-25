@@ -18,6 +18,7 @@ env:
 jobs:
   scan-sonar:
     runs-on: ubuntu-22.04
+    environment: ci
 
     steps:
       - name: "Checkout the source code"
