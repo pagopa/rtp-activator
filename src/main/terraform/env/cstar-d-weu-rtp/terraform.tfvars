@@ -22,8 +22,8 @@ tags = {
 # ------------------------------------------------------------------------------
 cae_name                       = "cstar-d-mcshared-cae"
 cae_resource_group_name        = "cstar-d-mcshared-app-rg"
-id_name                        = "cstar-d-mcshared-auth-id"
-id_resource_group_name         = "cstar-d-mcshared-identity-rg"
+id_name                        = "cstar-d-weu-rtp-activator-id"
+id_resource_group_name         = "cstar-d-weu-rtp-identity-rg"
 
 # ------------------------------------------------------------------------------
 # Names of key vault secrets.
@@ -40,3 +40,11 @@ rtp_activator_memory                            = "0.5Gi"
 rtp_activator_max_replicas                      = 5
 rtp_activator_min_replicas                      = 1
 rtp_activator_base_url                          = "https://mil-d-apim.azure-api.net/rtp-activator"
+
+rtp_environment_configs = {
+  OTEL_TRACES_SAMPLER: "always_on"
+}
+
+rtp_environment_secrets = {
+  APPLICATIONINSIGHTS_CONNECTION_STRING: "appinsights-connection-string"
+}

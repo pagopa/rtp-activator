@@ -46,6 +46,22 @@ resource "azurerm_container_app" "rtp-activator" {
         name        = "IDENTITY_CLIENT_ID"
         secret_name = "identity-client-id"
       }
+
+      dynamic "env" {
+        for_each = var.rtp_environment_configs
+        content {
+          name = env.key
+          value = env.value
+        }
+      }
+
+      dynamic "env" {
+        for_each = var.rtp_environment_secrets
+        content {
+          name = env.key
+          secret_name = replace(lower(env.key), "_", "-")
+        }
+      }
     }
 
     max_replicas = var.rtp_activator_max_replicas
@@ -55,6 +71,16 @@ resource "azurerm_container_app" "rtp-activator" {
   secret {
     name  = "identity-client-id"
     value = "${data.azurerm_user_assigned_identity.rtp-activator.client_id}"
+  }
+
+
+  dynamic "secret" {
+    for_each = var.rtp_environment_secrets
+    content {
+      name = replace(lower(secret.key), "_", "-")
+      key_vault_secret_id = "${data.azurerm_key_vault.rtp-kv.vault_uri}secrets/${secret.value}"
+      identity            = data.azurerm_user_assigned_identity.rtp-activator.id
+    }
   }
 
   identity {
