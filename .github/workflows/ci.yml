@@ -9,11 +9,8 @@ on:
       - opened
       - edited
       - synchronize
-    paths:
-      - 'src/*'
-
-env:
-  DOCKERFILE: src/main/docker/Dockerfile
+#    paths:
+#      - 'src/*'
 
 jobs:
   scan-sonar:
@@ -53,25 +50,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   scan-cve:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: "Checkout the source code"
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
-        with:
-          fetch-depth: 0
-
-      - name: "Build the Docker image"
-        run: docker build . --file ${{ env.DOCKERFILE }} --target cve --tag localbuild/testimage:latest
-
-      - name: "Run the Trivy scan action itself with GitHub Advanced Security code scanning integration enabled"
-        id: scan
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
-        with:
-          image-ref: "localbuild/testimage:latest"
-          format: 'sarif'
-          output: 'results.sarif'
-
-      - name: "Upload Anchore Scan Report"
-        uses: github/codeql-action/upload-sarif@cbe18979603527f12c7871a6eb04833ecf1548c7 # CodeQL Bundle v2.19.3
-        with:
-          sarif_file: 'results.sarif'
+    uses: ./.github/workflows/scan-cve.yml
+    secrets: inherit
