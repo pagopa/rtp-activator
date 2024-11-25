@@ -73,6 +73,7 @@ resource "azurerm_container_app" "rtp-activator" {
     value = "${data.azurerm_user_assigned_identity.rtp-activator.client_id}"
   }
 
+
   dynamic "secret" {
     for_each = var.rtp_environment_secrets
     content {
