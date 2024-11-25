@@ -19,7 +19,7 @@ public class ActivationMapper {
     }
 
     public ActivationEntity toDbEntity(Payer payer) {
-        return ActivationEntity.builder().id(payer.payerID().toString())
+        return ActivationEntity.builder().id(payer.payerID().getId().toString())
                 .fiscalCode(payer.fiscalCode())
                 .rtpSpId(payer.rtpSpId())
                 .effectiveActivationDate(payer.effectiveActivationDate())

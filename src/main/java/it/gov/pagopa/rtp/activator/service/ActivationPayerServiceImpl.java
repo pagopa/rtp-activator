@@ -26,7 +26,8 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
         Payer payer = new Payer(payerID, rtpSpId, fiscalCode, Instant.now());
 
         return activationDBRepository.findByFiscalCode(fiscalCode)
-                .flatMap(existingEntity -> Mono.<Payer>error(new PayerAlreadyExists()))
-                .switchIfEmpty(activationDBRepository.save(payer));
+
+            .flatMap(existingEntity -> Mono.<Payer>error(new PayerAlreadyExists())) 
+            .switchIfEmpty(Mono.defer(() -> activationDBRepository.save(payer)));
     }
 }
