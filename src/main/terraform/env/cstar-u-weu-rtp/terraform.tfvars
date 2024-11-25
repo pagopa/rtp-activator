@@ -22,8 +22,8 @@ tags = {
 # ------------------------------------------------------------------------------
 cae_name                       = "cstar-u-mcshared-cae"
 cae_resource_group_name        = "cstar-u-mcshared-app-rg"
-id_name                        = "cstar-u-mcshared-auth-id"
-id_resource_group_name         = "cstar-u-mcshared-identity-rg"
+id_name                        = "cstar-u-weu-rtp-activator-id"
+id_resource_group_name         = "cstar-u-weu-rtp-identity-rg"
 
 # ------------------------------------------------------------------------------
 # Names of key vault secrets.
