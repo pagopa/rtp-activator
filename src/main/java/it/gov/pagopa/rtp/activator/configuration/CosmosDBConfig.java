@@ -13,7 +13,7 @@ import com.azure.spring.data.cosmos.config.AbstractCosmosConfiguration;
 import com.azure.spring.data.cosmos.repository.config.EnableReactiveCosmosRepositories;
 
 @Configuration
-@EnableReactiveCosmosRepositories
+@EnableReactiveCosmosRepositories("it.gov.pagopa.rtp.activator.repository")
 public class CosmosDBConfig extends AbstractCosmosConfiguration {
 
     @Autowired
