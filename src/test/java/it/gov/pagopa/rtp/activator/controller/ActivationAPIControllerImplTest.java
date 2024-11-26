@@ -9,14 +9,14 @@ import it.gov.pagopa.rtp.activator.model.generated.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.PayerDto;
 import it.gov.pagopa.rtp.activator.repository.ActivationDBRepository;
 import it.gov.pagopa.rtp.activator.service.ActivationPayerService;
-import it.gov.pagopa.rtp.activator.service.ActivationPayerServiceImpl;
+
 import it.gov.pagopa.rtp.activator.utils.Users;
 import reactor.core.publisher.Mono;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -25,11 +25,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.aot.DisabledInAotMode;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.BodyInserters;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -42,7 +42,11 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = { ActivationAPIControllerImpl.class })
 @Import({ SecurityConfig.class })
+@DisabledInAotMode
 class ActivationAPIControllerImplTest {
+
+    @MockBean
+    private ActivationDBRepository activationDBRepository;
 
     @MockBean
     private ActivationPayerService activationPayerService;
@@ -75,72 +79,53 @@ class ActivationAPIControllerImplTest {
         when(activationPropertiesConfig.getBaseUrl()).thenReturn("http://localhost:8080/");
 
         webTestClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/activation")
-                        .queryParam("requestId", UUID.randomUUID().toString())
-                        .queryParam("version", "v1").build())
-                .contentType(MediaType.APPLICATION_JSON).body(BodyInserters.fromValue(generateActivationRequest()))
+                .uri("/activations")
+                .header("RequestId", UUID.randomUUID().toString())
+                .header("Version", "v1")
+                .bodyValue(generateActivationRequest())
                 .exchange()
                 .expectStatus().isCreated().expectHeader()
                 .location("http://localhost:8080/" + payer.payerID().toString());
     }
-    /*
-     * @Test
-     * 
-     * @Users.RtpWriter
-     * public void testActivatePayerAlreadyExists() {
-     * when(activationPayerService.activatePayer(any(String.class),
-     * any(String.class)))
-     * .thenReturn(Mono.error(new PayerAlreadyExists()));
-     * webTestClient.post()
-     * .uri(uriBuilder -> uriBuilder.path("/activation")
-     * .queryParam("requestId", UUID.randomUUID().toString())
-     * .queryParam("version", "v1").build())
-     * .contentType(MediaType.APPLICATION_JSON).body(BodyInserters.fromValue(
-     * activationReqDto))
-     * .exchange()
-     * .expectStatus().isEqualTo(409);
-     * }
-     * 
-     * @Test
-     * 
-     * @Users.RtpWriter
-     * void shouldCreateNewActivation() {
-     * webTestClient.post()
-     * .uri("/activations")
-     * .header("RequestId", UUID.randomUUID().toString())
-     * .header("Version", "v1")
-     * .bodyValue(generateActivationRequest())
-     * .exchange()
-     * .expectStatus().isEqualTo(HttpStatus.CREATED)
-     * .expectHeader().exists(HttpHeaders.LOCATION);
-     * }
-     * 
-     * @Test
-     * 
-     * @WithMockUser(value = "another", roles = Users.ACTIVATION_WRITE_ROLE)
-     * void authorizedUserShouldNotActivateForAnotherServiceProvider() {
-     * webTestClient.post()
-     * .uri("/activations")
-     * .header("RequestId", UUID.randomUUID().toString())
-     * .header("Version", "v1")
-     * .bodyValue(generateActivationRequest())
-     * .exchange()
-     * .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
-     * }
-     * 
-     * @Test
-     * 
-     * @WithMockUser
-     * void userWithoutEnoughPermissionShouldNotCreateNewActivation() {
-     * webTestClient.post()
-     * .uri("/activations")
-     * .header("RequestId", UUID.randomUUID().toString())
-     * .header("Version", "v1")
-     * .bodyValue(generateActivationRequest())
-     * .exchange()
-     * .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
-     * }
-     */
+
+    @Test
+    @Users.RtpWriter
+    public void testActivatePayerAlreadyExists() {
+        when(activationPayerService.activatePayer(any(String.class),
+                any(String.class)))
+                .thenReturn(Mono.error(new PayerAlreadyExists()));
+        webTestClient.post()
+                .uri("/activations")
+                .header("RequestId", UUID.randomUUID().toString())
+                .header("Version", "v1")
+                .bodyValue(generateActivationRequest())
+                .exchange()
+                .expectStatus().isEqualTo(409);
+    }
+
+    @Test
+    @WithMockUser(value = "another", roles = Users.ACTIVATION_WRITE_ROLE)
+    void authorizedUserShouldNotActivateForAnotherServiceProvider() {
+        webTestClient.post()
+                .uri("/activations")
+                .header("RequestId", UUID.randomUUID().toString())
+                .header("Version", "v1")
+                .bodyValue(generateActivationRequest())
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @WithMockUser
+    void userWithoutEnoughPermissionShouldNotCreateNewActivation() {
+        webTestClient.post()
+                .uri("/activations")
+                .header("RequestId", UUID.randomUUID().toString())
+                .header("Version", "v1")
+                .bodyValue(generateActivationRequest())
+                .exchange()
+                .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
+    }
 
     private ActivationReqDto generateActivationRequest() {
         return new ActivationReqDto(new PayerDto("RSSMRA85T10A562S", SERVICE_PROVIDER_ID));

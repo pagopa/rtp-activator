@@ -10,10 +10,10 @@ import com.azure.cosmos.CosmosClientBuilder;
 import com.azure.identity.DefaultAzureCredential;
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.spring.data.cosmos.config.AbstractCosmosConfiguration;
-import com.azure.spring.data.cosmos.repository.config.EnableCosmosRepositories;
+import com.azure.spring.data.cosmos.repository.config.EnableReactiveCosmosRepositories;
 
 @Configuration
-@EnableCosmosRepositories
+@EnableReactiveCosmosRepositories
 public class CosmosDBConfig extends AbstractCosmosConfiguration {
 
     @Autowired
