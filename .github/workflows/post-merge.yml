@@ -70,6 +70,8 @@ jobs:
       #
       - name: Checkout the source code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+        with:
+          token: ${{ secrets.GIT_PAT }}
 
       #
       # RELEASE CANDIDATE - Update of gradle.properties with the RC new version.
