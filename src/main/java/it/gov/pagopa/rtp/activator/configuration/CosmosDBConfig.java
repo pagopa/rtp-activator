@@ -16,8 +16,11 @@ import com.azure.spring.data.cosmos.repository.config.EnableReactiveCosmosReposi
 @EnableReactiveCosmosRepositories("it.gov.pagopa.rtp.activator.repository")
 public class CosmosDBConfig extends AbstractCosmosConfiguration {
 
-    @Autowired
     private CosmosPropertiesConfig cosmosPropertiesConfig;
+
+    public CosmosDBConfig(CosmosPropertiesConfig cosmosPropertiesConfig){
+        this.cosmosPropertiesConfig = cosmosPropertiesConfig;
+    }
 
     @Override
     protected String getDatabaseName() {
