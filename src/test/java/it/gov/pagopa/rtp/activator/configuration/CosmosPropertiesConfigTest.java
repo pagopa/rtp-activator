@@ -13,7 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @EnableConfigurationProperties(value = CosmosPropertiesConfig.class)
 @TestPropertySource("classpath:application.properties")
-public class CosmosPropertiesConfigTest {
+class CosmosPropertiesConfigTest {
 
     @Autowired
     private CosmosPropertiesConfig cosmosPropertiesConfig;

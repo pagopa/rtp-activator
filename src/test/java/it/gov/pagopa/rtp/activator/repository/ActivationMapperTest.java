@@ -10,12 +10,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.Instant;
 import java.util.UUID;
 
-public class ActivationMapperTest {
+class ActivationMapperTest {
 
     private ActivationMapper mapper = new ActivationMapper();
 
     @Test
-    public void testToDomain() {
+    void testToDomain() {
         ActivationEntity activationEntity = new ActivationEntity();
         activationEntity.setId(UUID.randomUUID().toString());
         activationEntity.setRtpSpId("RTP_SP_ID");
@@ -32,7 +32,7 @@ public class ActivationMapperTest {
     }
 
     @Test
-    public void testToDbEntity() {
+    void testToDbEntity() {
         PayerID payerID = new PayerID(UUID.randomUUID());
         Payer payer = new Payer(payerID, "RTP_SP_ID", "FISCAL_CODE", Instant.ofEpochSecond(1732517304));
 

@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ActivationPayerServiceImplTest {
+class ActivationPayerServiceImplTest {
 
     @Mock
     private ActivationDBRepository activationDBRepository;
@@ -33,13 +33,13 @@ public class ActivationPayerServiceImplTest {
     private Payer payer;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         payer = new Payer(PayerID.createNew(), "RTP_SP_ID", "FISCAL_CODE", Instant.now());
 
     }
 
     @Test
-    public void testActivatePayerSuccessful() {
+    void testActivatePayerSuccessful() {
         when(activationDBRepository.findByFiscalCode("FISCAL_CODE")).thenReturn(Mono.empty());
         when(activationDBRepository.save(any())).thenReturn(Mono.just(payer));
 
@@ -51,7 +51,7 @@ public class ActivationPayerServiceImplTest {
     }
 
     @Test
-    public void testActivatePayerAlreadyExists() {
+    void testActivatePayerAlreadyExists() {
         when(activationDBRepository.findByFiscalCode("FISCAL_CODE")).thenReturn(Mono.just(payer));
 
         Mono<Payer> result = activationPayerService.activatePayer("RTP_SP_ID", "FISCAL_CODE");

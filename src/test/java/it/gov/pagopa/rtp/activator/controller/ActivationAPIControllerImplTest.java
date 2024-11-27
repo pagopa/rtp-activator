@@ -59,7 +59,7 @@ class ActivationAPIControllerImplTest {
     private ApplicationContext context;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         webTestClient = WebTestClient
                 .bindToApplicationContext(context)
                 .apply(springSecurity())
@@ -69,7 +69,7 @@ class ActivationAPIControllerImplTest {
 
     @Test
     @Users.RtpWriter
-    public void testActivatePayerSuccessful() {
+    void testActivatePayerSuccessful() {
         Payer payer = new Payer(PayerID.createNew(), "RTP_SP_ID", "FISCAL_CODE", Instant.now());
 
         when(activationPayerService.activatePayer(any(String.class), any(String.class)))
@@ -89,7 +89,7 @@ class ActivationAPIControllerImplTest {
 
     @Test
     @Users.RtpWriter
-    public void testActivatePayerAlreadyExists() {
+    void testActivatePayerAlreadyExists() {
         when(activationPayerService.activatePayer(any(String.class),
                 any(String.class)))
                 .thenReturn(Mono.error(new PayerAlreadyExists()));

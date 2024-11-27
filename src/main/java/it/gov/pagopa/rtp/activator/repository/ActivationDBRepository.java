@@ -22,7 +22,7 @@ public class ActivationDBRepository implements PayerRepository {
     @Override
     public Mono<Payer> findByFiscalCode(String fiscalCode) {
         return activationDB.findByFiscalCode(fiscalCode)
-                .map(toDomain -> activationMapper.toDomain(toDomain));
+                .map(activationMapper::toDomain);
     }
 
     @Override
