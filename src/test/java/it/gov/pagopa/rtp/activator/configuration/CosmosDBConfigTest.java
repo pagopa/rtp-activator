@@ -25,20 +25,20 @@ class CosmosDBConfigTest {
 
     @BeforeEach
     void setUp() {
-        lenient().when(cosmosPropertiesConfig.getDbName()).thenReturn("test-db");
-        lenient().when(cosmosPropertiesConfig.getEndpoint()).thenReturn("https://test-endpoint:443/");
+        lenient().when(cosmosPropertiesConfig.getDatabase()).thenReturn("test-db");
+        lenient().when(cosmosPropertiesConfig.getUri()).thenReturn("https://test-endpoint:443/");
     }
 
     @Test
     void testGetDatabaseName() {
-        String dbName = cosmosDBConfig.getDatabaseName();
-        assertEquals("test-db", dbName);
+        String database = cosmosDBConfig.getDatabaseName();
+        assertEquals("test-db", database);
     }
 
     @Test
     void testGetCosmosClientBuilder() {
         CosmosClientBuilder builder = cosmosDBConfig.getCosmosClientBuilder();
-        verify(cosmosPropertiesConfig).getEndpoint();
+        verify(cosmosPropertiesConfig).getUri();
         assertNotNull(builder);
     }
 }

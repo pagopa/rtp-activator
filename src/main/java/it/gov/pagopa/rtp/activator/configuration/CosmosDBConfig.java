@@ -1,8 +1,5 @@
 package it.gov.pagopa.rtp.activator.configuration;
 
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,7 +21,7 @@ public class CosmosDBConfig extends AbstractCosmosConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        return cosmosPropertiesConfig.getDbName();
+        return cosmosPropertiesConfig.getDatabase();
     }
 
     @Bean
@@ -33,8 +30,8 @@ public class CosmosDBConfig extends AbstractCosmosConfiguration {
                 .build();
 
         return new CosmosClientBuilder()
-                .endpoint(cosmosPropertiesConfig.getEndpoint())
-                .credential(credential);
+            .endpoint(cosmosPropertiesConfig.getUri())
+            .credential(credential);
     }
 
 }

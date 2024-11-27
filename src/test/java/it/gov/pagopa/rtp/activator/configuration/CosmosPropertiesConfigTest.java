@@ -21,8 +21,8 @@ class CosmosPropertiesConfigTest {
     @Test
     void testPropertiesLoaded() {
         assertNotNull(cosmosPropertiesConfig);
-        assertEquals("https://example.com/db/endpoint", cosmosPropertiesConfig.getEndpoint());
-        assertEquals("rtp", cosmosPropertiesConfig.getDbName());
+        assertEquals("https://example.com/db/endpoint", cosmosPropertiesConfig.getUri());
+        assertEquals("rtp", cosmosPropertiesConfig.getDatabase());
 
     }
 }

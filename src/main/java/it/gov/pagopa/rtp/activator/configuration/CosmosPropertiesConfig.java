@@ -5,15 +5,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import lombok.Getter;
 import lombok.Setter;
 
-@ConfigurationProperties(prefix = "cosmos.credential")
+@ConfigurationProperties(prefix = "azure.cosmos")
 @Getter
 @Setter
 public class CosmosPropertiesConfig {
-    private String dbName;
-    private String endpoint;
+    private String database;
+    private String uri;
 
-    public CosmosPropertiesConfig(String dbName, String endpoint) {
-        this.dbName = dbName;
-        this.endpoint = endpoint;
+    public CosmosPropertiesConfig(String database, String uri) {
+        this.database = database;
+        this.uri = uri;
     }
 }
