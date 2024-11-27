@@ -27,6 +27,8 @@ class CosmosDBConfigTest {
     void setUp() {
         lenient().when(cosmosPropertiesConfig.getDatabase()).thenReturn("test-db");
         lenient().when(cosmosPropertiesConfig.getUri()).thenReturn("https://test-endpoint:443/");
+        lenient().when(cosmosPropertiesConfig.getKey()).thenReturn("keykey");
+
     }
 
     @Test
@@ -36,9 +38,9 @@ class CosmosDBConfigTest {
     }
 
     @Test
-    void testGetCosmosClientBuilder() {
-        CosmosClientBuilder builder = cosmosDBConfig.getCosmosClientBuilder();
+    void testGetCosmosKeyAndUri() {
+        assertNotNull(cosmosDBConfig.getCosmosClientBuilder());
         verify(cosmosPropertiesConfig).getUri();
-        assertNotNull(builder);
+        verify(cosmosPropertiesConfig).getKey();
     }
 }
