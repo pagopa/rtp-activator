@@ -47,6 +47,11 @@ resource "azurerm_container_app" "rtp-activator" {
         secret_name = "identity-client-id"
       }
 
+      env {
+        name        = "AZURE_CLIENT_ID"
+        secret_name = "identity-client-id"
+      }
+
       dynamic "env" {
         for_each = var.rtp_environment_configs
         content {
