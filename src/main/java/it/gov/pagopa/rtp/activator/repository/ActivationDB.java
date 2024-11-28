@@ -1,9 +1,13 @@
 package it.gov.pagopa.rtp.activator.repository;
 
-import com.azure.spring.data.cosmos.repository.ReactiveCosmosRepository;
+
+
+import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.stereotype.Repository;
 
 import reactor.core.publisher.Mono;
 
-public interface ActivationDB extends ReactiveCosmosRepository<ActivationEntity, String> {
+@Repository
+public interface ActivationDB extends ReactiveMongoRepository<ActivationEntity, String> {
     Mono<ActivationEntity> findByFiscalCode(String fiscalCode);
 }

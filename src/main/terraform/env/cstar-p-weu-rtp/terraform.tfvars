@@ -42,7 +42,7 @@ rtp_activator_min_replicas                      = 1
 rtp_activator_base_url                          = "https://mil-d-apim.azure-api.net/rtp_activator"
 
 rtp_environment_secrets = {
-  COSMOS_ACCOUNT_RTP_ENDPOINT           : "cosmosdb-account-rtp-endpoint"
+  COSMOS_ACCOUNT_RTP_CONNECTION_STRING  : "cosmosdb-account-rtp-connection-string"
   APPLICATIONINSIGHTS_CONNECTION_STRING : "appinsights-connection-string"
   AZURE_COSMOS_KEY                      : "azure-cosmos-key"
 }
