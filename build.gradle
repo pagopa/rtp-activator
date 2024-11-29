@@ -3,7 +3,7 @@ plugins {
 	id 'org.springframework.boot' version '3.3.5'
 	id 'io.spring.dependency-management' version '1.1.6'
 	id 'org.graalvm.buildtools.native' version '0.10.3'
-	id("org.openapi.generator") version "7.5.0"
+	id("org.openapi.generator") version "7.10.0"
 	id "org.sonarqube" version "6.0.0.5145"
 	id 'jacoco'
 }
@@ -29,16 +29,14 @@ ext {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
 
-	// spring security + oauth2 resource server
+//   spring security + oauth2 resource server
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
 
-	implementation("org.springframework.boot:spring-boot-starter-actuator")
-
 //	implementation 'com.azure.spring:spring-cloud-azure-starter-actuator'
-//	implementation 'com.azure.spring:spring-cloud-azure-starter-data-cosmos'
 	implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
@@ -53,6 +51,8 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'io.projectreactor:reactor-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	annotationProcessor("org.projectlombok:lombok")
+	compileOnly("org.projectlombok:lombok")
 }
 
 dependencyManagement {
@@ -107,6 +107,7 @@ openApiGenerate {
     ])
 }
 
+
 graalvmNative {
 	binaries {
 		main {
@@ -115,6 +116,17 @@ graalvmNative {
 		}
 	}
 }
+
+bootRun {
+	jvmArgs = [
+			'-Djava.security.properties=src/main/resources/custom.security'
+	]
+}
+
+tasks.withType(JavaExec) {
+	jvmArgs += '-Djava.security.properties=src/main/resources/custom.security'
+}
+
 
 test {
 	finalizedBy jacocoTestReport // report is always generated after tests run
@@ -134,3 +146,4 @@ sonarqube {
 		property 'sonar.projectKey', 'pagopa_rtp-activator'
 	}
 }
+

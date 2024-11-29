@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 
 public class Users {
 
-    public static final String SERVICE_PROVIDER_ID = "1234";
+    public static final String SERVICE_PROVIDER_ID = "984500A9EB6B07AC2G71";
 
     public static final String ACTIVATION_WRITE_ROLE = "write_rtp_activations";
     public static final String ACTIVATION_READ_ROLE = "read_rtp_activations";

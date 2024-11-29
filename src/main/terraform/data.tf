@@ -14,6 +14,7 @@ data "azurerm_user_assigned_identity" "rtp-activator" {
   resource_group_name = var.id_resource_group_name
 }
 
+
 # ------------------------------------------------------------------------------
 # General purpose key vault used to protect secrets.
 # ------------------------------------------------------------------------------
@@ -21,3 +22,4 @@ data "azurerm_key_vault" "rtp-kv" {
   name                = local.rtp_kv_name
   resource_group_name = local.rtp_kv_resource_group_name
 }
+

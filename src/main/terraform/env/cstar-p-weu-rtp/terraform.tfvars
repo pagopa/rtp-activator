@@ -41,10 +41,13 @@ rtp_activator_max_replicas                      = 5
 rtp_activator_min_replicas                      = 1
 rtp_activator_base_url                          = "https://mil-d-apim.azure-api.net/rtp_activator"
 
-rtp_environment_configs = {
-  OTEL_TRACES_SAMPLER: "always_on"
+rtp_environment_secrets = {
+  COSMOS_ACCOUNT_RTP_CONNECTION_STRING  : "cosmosdb-account-rtp-connection-string"
+  APPLICATIONINSIGHTS_CONNECTION_STRING : "appinsights-connection-string"
 }
 
-rtp_environment_secrets = {
-  APPLICATIONINSIGHTS_CONNECTION_STRING: "appinsights-connection-string"
+rtp_environment_configs = {
+  DB_NAME                   : "rtp"
+  BASE_URL                  : "https://"
+  OTEL_TRACES_SAMPLER       : "always_on"
 }
