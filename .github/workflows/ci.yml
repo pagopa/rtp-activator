@@ -9,8 +9,9 @@ on:
       - opened
       - edited
       - synchronize
-#    paths:
-#      - 'src/*'
+    paths:
+      - 'src/*'
+      - '*gradle*'
 
 jobs:
   scan-sonar:
