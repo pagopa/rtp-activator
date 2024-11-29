@@ -9,8 +9,8 @@ on:
       - opened
       - edited
       - synchronize
-#    paths:
-#      - 'src/*'
+    paths:
+      - 'src/*'
 
 jobs:
   scan-sonar:
