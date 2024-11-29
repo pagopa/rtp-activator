@@ -67,7 +67,9 @@ tasks.named('test') {
 }
 
 tasks.compileJava {
-	dependsOn("openApiGenerate")
+	dependsOn("generateOpenAPIActivate")
+	dependsOn("generateOpenAPISend")
+	dependsOn("generateOpenAPIEPC")
 }
 
 sourceSets {
@@ -78,7 +80,7 @@ sourceSets {
     }
 }
 
-openApiGenerate {
+task generateOpenAPIActivate(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
 	generatorName.set("spring")
 	inputSpec.set("$rootDir/openapi/activation.openapi.yaml")
 	outputDir.set("$projectDir/build/generated")
@@ -105,6 +107,65 @@ openApiGenerate {
         "DateTime"        : "java.time.LocalDateTime",
         "zoned-date-time" : "java.time.ZonedDateTime"
     ])
+}
+
+
+task generateOpenAPISend(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+	generatorName.set("spring")
+	inputSpec.set("$rootDir/openapi/send.openapi.yaml")
+	outputDir.set("$projectDir/build/generated")
+	apiPackage.set("it.gov.pagopa.rtp.activator.controller.generated")
+	modelPackage.set("it.gov.pagopa.rtp.activator.model.generated")
+	modelNameSuffix.set("Dto")
+	generateApiTests.set(false)
+	generateApiDocumentation.set(false)
+	generateApiTests.set(false)
+	generateModelTests.set(false)
+	library.set("spring-boot")
+	configOptions.set([
+			"dateLibrary"                         : "java8",
+			"useSpringBoot3"                      : "true",
+			"interfaceOnly"                       : "true",
+			"useTags"                             : "true",
+			"useSwaggerUI"                        : "false",
+			"reactive"							  : "true",
+			"swaggerAnnotations"				  : "false",
+			"skipDefaultInterface"				  : "true",
+			"openApiNullable" 					  : "true",
+	])
+	typeMappings.set([
+			"DateTime"        : "java.time.LocalDateTime",
+			"zoned-date-time" : "java.time.ZonedDateTime"
+	])
+}
+
+task generateOpenAPIEPC(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+	generatorName.set("spring")
+	inputSpec.set("$rootDir/openapi/EPC133-22 v3.1 - SRTP scheme rulebook v3.1 related API specifications_optimized.yaml")
+	outputDir.set("$projectDir/build/generated")
+	apiPackage.set("it.gov.pagopa.rtp.activator.controller.generated")
+	modelPackage.set("it.gov.pagopa.rtp.activator.model.generated")
+	modelNameSuffix.set("Dto")
+	generateApiTests.set(false)
+	generateApiDocumentation.set(false)
+	generateApiTests.set(false)
+	generateModelTests.set(false)
+	library.set("spring-boot")
+	configOptions.set([
+			"dateLibrary"                         : "java8",
+			"useSpringBoot3"                      : "true",
+			"interfaceOnly"                       : "true",
+			"useTags"                             : "true",
+			"useSwaggerUI"                        : "false",
+			"reactive"							  : "true",
+			"swaggerAnnotations"				  : "false",
+			"skipDefaultInterface"				  : "true",
+			"openApiNullable" 					  : "true",
+	])
+	typeMappings.set([
+			"DateTime"        : "java.time.LocalDateTime",
+			"zoned-date-time" : "java.time.ZonedDateTime"
+	])
 }
 
 
