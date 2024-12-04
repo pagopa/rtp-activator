@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: pagoPa RTP - OpenAPI 3.x
+  description: DESCRIPTION
+  version: 0.0.1
+  contact:
+    email: cstar@pagopa.it
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: rtps
+    description: API Group aims to notify a pagoPa notice through Request To Pay (RTP)
+paths:
+  /rtps:
+    post:
+      tags:
+        - rtps
+      operationId: "createRtp"
+      summary: "Create and send a new RTP from a pagoPa notice"
+      description: "Create and send a new RTP from a pagoPa notice"
+      requestBody:
+        description: "pagoPa notice's details to create as RTP"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRtp"
+      responses:
+        "201":
+          description: "Request to pay created and sent"
+          headers:
+            Location:
+              required: true
+              description: "The location of created rtp"
+              schema:
+                $ref: "#/components/schemas/RtpLocation"
+
+
+components:
+  schemas:
+    AmountEuroCents:
+      description: Amount for payments, in euro cents
+      type: integer
+      minimum: 0
+      maximum: 99999999
+
+    NoticeNumber:
+      type: string
+      pattern: "\\d{18}"
+      description: "pagoPa notice's code"
+      example: "311111111112222222"
+      externalDocs:
+        description: "See noticeNumber field"
+        url: "https://docs.pagopa.it/sanp/appendici/primitive#verifypaymentnotice-1"
+
+    Payee:
+      type: object
+      properties:
+        payeeId:
+          $ref: "#/components/schemas/PayeeId"
+        name:
+          type: string
+          maxLength: 140
+          description: "The name of payee (e.g. EC name or Company Name)"
+          example: "Comune di Roma"
+      required:
+        - payeeId
+        - name
+
+    PayeeId:
+      type: string
+      pattern: "\\d{11}|\\d{16}"
+      description: "The payee id (e.g. EC fiscal code)"
+      example: "77777777777"
+      externalDocs:
+        description: "See idPA field"
+        url: "https://docs.pagopa.it/sanp/appendici/primitive#paverifypaymentnotice"
+
+    RtpId:
+      type: string
+      format: uuid
+      description: "Request to pay unique id"
+
+    RtpLocation:
+      type: string
+      description: "The location of created resource"
+      format: url
+      example: "https://domain.com/rtps/{rtpId}"
+
+    CreateRtp:
+      type: object
+      properties:
+        noticeNumber:
+          $ref: "#/components/schemas/NoticeNumber"
+        amount:
+          $ref: "#/components/schemas/AmountEuroCents"
+        description:
+          type: string
+          description: "The pagopa notice's description"
+          maxLength: 140
+        expiryDate:
+          type: string
+          description: "The pagoPa notice's expiry date. Formatted as ISO 8601 [YYYY]-[MM]-[DD]"
+          format: date
+          example: "2024-12-03"
+        payerId:
+          type: string
+          description: "The id of the recipient of the request to pay. The id is the fiscal code"
+          example: "ABCDEF12G34H567I"
+        payee:
+          $ref: "#/components/schemas/Payee"
+      required:
+        - noticeNumber
+        - amount
+        - description
+        - expiryDate
+        - payerId
+        - payee

@@ -1,5 +1,7 @@
 package it.gov.pagopa.rtp.activator.controller;
 
+import it.gov.pagopa.rtp.activator.controller.generated.activate.CreateApi;
+import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -8,9 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
-import it.gov.pagopa.rtp.activator.controller.generated.CreateApi;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
-import it.gov.pagopa.rtp.activator.model.generated.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.service.ActivationPayerService;
 import reactor.core.publisher.Mono;
 
