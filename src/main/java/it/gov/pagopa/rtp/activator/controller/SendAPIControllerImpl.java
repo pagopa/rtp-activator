@@ -33,6 +33,6 @@ public class SendAPIControllerImpl implements RtpsApi {
         ServerWebExchange exchange
         ) {
         return verifySubjectRequest(createRtpDto, CreateRtpDto::getPayerId)
-            .thenReturn(ResponseEntity.status(200).build());
+            .thenReturn(ResponseEntity.status(201).build());
     }
 }
