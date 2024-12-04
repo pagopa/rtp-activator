@@ -13,6 +13,10 @@ on:
       - 'src/*'
       - '*gradle*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scan-sonar:
     runs-on: ubuntu-22.04
