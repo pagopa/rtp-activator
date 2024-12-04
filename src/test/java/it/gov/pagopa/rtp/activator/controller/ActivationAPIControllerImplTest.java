@@ -75,7 +75,7 @@ class ActivationAPIControllerImplTest {
         when(activationPayerService.activatePayer(any(String.class), any(String.class)))
                 .thenReturn(Mono.just(payer));
 
-        when(activationPropertiesConfig.getBaseUrl()).thenReturn("http://localhost:8080/");
+        when(activationPropertiesConfig.baseUrl()).thenReturn("http://localhost:8080/");
 
         webTestClient.post()
                 .uri("/activations")
