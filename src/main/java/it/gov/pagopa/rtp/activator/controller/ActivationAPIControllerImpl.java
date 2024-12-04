@@ -1,5 +1,7 @@
 package it.gov.pagopa.rtp.activator.controller;
 
+import it.gov.pagopa.rtp.activator.controller.generated.activate.CreateApi;
+import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
