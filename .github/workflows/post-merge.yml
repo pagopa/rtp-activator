@@ -17,6 +17,9 @@ jobs:
       new_release_published: ${{ steps.semantic.outputs.new_release_published }}
       new_version: ${{ steps.semantic.outputs.new_release_version }}
 
+    # prevents action to be executed on the push of gradle.properties
+    if: github.actor != 'rtp-gh-bot'
+
     steps:
       - name: "Checkout the source code"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
