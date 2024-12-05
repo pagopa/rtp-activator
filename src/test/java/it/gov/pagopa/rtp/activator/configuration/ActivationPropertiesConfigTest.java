@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
 @EnableConfigurationProperties(value = ActivationPropertiesConfig.class)
-@TestPropertySource("classpath:application.properties")
+@TestPropertySource("classpath:application.yaml")
 class ActivationPropertiesConfigTest {
 
     @Autowired
