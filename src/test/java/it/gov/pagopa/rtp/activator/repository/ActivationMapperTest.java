@@ -2,8 +2,8 @@ package it.gov.pagopa.rtp.activator.repository;
 
 import org.junit.jupiter.api.Test;
 
-import it.gov.pagopa.rtp.activator.domain.Payer;
-import it.gov.pagopa.rtp.activator.domain.PayerID;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
+import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
 
 import static org.junit.jupiter.api.Assertions.*;
 

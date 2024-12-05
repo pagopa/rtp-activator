@@ -1,8 +1,10 @@
 package it.gov.pagopa.rtp.activator.service;
 
-import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
+import reactor.core.publisher.Mono;
+
 
 public interface SendRTPService {
-    SepaRequestToPayRequestResourceDto send (CreateRtpDto createRtpDto);
+    Mono<Rtp> send (CreateRtpDto createRtpDto);
 }

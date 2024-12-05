@@ -2,9 +2,9 @@ package it.gov.pagopa.rtp.activator.controller;
 
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
-import it.gov.pagopa.rtp.activator.domain.Payer;
-import it.gov.pagopa.rtp.activator.domain.PayerID;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
+import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PayerDto;
 import it.gov.pagopa.rtp.activator.repository.ActivationDBRepository;

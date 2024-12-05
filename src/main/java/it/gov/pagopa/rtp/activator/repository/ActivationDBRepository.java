@@ -3,8 +3,8 @@ package it.gov.pagopa.rtp.activator.repository;
 
 import org.springframework.stereotype.Repository;
 
-import it.gov.pagopa.rtp.activator.domain.Payer;
-import it.gov.pagopa.rtp.activator.domain.PayerRepository;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
+import it.gov.pagopa.rtp.activator.domain.payer.PayerRepository;
 import reactor.core.publisher.Mono;
 
 @Repository

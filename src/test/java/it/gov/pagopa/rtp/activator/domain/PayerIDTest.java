@@ -1,5 +1,8 @@
 package it.gov.pagopa.rtp.activator.domain;
 import org.junit.jupiter.api.Test;
+
+import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.UUID;
 

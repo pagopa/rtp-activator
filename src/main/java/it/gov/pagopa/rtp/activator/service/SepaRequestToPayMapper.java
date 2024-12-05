@@ -39,13 +39,13 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentMethod7CodeDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentTypeInformation26EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.RemittanceInformation21EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 
 @Component
 public class SepaRequestToPayMapper {
 
-    public SepaRequestToPayRequestResourceDto toRequestToPay(String resourceId, LocalDateTime savingDateTime,
-            String expiryDate, String payerId, String rtpSpId, String endToEndId, BigDecimal amount, String payeeName,
-            String payeeId, String iban, String payTrxRef, String flgConf, String noticeNumber, String description) {
+    public SepaRequestToPayRequestResourceDto toRequestToPay(CreateRtpDto createRtpDto ,String resourceId, LocalDateTime savingDateTime,
+           String rtpSpId, String endToEndId, String iban, String payTrxRef, String flgConf) {
 
         SepaRequestToPayRequestResourceDto sepaRequestToPayRequestResourceDto = new SepaRequestToPayRequestResourceDto();
 
@@ -59,14 +59,14 @@ public class SepaRequestToPayMapper {
         groupHeader105EPC25922V30DS02Dto.setInitgPty(partyIdentification135EPC25922V30DS02Dto);
 
         ISODateTimeWrapperDto isoDateTimeWrapperDto = new ISODateTimeWrapperDto();
-        isoDateTimeWrapperDto.setDtTm(expiryDate);
+        isoDateTimeWrapperDto.setDtTm(createRtpDto.getExpiryDate().toString());
 
         ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto dbtExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto = new ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto();
         dbtExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto
                 .setCd(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID);// FIXED
 
         GenericOrganisationIdentification1EPC25922V30DS02Dto dbtGenericOrganisationIdentification1EPC25922V30DS02Dto = new GenericOrganisationIdentification1EPC25922V30DS02Dto();
-        dbtGenericOrganisationIdentification1EPC25922V30DS02Dto.setId(payerId);
+        dbtGenericOrganisationIdentification1EPC25922V30DS02Dto.setId(createRtpDto.getPayerId());
         dbtGenericOrganisationIdentification1EPC25922V30DS02Dto
                 .setSchmeNm(dbtExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto);
 
@@ -106,7 +106,7 @@ public class SepaRequestToPayMapper {
                 externalServiceLevel1CodeWrapperDto, max35TextWrapperDto);
 
         ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto activeOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto = new ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto();
-        activeOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto.setInstdAmt(amount);
+        activeOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto.setInstdAmt(BigDecimal.valueOf(createRtpDto.getAmount()/100));
 
         Max35TextWrapperDto cdtMax35TextWrapperDto = new Max35TextWrapperDto();
         cdtMax35TextWrapperDto.setPrtry("LEI");// FIXED
@@ -127,7 +127,7 @@ public class SepaRequestToPayMapper {
                 .setCd(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID);// FIXED
 
         GenericOrganisationIdentification1EPC25922V30DS02Dto cdtGenericOrganisationIdentification1EPC25922V30DS02Dto = new GenericOrganisationIdentification1EPC25922V30DS02Dto();
-        cdtGenericOrganisationIdentification1EPC25922V30DS02Dto.setId(payeeId);
+        cdtGenericOrganisationIdentification1EPC25922V30DS02Dto.setId(createRtpDto.getPayee().getPayeeId());
         cdtGenericOrganisationIdentification1EPC25922V30DS02Dto
                 .setSchmeNm(cdtExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto);
 
@@ -144,7 +144,7 @@ public class SepaRequestToPayMapper {
                 .setOrgId(cdtOrganisationIdentification29EPC25922V30DS02Dto);
 
         PartyIdentification135EPC25922V30DS023Dto partyIdentification135EPC25922V30DS023Dto = new PartyIdentification135EPC25922V30DS023Dto();
-        partyIdentification135EPC25922V30DS022Dto.setNm(payeeName);
+        partyIdentification135EPC25922V30DS022Dto.setNm(createRtpDto.getPayee().getName());
         partyIdentification135EPC25922V30DS022Dto.setId(cdtOrganisationIdentification29EPC25922V30DS02WrapperDto);
 
         IBAN2007IdentifierWrapperDto iban2007IdentifierWrapperDto = new IBAN2007IdentifierWrapperDto();
@@ -163,11 +163,11 @@ public class SepaRequestToPayMapper {
         lInstructionForCreditorAgent3EPC25922V30DS02Dtos.add(flgConfRefinstructionForCreditorAgent3EPC25922V30DS02Dto);
 
         ExternalPurpose1CodeWrapperDto externalPurpose1CodeWrapperDto = new ExternalPurpose1CodeWrapperDto();
-        externalPurpose1CodeWrapperDto.setCd(noticeNumber);
+        externalPurpose1CodeWrapperDto.setCd(createRtpDto.getNoticeNumber());
 
         List<String> lUstrd = new ArrayList<>();
         lUstrd.add("TARI immobile 1234/BU-2024-23231312 -");// FIXED VALUE TO CHANGE
-        lUstrd.add(description);
+        lUstrd.add(createRtpDto.getDescription());
 
         RemittanceInformation21EPC25922V30DS02Dto remittanceInformation21EPC25922V30DS02Dto = new RemittanceInformation21EPC25922V30DS02Dto();
         remittanceInformation21EPC25922V30DS02Dto.setUstrd(lUstrd);
