@@ -40,4 +40,3 @@ public class SendAPIControllerImpl implements RtpsApi {
             .thenReturn(ResponseEntity.status(201).build());
     }
 }
-}
