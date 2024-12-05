@@ -162,6 +162,7 @@ jobs:
         run: |
           docker pull ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC
           docker image tag ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}
+          docker image tag ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC ghcr.io/${{ github.repository }}:latest
           docker rmi ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC
           docker image push --all-tags ghcr.io/${{ github.repository }}
 
