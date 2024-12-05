@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.5'
@@ -80,7 +82,7 @@ sourceSets {
     }
 }
 
-task generateOpenAPIActivate(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+tasks.register('generateOpenAPIActivate', GenerateTask) {
 	generatorName.set("spring")
 	inputSpec.set("$rootDir/openapi/activation.openapi.yaml")
 	outputDir.set("$projectDir/build/generated")
@@ -110,7 +112,7 @@ task generateOpenAPIActivate(type: org.openapitools.generator.gradle.plugin.task
 }
 
 
-task generateOpenAPISend(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+tasks.register('generateOpenAPISend', GenerateTask) {
 	generatorName.set("spring")
 	inputSpec.set("$rootDir/openapi/send.openapi.yaml")
 	outputDir.set("$projectDir/build/generated")
@@ -139,21 +141,22 @@ task generateOpenAPISend(type: org.openapitools.generator.gradle.plugin.tasks.Ge
 	])
 }
 
-task generateOpenAPIEPC(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
-	generatorName.set("spring")
+tasks.register('generateOpenAPIEPC', GenerateTask) {
+	generatorName.set("java")
 	inputSpec.set("$rootDir/openapi/EPC133-22 v3.1 - SRTP scheme rulebook v3.1 related API specifications_optimized.yaml")
 	outputDir.set("$projectDir/build/generated")
-	apiPackage.set("it.gov.pagopa.rtp.activator.controller.generated.epc")
-	modelPackage.set("it.gov.pagopa.rtp.activator.model.generated.epc")
+	apiPackage.set("it.gov.pagopa.rtp.activator.client.epc.api")
+	modelPackage.set("it.gov.pagopa.rtp.activator.client.epc.model")
+	invokerPackage.set("it.gov.pagopa.rtp.activator.client.epc.invoker")
 	modelNameSuffix.set("Dto")
 	generateApiTests.set(false)
 	generateApiDocumentation.set(false)
 	generateApiTests.set(false)
 	generateModelTests.set(false)
-	library.set("spring-boot")
+	library.set("webclient")
 	configOptions.set([
 			"dateLibrary"                         : "java8",
-			"useSpringBoot3"                      : "true",
+			"useJakartaEe"                        : "true",
 			"interfaceOnly"                       : "true",
 			"useTags"                             : "true",
 			"useSwaggerUI"                        : "false",
@@ -184,7 +187,7 @@ bootRun {
 	]
 }
 
-tasks.withType(JavaExec) {
+tasks.withType(JavaExec).configureEach {
 	jvmArgs += '-Djava.security.properties=src/main/resources/custom.security'
 }
 
