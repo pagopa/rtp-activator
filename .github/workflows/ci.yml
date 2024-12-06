@@ -10,8 +10,8 @@ on:
       - edited
       - synchronize
     paths:
-      - 'src/*'
-      - '*gradle*'
+      - 'src/**'
+      - '**gradle**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
