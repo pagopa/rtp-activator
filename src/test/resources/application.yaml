@@ -1,0 +1,7 @@
+logging.level.org.springframework.security: DEBUG
+activation.baseUrl: https://example.com
+
+azure.cosmos:
+  uri: https://example.com/db/endpoint
+  key: your-primary-key
+  database: rtp

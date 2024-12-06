@@ -1,0 +1,20 @@
+logging.level.root: INFO
+
+spring.application.name: rtp-activator
+
+# enable spring boot actuator health endpoint
+management:
+  endpoints:
+    enabled-by-default: false
+    web.exposure.include: health
+  endpoint:
+    health:
+      enabled: true
+      probes.enabled: true
+#repository
+  health.mongo.enabled: false
+
+spring.data.mongodb:
+  uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:}
+  database: ${DB_NAME:rtp}
+activation.base-url: ${BASE_URL:http://localhost}
