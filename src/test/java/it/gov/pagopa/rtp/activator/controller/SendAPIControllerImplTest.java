@@ -35,7 +35,7 @@ import java.time.LocalDate;
 @WebFluxTest(controllers = { SendAPIControllerImpl.class })
 @Import({ SecurityConfig.class })
 @DisabledInAotMode
-public class SendAPIControllerImplTest {
+class SendAPIControllerImplTest {
 
     @MockBean
     private SendRTPService sendRTPService;

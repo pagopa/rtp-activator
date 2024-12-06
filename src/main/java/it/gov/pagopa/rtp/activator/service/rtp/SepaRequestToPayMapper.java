@@ -15,6 +15,7 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.ChargeBearerType1CodeDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.CreditTransferTransaction57EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.CreditorPaymentActivationRequestV10EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.DocumentEPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPurpose1CodeWrapperDto;
@@ -63,6 +64,7 @@ public class SepaRequestToPayMapper {
                 ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto dbtExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto = new ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto();
                 dbtExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto
                                 .setCd(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID);// FIXED
+
 
                 GenericOrganisationIdentification1EPC25922V30DS02Dto dbtGenericOrganisationIdentification1EPC25922V30DS02Dto = new GenericOrganisationIdentification1EPC25922V30DS02Dto();
                 dbtGenericOrganisationIdentification1EPC25922V30DS02Dto.setId(rtp.payerId());
@@ -205,7 +207,7 @@ public class SepaRequestToPayMapper {
                                 .setDbtrAgt(dbtBranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto);
                 paymentInstruction42EPC25922V30DS02Dto.setCdtTrfTx(lCreditTransferTransaction57EPC25922V30DS02Dtos);
 
-                List<PaymentInstruction42EPC25922V30DS02Dto> listPaymentInstruction42EPC25922V30DS02Dto = new ArrayList<PaymentInstruction42EPC25922V30DS02Dto>();
+                List<PaymentInstruction42EPC25922V30DS02Dto> listPaymentInstruction42EPC25922V30DS02Dto = new ArrayList<>();
                 listPaymentInstruction42EPC25922V30DS02Dto.add(paymentInstruction42EPC25922V30DS02Dto);
 
                 CreditorPaymentActivationRequestV10EPC25922V30DS02Dto creditorPaymentActivationRequestV10EPC25922V30DS02Dto = new CreditorPaymentActivationRequestV10EPC25922V30DS02Dto();

@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-public class ResourceIDTest {
+class ResourceIDTest {
       @Test
     void testCreateNew() {
         ResourceID resourceID = ResourceID.createNew();

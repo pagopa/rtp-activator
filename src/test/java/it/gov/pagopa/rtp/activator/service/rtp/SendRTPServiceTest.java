@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
-public class SendRTPServiceTest {
+class SendRTPServiceTest {
 
     @Mock
     private SepaRequestToPayMapper sepaRequestToPayMapper;

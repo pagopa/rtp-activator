@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationMapper;
 
 import static org.junit.jupiter.api.Assertions.*;
 
