@@ -1,4 +1,4 @@
-package it.gov.pagopa.rtp.activator.domain;
+package it.gov.pagopa.rtp.activator.domain.payer;
 
 
 import reactor.core.publisher.Mono;

@@ -1,6 +1,6 @@
-package it.gov.pagopa.rtp.activator.service;
+package it.gov.pagopa.rtp.activator.service.activation;
 
-import it.gov.pagopa.rtp.activator.domain.Payer;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import reactor.core.publisher.Mono;
 
 public interface ActivationPayerService {
