@@ -11,7 +11,6 @@ import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
-import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerServiceImpl;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 

@@ -27,8 +27,8 @@ public class SendAPIControllerImpl implements RtpsApi {
             ServerWebExchange exchange) {
         return createRtpDto
                 .flatMap(t -> sendRTPService.send(t.getNoticeNumber(), t.getAmount(), t.getDescription(),
-                        t.getExpiryDate(), t.getPayerId(), t.getPayee().getName(), t.getPayee().getPayeeId(), "null",
-                        "null", "null", "null"))
+                        t.getExpiryDate(), t.getPayerId(), t.getPayee().getName(), t.getPayee().getPayeeId(), "endToEndId",
+                        "iban", "payTrxRef", "flgConf"))
                 .thenReturn(ResponseEntity.status(201).build());
     }
 }

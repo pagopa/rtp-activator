@@ -1,8 +1,7 @@
-package it.gov.pagopa.rtp.activator.controller.activation;
+package it.gov.pagopa.rtp.activator.controller;
 
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
-import it.gov.pagopa.rtp.activator.controller.ActivationAPIControllerImpl;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
