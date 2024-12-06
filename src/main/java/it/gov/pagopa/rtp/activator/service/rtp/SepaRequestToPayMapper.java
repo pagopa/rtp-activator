@@ -15,7 +15,6 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.ChargeBearerType1CodeDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.CreditTransferTransaction57EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.CreditorPaymentActivationRequestV10EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.DocumentEPC25922V30DS02Dto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPurpose1CodeWrapperDto;
@@ -38,7 +37,6 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentIdentification6EPC
 import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentInstruction42EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentMethod7CodeDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentTypeInformation26EPC25922V30DS02Dto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.Purpose2ChoiceEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.RemittanceInformation21EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
 

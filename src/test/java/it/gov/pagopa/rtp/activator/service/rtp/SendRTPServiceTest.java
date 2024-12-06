@@ -38,7 +38,7 @@ class SendRTPServiceTest {
     }
 
     @Test
-    public void testSend() {
+    void testSend() {
         String noticeNumber = "12345";
         Integer amount = 100;
         String description = "Payment Description";
