@@ -5,17 +5,17 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class RequestID {
+public class ResourceID {
 
     private final UUID id;
 
-    public RequestID(UUID uuid) {
+    public ResourceID(UUID uuid) {
         this.id = uuid;
     }
 
-    public static RequestID createNew() {
+    public static ResourceID createNew() {
         UUID uuid = UUID.randomUUID();
-        return new RequestID(uuid);
+        return new ResourceID(uuid);
     }
 
 }

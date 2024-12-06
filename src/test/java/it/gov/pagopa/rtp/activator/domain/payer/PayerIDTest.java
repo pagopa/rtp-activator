@@ -1,4 +1,4 @@
-package it.gov.pagopa.rtp.activator.domain;
+package it.gov.pagopa.rtp.activator.domain.payer;
 import org.junit.jupiter.api.Test;
 
 import it.gov.pagopa.rtp.activator.domain.payer.PayerID;

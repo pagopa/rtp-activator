@@ -1,4 +1,4 @@
-package it.gov.pagopa.rtp.activator.service;
+package it.gov.pagopa.rtp.activator.service.activation;
 
 import java.time.Instant;
 
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
-import it.gov.pagopa.rtp.activator.repository.ActivationDBRepository;
+import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
 import reactor.core.publisher.Mono;
 
 @Service
