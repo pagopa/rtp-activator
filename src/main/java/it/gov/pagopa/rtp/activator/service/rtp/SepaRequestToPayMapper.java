@@ -37,6 +37,7 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentIdentification6EPC
 import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentInstruction42EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentMethod7CodeDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentTypeInformation26EPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.Purpose2ChoiceEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.RemittanceInformation21EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
 
@@ -166,6 +167,7 @@ public class SepaRequestToPayMapper {
                                 .add(flgConfRefinstructionForCreditorAgent3EPC25922V30DS02Dto);
 
                 ExternalPurpose1CodeWrapperDto externalPurpose1CodeWrapperDto = new ExternalPurpose1CodeWrapperDto();
+
                 externalPurpose1CodeWrapperDto.setCd(rtp.noticeNumber());
 
                 List<String> lUstrd = new ArrayList<>();
