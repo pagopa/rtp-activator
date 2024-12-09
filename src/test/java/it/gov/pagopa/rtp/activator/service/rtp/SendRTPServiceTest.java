@@ -47,6 +47,7 @@ class SendRTPServiceTest {
         String payeeName = "Payee Name";
         String payeeId = "payeeId";
         String endToEndId = "endToEndId";
+        String rtpSpId = "rtpSpId";
         String iban = "IT60X0542811101000000123456";
         String payTrxRef = "payTrxRef";
         String flgConf = "flgConf";
@@ -60,7 +61,7 @@ class SendRTPServiceTest {
         when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class))).thenReturn(mockSepaRequestToPayRequestResource);
 
         Mono<Rtp> result = sendRTPService.send(noticeNumber, amount, description, expiryDate, payerId, payeeName,
-                payeeId, endToEndId, iban, payTrxRef, flgConf);
+                payeeId, rtpSpId, endToEndId, iban, payTrxRef, flgConf);
         StepVerifier.create(result)
                 .expectNextMatches(rtp -> rtp.noticeNumber().equals(expectedRtp.noticeNumber())
                         && rtp.amount().equals(expectedRtp.amount())
@@ -69,6 +70,7 @@ class SendRTPServiceTest {
                         && rtp.payerId().equals(expectedRtp.payerId())
                         && rtp.payeeName().equals(expectedRtp.payeeName())
                         && rtp.payeeId().equals(expectedRtp.payeeId())
+                        && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
                         && rtp.endToEndId().equals(expectedRtp.endToEndId())
                         && rtp.iban().equals(expectedRtp.iban()) && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
                         && rtp.flgConf().equals(expectedRtp.flgConf()))

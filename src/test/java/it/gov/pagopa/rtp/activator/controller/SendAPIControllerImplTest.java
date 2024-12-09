@@ -59,7 +59,7 @@ class SendAPIControllerImplTest {
     void testSendRtpSuccessful() {
 
         when(sendRTPService.send(anyString(), anyInt(), anyString(), any(), anyString(), anyString(), anyString(),
-                anyString(), anyString(), anyString(), anyString()))
+                anyString(), anyString(),anyString(), anyString(), anyString()))
                 .thenReturn(Mono.empty());
 
         webTestClient.post()
@@ -77,7 +77,7 @@ class SendAPIControllerImplTest {
     void testSendRtpWithWrongBody() {
 
         when(sendRTPService.send(anyString(), anyInt(), anyString(), any(), anyString(), anyString(), anyString(),
-                anyString(), anyString(), anyString(), anyString()))
+                anyString(), anyString(),anyString(), anyString(), anyString()))
                 .thenReturn(Mono.empty());
 
         webTestClient.post()

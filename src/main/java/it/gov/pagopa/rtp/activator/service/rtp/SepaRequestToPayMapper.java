@@ -14,7 +14,10 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.CashAccount40EPC25922V30D
 import it.gov.pagopa.rtp.activator.model.generated.epc.ChargeBearerType1CodeDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.CreditTransferTransaction57EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.CreditorPaymentActivationRequestV10EPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.DateAndDateTime2ChoiceEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.DocumentEPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPersonIdentification1CodeEPC25922V30DS02Dto;
@@ -23,16 +26,21 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalServiceLevel1Code
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalServiceLevel1CodeWrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.FinancialInstitutionIdentification18EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.GenericFinancialIdentification1Dto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.GenericOrganisationIdentification1EPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.GenericOrganisationIdentification1EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.GenericPersonIdentification1EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.GroupHeader105EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.IBAN2007IdentifierWrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ISODateTimeWrapperDto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.ISODateWrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.InstructionForCreditorAgent3EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.Max35TextWrapperDto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS022Dto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS02WrapperDto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.Party38ChoiceEPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS022Dto;
+import it.gov.pagopa.rtp.activator.model.generated.epc.Party38ChoiceEPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PartyIdentification135EPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PartyIdentification135EPC25922V30DS023Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PartyIdentification135EPC25922V30DS02Dto;
@@ -42,8 +50,6 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentMethod7CodeDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PaymentTypeInformation26EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PersonIdentification13EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PersonIdentification13EPC25922V30DS02WrapperDto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.PersonIdentificationSchemeName1ChoiceEPC25922V30DS02Dto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.Purpose2ChoiceEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.RemittanceInformation21EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
 
@@ -58,13 +64,14 @@ public class SepaRequestToPayMapper {
                 partyIdentification135EPC25922V30DS02Dto.setNm("PagoPA");// FIXED
 
                 GroupHeader105EPC25922V30DS02Dto groupHeader105EPC25922V30DS02Dto = new GroupHeader105EPC25922V30DS02Dto();
-                groupHeader105EPC25922V30DS02Dto.setMsgId(rtp.resourceID().toString());
+                groupHeader105EPC25922V30DS02Dto.setMsgId(rtp.resourceID().getId().toString());
+
                 groupHeader105EPC25922V30DS02Dto.setCreDtTm(rtp.savingDateTime().toString());
                 groupHeader105EPC25922V30DS02Dto.setNbOfTxs("1");// FIXED
                 groupHeader105EPC25922V30DS02Dto.setInitgPty(partyIdentification135EPC25922V30DS02Dto);
 
-                ISODateTimeWrapperDto isoDateTimeWrapperDto = new ISODateTimeWrapperDto();
-                isoDateTimeWrapperDto.setDtTm(rtp.expiryDate().toString());
+                ISODateWrapperDto isoDateWrapperDto = new ISODateWrapperDto();
+                isoDateWrapperDto.setDt(rtp.expiryDate().toString());
 
                 ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto externalPersonIdentification1CodeEPC25922V30DS02WrapperDto = new ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto();
                 externalPersonIdentification1CodeEPC25922V30DS02WrapperDto
@@ -97,7 +104,7 @@ public class SepaRequestToPayMapper {
                                 .setFinInstnId(dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto);
 
                 PaymentIdentification6EPC25922V30DS02Dto paymentIdentification6EPC25922V30DS02Dto = new PaymentIdentification6EPC25922V30DS02Dto(
-                                rtp.resourceID().toString(), rtp.endToEndId());
+                                rtp.resourceID().getId().toString(), rtp.endToEndId());
 
                 ExternalServiceLevel1CodeWrapperDto externalServiceLevel1CodeWrapperDto = new ExternalServiceLevel1CodeWrapperDto();
                 externalServiceLevel1CodeWrapperDto.setCd(ExternalServiceLevel1CodeDto.SRTP);// FIXED
@@ -126,31 +133,27 @@ public class SepaRequestToPayMapper {
                 cdtBranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto
                                 .setFinInstnId(financialInstitutionIdentification18EPC25922V30DS02Dto);
 
-                ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto cdtExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto = new ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto();
-                cdtExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto
-                                .setCd(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID);// FIXED
+                ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto externalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto = new ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto();
+                externalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto.setCd(ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto.BOID);
 
-                GenericOrganisationIdentification1EPC25922V30DS02Dto cdtGenericOrganisationIdentification1EPC25922V30DS02Dto = new GenericOrganisationIdentification1EPC25922V30DS02Dto();
-                cdtGenericOrganisationIdentification1EPC25922V30DS02Dto.setId(rtp.payeeId());
-                cdtGenericOrganisationIdentification1EPC25922V30DS02Dto
-                                .setSchmeNm(cdtExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto);
+                GenericOrganisationIdentification1EPC25922V30DS022Dto genericOrganisationIdentification1EPC25922V30DS022Dto = new GenericOrganisationIdentification1EPC25922V30DS022Dto();
+                genericOrganisationIdentification1EPC25922V30DS022Dto.setId(rtp.payeeId());
+                genericOrganisationIdentification1EPC25922V30DS022Dto.setSchmeNm(externalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto);
 
-                List<GenericOrganisationIdentification1EPC25922V30DS02Dto> lCdtGenericOrganisationIdentification1EPC25922V30DS02Dtos = new ArrayList<>();
-                lCdtGenericOrganisationIdentification1EPC25922V30DS02Dtos
-                                .add(cdtGenericOrganisationIdentification1EPC25922V30DS02Dto);
+                List<GenericOrganisationIdentification1EPC25922V30DS022Dto> lGenericOrganisationIdentification1EPC25922V30DS022Dtos = new ArrayList<>();
+                lGenericOrganisationIdentification1EPC25922V30DS022Dtos.add(genericOrganisationIdentification1EPC25922V30DS022Dto);
 
-                OrganisationIdentification29EPC25922V30DS02Dto cdtOrganisationIdentification29EPC25922V30DS02Dto = new OrganisationIdentification29EPC25922V30DS02Dto();
-                cdtOrganisationIdentification29EPC25922V30DS02Dto
-                                .setOthr(lCdtGenericOrganisationIdentification1EPC25922V30DS02Dtos);
+                OrganisationIdentification29EPC25922V30DS022Dto organisationIdentification29EPC25922V30DS022Dto = new OrganisationIdentification29EPC25922V30DS022Dto();
+                
+                organisationIdentification29EPC25922V30DS022Dto.setOthr(lGenericOrganisationIdentification1EPC25922V30DS022Dtos);
 
-                OrganisationIdentification29EPC25922V30DS02WrapperDto cdtOrganisationIdentification29EPC25922V30DS02WrapperDto = new OrganisationIdentification29EPC25922V30DS02WrapperDto();
-                cdtOrganisationIdentification29EPC25922V30DS02WrapperDto
-                                .setOrgId(cdtOrganisationIdentification29EPC25922V30DS02Dto);
-
+                OrganisationIdentification29EPC25922V30DS022WrapperDto organisationIdentification29EPC25922V30DS022WrapperDto = new OrganisationIdentification29EPC25922V30DS022WrapperDto();
+                organisationIdentification29EPC25922V30DS022WrapperDto.setOrgId(organisationIdentification29EPC25922V30DS022Dto);
+                
                 PartyIdentification135EPC25922V30DS023Dto partyIdentification135EPC25922V30DS023Dto = new PartyIdentification135EPC25922V30DS023Dto();
-                partyIdentification135EPC25922V30DS022Dto.setNm(rtp.payeeName());
-                partyIdentification135EPC25922V30DS022Dto
-                                .setId(cdtOrganisationIdentification29EPC25922V30DS02WrapperDto);
+                partyIdentification135EPC25922V30DS023Dto.setNm(rtp.payeeName());
+                partyIdentification135EPC25922V30DS023Dto
+                                .setId(organisationIdentification29EPC25922V30DS022WrapperDto);
 
                 IBAN2007IdentifierWrapperDto iban2007IdentifierWrapperDto = new IBAN2007IdentifierWrapperDto();
                 iban2007IdentifierWrapperDto.setIBAN(rtp.iban());
@@ -196,8 +199,8 @@ public class SepaRequestToPayMapper {
                 PaymentInstruction42EPC25922V30DS02Dto paymentInstruction42EPC25922V30DS02Dto = new PaymentInstruction42EPC25922V30DS02Dto();
                 paymentInstruction42EPC25922V30DS02Dto.setPmtInfId(rtp.noticeNumber());
                 paymentInstruction42EPC25922V30DS02Dto.setPmtMtd(PaymentMethod7CodeDto.TRF);// FIXED
-                paymentInstruction42EPC25922V30DS02Dto.setReqdExctnDt(isoDateTimeWrapperDto);
-                paymentInstruction42EPC25922V30DS02Dto.setXpryDt(isoDateTimeWrapperDto);
+                paymentInstruction42EPC25922V30DS02Dto.setReqdExctnDt(isoDateWrapperDto);
+                paymentInstruction42EPC25922V30DS02Dto.setXpryDt(isoDateWrapperDto);
                 paymentInstruction42EPC25922V30DS02Dto.setDbtr(partyIdentification135EPC25922V30DS022Dto);
                 paymentInstruction42EPC25922V30DS02Dto
                                 .setDbtrAgt(dbtBranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto);
@@ -215,7 +218,7 @@ public class SepaRequestToPayMapper {
                 documentEPC25922V30DS02Dto.setCdtrPmtActvtnReq(creditorPaymentActivationRequestV10EPC25922V30DS02Dto);
 
                 sepaRequestToPayRequestResourceDto.setCallbackUrl(URI.create("http://spsrtp.api.cstar.pagopa.it"));// FIXED
-                sepaRequestToPayRequestResourceDto.setResourceId(rtp.resourceID().toString());
+                sepaRequestToPayRequestResourceDto.setResourceId(rtp.resourceID().getId().toString());
                 sepaRequestToPayRequestResourceDto.document(documentEPC25922V30DS02Dto);
 
                 return sepaRequestToPayRequestResourceDto;
