@@ -53,7 +53,7 @@ class SendRTPServiceTest {
         String flgConf = "flgConf";
 
         Rtp expectedRtp = new Rtp(noticeNumber, amount, description, expiryDate, payerId, payeeName, payeeId,
-                ResourceID.createNew(), LocalDateTime.now(), payeeId, endToEndId, iban, payTrxRef, flgConf);
+                ResourceID.createNew(), LocalDateTime.now(),"rtpSpId", endToEndId, iban, payTrxRef, flgConf);
 
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto(
                 URI.create("http://callback.url"));

@@ -63,9 +63,9 @@ class SepaRequestToPayMapperTest {
         SepaRequestToPayRequestResourceDto result = sepaRequestToPayMapper.toRequestToPay(rtp);
 
         assertNotNull(result);
-        assertEquals(resourceId.toString(), result.getResourceId());
+        assertEquals(resourceId.getId().toString(), result.getResourceId());
         assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
-        assertEquals(resourceId.toString(), result.getDocument().getCdtrPmtActvtnReq().getGrpHdr().getMsgId());
+        assertEquals(resourceId.getId().toString(), result.getDocument().getCdtrPmtActvtnReq().getGrpHdr().getMsgId());
         assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0).getRmtInf().getUstrd().contains(description));
     }
 }
