@@ -1,11 +1,11 @@
-package it.gov.pagopa.rtp.activator.repository;
+package it.gov.pagopa.rtp.activator.repository.activation;
 
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import it.gov.pagopa.rtp.activator.domain.Payer;
-import it.gov.pagopa.rtp.activator.domain.PayerID;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
+import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
 
 @Component
 public class ActivationMapper {

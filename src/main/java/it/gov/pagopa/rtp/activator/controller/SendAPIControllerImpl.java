@@ -1,11 +1,9 @@
 package it.gov.pagopa.rtp.activator.controller;
 
-import static it.gov.pagopa.rtp.activator.utils.Authorizations.verifySubjectRequest;
-
-import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
-import it.gov.pagopa.rtp.activator.service.ActivationPayerService;
+import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -17,22 +15,20 @@ import reactor.core.publisher.Mono;
 @Validated
 public class SendAPIControllerImpl implements RtpsApi {
 
-    private final ActivationPayerService activationPayerService;
+    private final SendRTPService sendRTPService;
 
-    private final ActivationPropertiesConfig activationPropertiesConfig;
-
-    public SendAPIControllerImpl(ActivationPayerService activationPayerService,
-            ActivationPropertiesConfig activationPropertiesConfig) {
-        this.activationPayerService = activationPayerService;
-        this.activationPropertiesConfig = activationPropertiesConfig;
+    public SendAPIControllerImpl(SendRTPService sendRTPService) {
+        this.sendRTPService = sendRTPService;
     }
 
     @Override
     @PreAuthorize("hasRole('write_rtp_send')")
     public Mono<ResponseEntity<Void>> createRtp(Mono<CreateRtpDto> createRtpDto,
-        ServerWebExchange exchange
-        ) {
-        return verifySubjectRequest(createRtpDto, CreateRtpDto::getPayerId)
-            .thenReturn(ResponseEntity.status(201).build());
+            ServerWebExchange exchange) {
+        return createRtpDto
+                .flatMap(t -> sendRTPService.send(t.getNoticeNumber(), t.getAmount(), t.getDescription(),
+                        t.getExpiryDate(), t.getPayerId(), t.getPayee().getName(), t.getPayee().getPayeeId(),"rtpSpId", "endToEndId",
+                        "iban", "payTrxRef", "flgConf"))
+                .thenReturn(ResponseEntity.status(201).build());
     }
 }
