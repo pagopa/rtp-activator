@@ -12,9 +12,6 @@ import java.time.LocalDateTime;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 @Service
 @Slf4j
@@ -35,15 +32,7 @@ public class SendRTPServiceImpl implements SendRTPService {
     Rtp rtp = new Rtp(noticeNumber, amount, description, expiryDate, payerId, payeeName, payeeId,
         ResourceID.createNew(), LocalDateTime.now(), rtpSpId, endToEndId, iban, payTrxRef, flgConf);
     // save
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-
-    try { //
-      String jsonString = objectMapper.writeValueAsString(sepaRequestToPayMapper.toRequestToPay(rtp));
-      log.info(jsonString);
-    } catch (JsonProcessingException e) {
-      log.error("Problem while serializing SepaRequestToPayRequestResourceDto object", e);
-    }
+    log.info(sepaRequestToPayMapper.toRequestToPay(rtp).toString());
 
     return Mono.just(rtp);
   }
