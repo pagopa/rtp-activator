@@ -32,6 +32,7 @@ public class SendRTPServiceImpl implements SendRTPService {
     Rtp rtp = new Rtp(noticeNumber, amount, description, expiryDate, payerId, payeeName, payeeId,
         ResourceID.createNew(), LocalDateTime.now(), rtpSpId, endToEndId, iban, payTrxRef, flgConf);
     // save
+
     log.info(sepaRequestToPayMapper.toRequestToPay(rtp).toString());
 
     return Mono.just(rtp);
