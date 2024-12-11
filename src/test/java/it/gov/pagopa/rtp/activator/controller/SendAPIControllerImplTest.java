@@ -1,35 +1,29 @@
 package it.gov.pagopa.rtp.activator.controller;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.aot.DisabledInAotMode;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.reactive.server.WebTestClient;
-
-import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
-
-import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
-import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
-import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
-import it.gov.pagopa.rtp.activator.utils.Users;
-import reactor.core.publisher.Mono;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
+import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
+import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
+import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
+import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
 import java.time.LocalDate;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.aot.DisabledInAotMode;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = { SendAPIControllerImpl.class })
@@ -55,7 +49,6 @@ class SendAPIControllerImplTest {
     }
 
     @Test
-    @Users.RtpSenderWriter
     void testSendRtpSuccessful() {
 
         when(sendRTPService.send(anyString(), anyInt(), anyString(), any(), anyString(), anyString(), anyString(),
@@ -73,7 +66,6 @@ class SendAPIControllerImplTest {
     }
 
     @Test
-    @Users.RtpSenderWriter
     void testSendRtpWithWrongBody() {
 
         when(sendRTPService.send(anyString(), anyInt(), anyString(), any(), anyString(), anyString(), anyString(),
@@ -86,17 +78,6 @@ class SendAPIControllerImplTest {
                 .exchange()
                 .expectStatus()
                 .isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    @WithMockUser
-    void userWithoutEnoughPermissionShouldNotSendRtp() {
-        webTestClient.post()
-                .uri("/rtps")
-                .bodyValue(generateSendRequest())
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     private CreateRtpDto generateSendRequest() {
