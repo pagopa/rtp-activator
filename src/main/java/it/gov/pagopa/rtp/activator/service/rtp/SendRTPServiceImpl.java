@@ -42,7 +42,7 @@ public class SendRTPServiceImpl implements SendRTPService {
       String jsonString = objectMapper.writeValueAsString(sepaRequestToPayMapper.toRequestToPay(rtp));
       log.info(jsonString);
     } catch (JsonProcessingException e) {
-      e.printStackTrace();
+      log.error("Problem while serializing SepaRequestToPayRequestResourceDto object", e);
     }
 
     return Mono.just(rtp);
