@@ -23,7 +23,7 @@ public class SendAPIControllerImpl implements RtpsApi {
     public Mono<ResponseEntity<Void>> createRtp(Mono<CreateRtpDto> createRtpDto,
             ServerWebExchange exchange) {
         return createRtpDto
-                .flatMap(t -> sendRTPService.send(t.getNoticeNumber(), t.getAmount(), t.getDescription(),
+                .flatMap(t -> sendRTPService.send(t.getNoticeNumber(), t.getAmount().movePointLeft(2), t.getDescription(),
                         t.getExpiryDate(), t.getPayerId(), t.getPayee().getName(), t.getPayee().getPayeeId(),"rtpSpId", "endToEndId",
                         "iban", "payTrxRef", "flgConf"))
                 .thenReturn(ResponseEntity.status(201).build());

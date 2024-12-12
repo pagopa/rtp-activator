@@ -15,6 +15,7 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestRe
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -43,7 +44,7 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   @Override
-  public Mono<Rtp> send(String noticeNumber, Integer amount, String description, LocalDate expiryDate, String payerId,
+  public Mono<Rtp> send(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate, String payerId,
       String payeeName,
       String payeeId, String rtpSpId, String endToEndId, String iban, String payTrxRef, String flgConf) {
 

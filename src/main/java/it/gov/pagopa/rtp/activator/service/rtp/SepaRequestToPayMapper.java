@@ -118,7 +118,7 @@ public class SepaRequestToPayMapper {
 
                 ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto activeOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto = new ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto();
                 activeOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto
-                                .setInstdAmt(new BigDecimal(rtp.amount()).movePointLeft(2));
+                                .setInstdAmt(rtp.amount());
 
                 Max35TextWrapperDto cdtMax35TextWrapperDto = new Max35TextWrapperDto();
                 cdtMax35TextWrapperDto.setPrtry("LEI");// FIXED
