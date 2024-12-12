@@ -70,18 +70,18 @@ class SendRTPServiceTest {
                 payeeName,
                 payeeId, rtpSpId, endToEndId, iban, payTrxRef, flgConf);
         StepVerifier.create(result)
-                .expectNextMatches(rtp -> rtp.getNoticeNumber().equals(expectedRtp.getNoticeNumber())
-                        && rtp.getAmount().equals(expectedRtp.getAmount())
-                        && rtp.getDescription().equals(expectedRtp.getDescription())
-                        && rtp.getExpiryDate().equals(expectedRtp.getExpiryDate())
-                        && rtp.getPayerId().equals(expectedRtp.getPayerId())
-                        && rtp.getPayeeName().equals(expectedRtp.getPayeeName())
-                        && rtp.getPayeeId().equals(expectedRtp.getPayeeId())
-                        && rtp.getRtpSpId().equals(expectedRtp.getRtpSpId())
-                        && rtp.getEndToEndId().equals(expectedRtp.getEndToEndId())
-                        && rtp.getIban().equals(expectedRtp.getIban())
-                        && rtp.getPayTrxRef().equals(expectedRtp.getPayTrxRef())
-                        && rtp.getFlgConf().equals(expectedRtp.getFlgConf()))
+                .expectNextMatches(rtp -> rtp.noticeNumber().equals(expectedRtp.noticeNumber())
+                        && rtp.amount().equals(expectedRtp.amount())
+                        && rtp.description().equals(expectedRtp.description())
+                        && rtp.expiryDate().equals(expectedRtp.expiryDate())
+                        && rtp.payerId().equals(expectedRtp.payerId())
+                        && rtp.payeeName().equals(expectedRtp.payeeName())
+                        && rtp.payeeId().equals(expectedRtp.payeeId())
+                        && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
+                        && rtp.endToEndId().equals(expectedRtp.endToEndId())
+                        && rtp.iban().equals(expectedRtp.iban())
+                        && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
+                        && rtp.flgConf().equals(expectedRtp.flgConf()))
                 .verifyComplete();
         verify(sepaRequestToPayMapper, times(1)).toRequestToPay(any(Rtp.class));
     }
