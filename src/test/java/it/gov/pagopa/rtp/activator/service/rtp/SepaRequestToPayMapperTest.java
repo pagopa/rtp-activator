@@ -52,7 +52,7 @@ class SepaRequestToPayMapperTest {
         when(rtp.rtpSpId()).thenReturn(rtpSpId);
         when(rtp.iban()).thenReturn(iban);
         when(rtp.endToEndId()).thenReturn(endToEndId);
-        when(rtp.amount()).thenReturn(amount.intValue());
+        when(rtp.amount()).thenReturn(amount);
         when(rtp.savingDateTime()).thenReturn(savingDateTime);
         when(rtp.expiryDate()).thenReturn(expiryDate);
         when(rtp.description()).thenReturn(description);

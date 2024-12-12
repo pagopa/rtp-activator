@@ -5,6 +5,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,7 +41,7 @@ class SendRTPServiceTest {
     @Test
     void testSend() {
         String noticeNumber = "12345";
-        Integer amount = 100;
+        BigDecimal amount = BigDecimal.valueOf(100);
         String description = "Payment Description";
         LocalDate expiryDate = LocalDate.now();
         String payerId = "payerId";

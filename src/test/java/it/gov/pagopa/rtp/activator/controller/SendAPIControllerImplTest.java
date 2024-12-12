@@ -10,6 +10,8 @@ import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +53,7 @@ class SendAPIControllerImplTest {
     @Test
     void testSendRtpSuccessful() {
 
-        when(sendRTPService.send(anyString(), anyInt(), anyString(), any(), anyString(), anyString(), anyString(),
+        when(sendRTPService.send(anyString(), any(), anyString(), any(), anyString(), anyString(), anyString(),
                 anyString(), anyString(),anyString(), anyString(), anyString()))
                 .thenReturn(Mono.empty());
 
@@ -68,7 +70,7 @@ class SendAPIControllerImplTest {
     @Test
     void testSendRtpWithWrongBody() {
 
-        when(sendRTPService.send(anyString(), anyInt(), anyString(), any(), anyString(), anyString(), anyString(),
+        when(sendRTPService.send(anyString(), any() , anyString(), any(), anyString(), anyString(), anyString(),
                 anyString(), anyString(),anyString(), anyString(), anyString()))
                 .thenReturn(Mono.empty());
 
@@ -81,12 +83,12 @@ class SendAPIControllerImplTest {
     }
 
     private CreateRtpDto generateSendRequest() {
-        return new CreateRtpDto("311111111112222222", 1, "description", LocalDate.now(), "payerId",
+        return new CreateRtpDto("311111111112222222", BigDecimal.valueOf(1), "description", LocalDate.now(), "payerId",
                 new PayeeDto("77777777777", "payeeName"));
     }
 
     private CreateRtpDto generateWrongSendRequest() {
-        return new CreateRtpDto("noticenumber", 1, "description", LocalDate.now(), "payerId",
+        return new CreateRtpDto("noticenumber", BigDecimal.valueOf(1), "description", LocalDate.now(), "payerId",
                 new PayeeDto("dsds", "payeeName"));
     }
 }
