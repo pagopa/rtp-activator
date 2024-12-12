@@ -45,20 +45,20 @@ class SepaRequestToPayMapperTest {
         String payTrxRef = "payTrxRef123";
         String flgConf = "flgConf123";
 
-        when(rtp.resourceID()).thenReturn(resourceId);
-        when(rtp.payerId()).thenReturn(payerId);
-        when(rtp.payeeId()).thenReturn(payeeId);
-        when(rtp.payeeName()).thenReturn(payeeName);
-        when(rtp.rtpSpId()).thenReturn(rtpSpId);
-        when(rtp.iban()).thenReturn(iban);
-        when(rtp.endToEndId()).thenReturn(endToEndId);
-        when(rtp.amount()).thenReturn(amount);
-        when(rtp.savingDateTime()).thenReturn(savingDateTime);
-        when(rtp.expiryDate()).thenReturn(expiryDate);
-        when(rtp.description()).thenReturn(description);
-        when(rtp.noticeNumber()).thenReturn(noticeNumber);
-        when(rtp.payTrxRef()).thenReturn(payTrxRef);
-        when(rtp.flgConf()).thenReturn(flgConf);
+        when(rtp.getResourceID()).thenReturn(resourceId);
+        when(rtp.getPayerId()).thenReturn(payerId);
+        when(rtp.getPayeeId()).thenReturn(payeeId);
+        when(rtp.getPayeeName()).thenReturn(payeeName);
+        when(rtp.getRtpSpId()).thenReturn(rtpSpId);
+        when(rtp.getIban()).thenReturn(iban);
+        when(rtp.getEndToEndId()).thenReturn(endToEndId);
+        when(rtp.getAmount()).thenReturn(amount);
+        when(rtp.getSavingDateTime()).thenReturn(savingDateTime);
+        when(rtp.getExpiryDate()).thenReturn(expiryDate);
+        when(rtp.getDescription()).thenReturn(description);
+        when(rtp.getNoticeNumber()).thenReturn(noticeNumber);
+        when(rtp.getPayTrxRef()).thenReturn(payTrxRef);
+        when(rtp.getFlgConf()).thenReturn(flgConf);
 
         SepaRequestToPayRequestResourceDto result = sepaRequestToPayMapper.toRequestToPay(rtp);
 
@@ -66,7 +66,7 @@ class SepaRequestToPayMapperTest {
         assertEquals(resourceId.getId().toString(), result.getResourceId());
         assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
         assertEquals(resourceId.getId().toString(), result.getDocument().getCdtrPmtActvtnReq().getGrpHdr().getMsgId());
-        assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0).getRmtInf().getUstrd().contains(description));
+        assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0).getRmtInf()
+                .getUstrd().contains(description));
     }
 }
-

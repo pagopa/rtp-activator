@@ -53,28 +53,35 @@ class SendRTPServiceTest {
         String payTrxRef = "payTrxRef";
         String flgConf = "flgConf";
 
-        Rtp expectedRtp = new Rtp(noticeNumber, amount, description, expiryDate, payerId, payeeName, payeeId,
-                ResourceID.createNew(), LocalDateTime.now(),"rtpSpId", endToEndId, iban, payTrxRef, flgConf);
-
+        Rtp expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
+                .expiryDate(expiryDate)
+                .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
+                .resourceID(ResourceID.createNew())
+                .savingDateTime(LocalDateTime.now()).rtpSpId("rtpSpId").endToEndId(endToEndId)
+                .iban(iban).payTrxRef(payTrxRef)
+                .flgConf(flgConf).build();
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto(
                 URI.create("http://callback.url"));
 
-        when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class))).thenReturn(mockSepaRequestToPayRequestResource);
+        when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class)))
+                .thenReturn(mockSepaRequestToPayRequestResource);
 
-        Mono<Rtp> result = sendRTPService.send(noticeNumber, amount, description, expiryDate, payerId, payeeName,
+        Mono<Rtp> result = sendRTPService.send(noticeNumber, amount, description, expiryDate, payerId,
+                payeeName,
                 payeeId, rtpSpId, endToEndId, iban, payTrxRef, flgConf);
         StepVerifier.create(result)
-                .expectNextMatches(rtp -> rtp.noticeNumber().equals(expectedRtp.noticeNumber())
-                        && rtp.amount().equals(expectedRtp.amount())
-                        && rtp.description().equals(expectedRtp.description())
-                        && rtp.expiryDate().equals(expectedRtp.expiryDate())
-                        && rtp.payerId().equals(expectedRtp.payerId())
-                        && rtp.payeeName().equals(expectedRtp.payeeName())
-                        && rtp.payeeId().equals(expectedRtp.payeeId())
-                        && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
-                        && rtp.endToEndId().equals(expectedRtp.endToEndId())
-                        && rtp.iban().equals(expectedRtp.iban()) && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
-                        && rtp.flgConf().equals(expectedRtp.flgConf()))
+                .expectNextMatches(rtp -> rtp.getNoticeNumber().equals(expectedRtp.getNoticeNumber())
+                        && rtp.getAmount().equals(expectedRtp.getAmount())
+                        && rtp.getDescription().equals(expectedRtp.getDescription())
+                        && rtp.getExpiryDate().equals(expectedRtp.getExpiryDate())
+                        && rtp.getPayerId().equals(expectedRtp.getPayerId())
+                        && rtp.getPayeeName().equals(expectedRtp.getPayeeName())
+                        && rtp.getPayeeId().equals(expectedRtp.getPayeeId())
+                        && rtp.getRtpSpId().equals(expectedRtp.getRtpSpId())
+                        && rtp.getEndToEndId().equals(expectedRtp.getEndToEndId())
+                        && rtp.getIban().equals(expectedRtp.getIban())
+                        && rtp.getPayTrxRef().equals(expectedRtp.getPayTrxRef())
+                        && rtp.getFlgConf().equals(expectedRtp.getFlgConf()))
                 .verifyComplete();
         verify(sepaRequestToPayMapper, times(1)).toRequestToPay(any(Rtp.class));
     }

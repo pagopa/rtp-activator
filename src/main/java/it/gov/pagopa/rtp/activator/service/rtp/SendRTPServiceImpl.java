@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Service
 @Slf4j
 @RegisterReflectionForBinding({ SepaRequestToPayRequestResourceDto.class,
-    PersonIdentification13EPC25922V30DS02WrapperDto.class,ISODateWrapperDto.class,
+    PersonIdentification13EPC25922V30DS02WrapperDto.class, ISODateWrapperDto.class,
     ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class, ExternalServiceLevel1CodeWrapperDto.class,
     ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto.class, Max35TextWrapperDto.class,
     OrganisationIdentification29EPC25922V30DS022WrapperDto.class,
@@ -44,12 +44,15 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   @Override
-  public Mono<Rtp> send(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate, String payerId,
+  public Mono<Rtp> send(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate,
+      String payerId,
       String payeeName,
       String payeeId, String rtpSpId, String endToEndId, String iban, String payTrxRef, String flgConf) {
 
-    Rtp rtp = new Rtp(noticeNumber, amount, description, expiryDate, payerId, payeeName, payeeId,
-        ResourceID.createNew(), LocalDateTime.now(), rtpSpId, endToEndId, iban, payTrxRef, flgConf);
+    Rtp rtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description).expiryDate(expiryDate)
+        .payerId(payerId).payeeName(payeeName).payeeId(payeeId).resourceID(ResourceID.createNew())
+        .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId).iban(iban).payTrxRef(payTrxRef)
+        .flgConf(flgConf).build();
     // save
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
