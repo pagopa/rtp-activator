@@ -53,21 +53,15 @@ class SendRTPServiceTest {
         String payTrxRef = "payTrxRef";
         String flgConf = "flgConf";
 
-        Rtp expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
-                .expiryDate(expiryDate)
-                .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
-                .resourceID(ResourceID.createNew())
-                .savingDateTime(LocalDateTime.now()).rtpSpId("rtpSpId").endToEndId(endToEndId)
-                .iban(iban).payTrxRef(payTrxRef)
-                .flgConf(flgConf).build();
+        Rtp expectedRtp = new Rtp(noticeNumber, amount, description, expiryDate, payerId, payeeName, payeeId,
+                ResourceID.createNew(), LocalDateTime.now(),"rtpSpId", endToEndId, iban, payTrxRef, flgConf);
+
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto(
                 URI.create("http://callback.url"));
 
-        when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class)))
-                .thenReturn(mockSepaRequestToPayRequestResource);
+        when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class))).thenReturn(mockSepaRequestToPayRequestResource);
 
-        Mono<Rtp> result = sendRTPService.send(noticeNumber, amount, description, expiryDate, payerId,
-                payeeName,
+        Mono<Rtp> result = sendRTPService.send(noticeNumber, amount, description, expiryDate, payerId, payeeName,
                 payeeId, rtpSpId, endToEndId, iban, payTrxRef, flgConf);
         StepVerifier.create(result)
                 .expectNextMatches(rtp -> rtp.noticeNumber().equals(expectedRtp.noticeNumber())
@@ -79,8 +73,7 @@ class SendRTPServiceTest {
                         && rtp.payeeId().equals(expectedRtp.payeeId())
                         && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
                         && rtp.endToEndId().equals(expectedRtp.endToEndId())
-                        && rtp.iban().equals(expectedRtp.iban())
-                        && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
+                        && rtp.iban().equals(expectedRtp.iban()) && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
                         && rtp.flgConf().equals(expectedRtp.flgConf()))
                 .verifyComplete();
         verify(sepaRequestToPayMapper, times(1)).toRequestToPay(any(Rtp.class));
