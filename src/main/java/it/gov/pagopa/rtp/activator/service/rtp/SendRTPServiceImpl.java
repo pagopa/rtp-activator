@@ -44,15 +44,8 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   @Override
-  public Mono<Rtp> send(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate,
-      String payerId,
-      String payeeName,
-      String payeeId, String rtpSpId, String endToEndId, String iban, String payTrxRef, String flgConf) {
+  public Mono<Rtp> send(Rtp rtp) {
 
-    Rtp rtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description).expiryDate(expiryDate)
-        .payerId(payerId).payeeName(payeeName).payeeId(payeeId).resourceID(ResourceID.createNew())
-        .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId).iban(iban).payTrxRef(payTrxRef)
-        .flgConf(flgConf).build();
     // save
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);

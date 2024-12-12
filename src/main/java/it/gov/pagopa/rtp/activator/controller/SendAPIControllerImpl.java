@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.controller;
 
 import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpMapper;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
 import org.springframework.http.ResponseEntity;
@@ -15,17 +16,19 @@ public class SendAPIControllerImpl implements RtpsApi {
 
     private final SendRTPService sendRTPService;
 
-    public SendAPIControllerImpl(SendRTPService sendRTPService) {
+    private final RtpMapper rtpMapper;
+
+    public SendAPIControllerImpl(SendRTPService sendRTPService, RtpMapper rtpMapper) {
         this.sendRTPService = sendRTPService;
+        this.rtpMapper = rtpMapper;
     }
 
     @Override
     public Mono<ResponseEntity<Void>> createRtp(Mono<CreateRtpDto> createRtpDto,
             ServerWebExchange exchange) {
         return createRtpDto
-                .flatMap(t -> sendRTPService.send(t.getNoticeNumber(), t.getAmount(), t.getDescription(),
-                        t.getExpiryDate(), t.getPayerId(), t.getPayee().getName(), t.getPayee().getPayeeId(),"rtpSpId", "endToEndId",
-                        "iban", "payTrxRef", "flgConf"))
+                .map(rtpDto -> rtpMapper.toRtp(rtpDto))
+                .flatMap(rtp -> sendRTPService.send(rtp))
                 .thenReturn(ResponseEntity.status(201).build());
     }
 }

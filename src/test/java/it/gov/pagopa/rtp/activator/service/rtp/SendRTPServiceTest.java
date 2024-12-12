@@ -41,7 +41,7 @@ class SendRTPServiceTest {
     @Test
     void testSend() {
         String noticeNumber = "12345";
-        BigDecimal amount = BigDecimal.valueOf(100);
+        BigDecimal amount = new BigDecimal("99999999999");
         String description = "Payment Description";
         LocalDate expiryDate = LocalDate.now();
         String payerId = "payerId";
@@ -57,7 +57,7 @@ class SendRTPServiceTest {
                 .expiryDate(expiryDate)
                 .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
                 .resourceID(ResourceID.createNew())
-                .savingDateTime(LocalDateTime.now()).rtpSpId("rtpSpId").endToEndId(endToEndId)
+                .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
                 .iban(iban).payTrxRef(payTrxRef)
                 .flgConf(flgConf).build();
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto(
@@ -66,9 +66,7 @@ class SendRTPServiceTest {
         when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class)))
                 .thenReturn(mockSepaRequestToPayRequestResource);
 
-        Mono<Rtp> result = sendRTPService.send(noticeNumber, amount, description, expiryDate, payerId,
-                payeeName,
-                payeeId, rtpSpId, endToEndId, iban, payTrxRef, flgConf);
+        Mono<Rtp> result = sendRTPService.send(expectedRtp);
         StepVerifier.create(result)
                 .expectNextMatches(rtp -> rtp.noticeNumber().equals(expectedRtp.noticeNumber())
                         && rtp.amount().equals(expectedRtp.amount())
