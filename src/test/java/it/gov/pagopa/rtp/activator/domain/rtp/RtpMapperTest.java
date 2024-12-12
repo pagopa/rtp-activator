@@ -8,16 +8,16 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RtpMapperTest {
+class RtpMapperTest {
     private RtpMapper rtpMapper;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         rtpMapper = new RtpMapper();
     }
 
     @Test
-    public void testToRtp() {
+    void testToRtp() {
         CreateRtpDto createRtpDto = new CreateRtpDto();
         createRtpDto.setNoticeNumber("12345");
         createRtpDto.setAmount(BigDecimal.valueOf(100));

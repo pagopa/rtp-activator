@@ -27,8 +27,8 @@ public class SendAPIControllerImpl implements RtpsApi {
     public Mono<ResponseEntity<Void>> createRtp(Mono<CreateRtpDto> createRtpDto,
             ServerWebExchange exchange) {
         return createRtpDto
-                .map(rtpDto -> rtpMapper.toRtp(rtpDto))
-                .flatMap(rtp -> sendRTPService.send(rtp))
+                .map(rtpMapper::toRtp)
+                .flatMap(sendRTPService::send)
                 .thenReturn(ResponseEntity.status(201).build());
     }
 }
