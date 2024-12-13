@@ -15,6 +15,7 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestRe
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -28,7 +29,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @Service
 @Slf4j
 @RegisterReflectionForBinding({ SepaRequestToPayRequestResourceDto.class,
-    PersonIdentification13EPC25922V30DS02WrapperDto.class,ISODateWrapperDto.class,
+    PersonIdentification13EPC25922V30DS02WrapperDto.class, ISODateWrapperDto.class,
     ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class, ExternalServiceLevel1CodeWrapperDto.class,
     ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto.class, Max35TextWrapperDto.class,
     OrganisationIdentification29EPC25922V30DS022WrapperDto.class,
@@ -43,12 +44,8 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   @Override
-  public Mono<Rtp> send(String noticeNumber, Integer amount, String description, LocalDate expiryDate, String payerId,
-      String payeeName,
-      String payeeId, String rtpSpId, String endToEndId, String iban, String payTrxRef, String flgConf) {
+  public Mono<Rtp> send(Rtp rtp) {
 
-    Rtp rtp = new Rtp(noticeNumber, amount, description, expiryDate, payerId, payeeName, payeeId,
-        ResourceID.createNew(), LocalDateTime.now(), rtpSpId, endToEndId, iban, payTrxRef, flgConf);
     // save
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);

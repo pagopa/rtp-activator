@@ -1,6 +1,6 @@
 package it.gov.pagopa.rtp.activator.service.rtp;
 
-import java.math.BigDecimal;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,12 +14,9 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.CashAccount40EPC25922V30D
 import it.gov.pagopa.rtp.activator.model.generated.epc.ChargeBearerType1CodeDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.CreditTransferTransaction57EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.CreditorPaymentActivationRequestV10EPC25922V30DS02Dto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.DateAndDateTime2ChoiceEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.DocumentEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPersonIdentification1CodeEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalServiceLevel1CodeDto;
@@ -27,20 +24,14 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalServiceLevel1Code
 import it.gov.pagopa.rtp.activator.model.generated.epc.FinancialInstitutionIdentification18EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.GenericFinancialIdentification1Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.GenericOrganisationIdentification1EPC25922V30DS022Dto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.GenericOrganisationIdentification1EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.GenericPersonIdentification1EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.GroupHeader105EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.IBAN2007IdentifierWrapperDto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.ISODateTimeWrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ISODateWrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.InstructionForCreditorAgent3EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS022WrapperDto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS02Dto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS02WrapperDto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS022Dto;
-import it.gov.pagopa.rtp.activator.model.generated.epc.Party38ChoiceEPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PartyIdentification135EPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PartyIdentification135EPC25922V30DS023Dto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PartyIdentification135EPC25922V30DS02Dto;
@@ -117,7 +108,7 @@ public class SepaRequestToPayMapper {
 
                 ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto activeOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto = new ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto();
                 activeOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto
-                                .setInstdAmt(BigDecimal.valueOf(rtp.amount(), 2));
+                                .setInstdAmt(rtp.amount().movePointLeft(2));
 
                 Max35TextWrapperDto cdtMax35TextWrapperDto = new Max35TextWrapperDto();
                 cdtMax35TextWrapperDto.setPrtry("LEI");// FIXED

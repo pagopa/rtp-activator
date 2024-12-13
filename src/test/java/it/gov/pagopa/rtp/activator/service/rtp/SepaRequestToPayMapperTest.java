@@ -37,7 +37,7 @@ class SepaRequestToPayMapperTest {
         String rtpSpId = "BIC123456";
         String iban = "IT60X0542811101000000123456";
         String endToEndId = "endToEndId123";
-        BigDecimal amount = BigDecimal.valueOf(10);
+        BigDecimal amount = new BigDecimal("99999999999");
         LocalDateTime savingDateTime = LocalDateTime.now();
         LocalDate expiryDate = LocalDate.now().plusDays(5);
         String description = "Pagamento TARI";
@@ -52,7 +52,7 @@ class SepaRequestToPayMapperTest {
         when(rtp.rtpSpId()).thenReturn(rtpSpId);
         when(rtp.iban()).thenReturn(iban);
         when(rtp.endToEndId()).thenReturn(endToEndId);
-        when(rtp.amount()).thenReturn(amount.intValue());
+        when(rtp.amount()).thenReturn(amount);
         when(rtp.savingDateTime()).thenReturn(savingDateTime);
         when(rtp.expiryDate()).thenReturn(expiryDate);
         when(rtp.description()).thenReturn(description);

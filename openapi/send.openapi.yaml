@@ -40,9 +40,9 @@ components:
   schemas:
     AmountEuroCents:
       description: Amount for payments, in euro cents
-      type: integer
+      type: number
       minimum: 0
-      maximum: 99999999
+      maximum: 99999999999
 
     NoticeNumber:
       type: string
