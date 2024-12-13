@@ -111,6 +111,22 @@ class SendAPIControllerImplTest {
                 .isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
+
+    @Test
+    void testSendRtpWithWrongAmount() {
+
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp); 
+        when(sendRTPService.send(any()))
+                .thenReturn(Mono.empty());
+
+        webTestClient.post()
+                .uri("/rtps")
+                .bodyValue(generateWrongAmountSendRequest())
+                .exchange()
+                .expectStatus()
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
     private CreateRtpDto generateSendRequest() {
         return new CreateRtpDto("311111111112222222", BigDecimal.valueOf(1), "description", LocalDate.now(),
                 "payerId",
@@ -121,5 +137,11 @@ class SendAPIControllerImplTest {
         return new CreateRtpDto("noticenumber", BigDecimal.valueOf(1), "description", LocalDate.now(),
                 "payerId",
                 new PayeeDto("dsds", "payeeName"));
+    }
+
+    private CreateRtpDto generateWrongAmountSendRequest() {
+        return new CreateRtpDto("311111111112222222", new BigDecimal("999999999999"), "description", LocalDate.now(),
+                "payerId",
+                new PayeeDto("77777777777", "payeeName"));
     }
 }
