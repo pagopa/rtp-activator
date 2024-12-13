@@ -1,7 +1,6 @@
 package it.gov.pagopa.rtp.activator.controller;
 
 import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
-import it.gov.pagopa.rtp.activator.domain.rtp.RtpMapper;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
 import org.springframework.http.ResponseEntity;

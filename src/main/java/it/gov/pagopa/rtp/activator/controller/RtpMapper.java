@@ -1,9 +1,11 @@
-package it.gov.pagopa.rtp.activator.domain.rtp;
+package it.gov.pagopa.rtp.activator.controller;
 
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Component;
 
+import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
+import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 
 @Component

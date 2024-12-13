@@ -1,5 +1,6 @@
-package it.gov.pagopa.rtp.activator.domain.rtp;
+package it.gov.pagopa.rtp.activator.controller;
 
+import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
 import org.junit.jupiter.api.BeforeEach;

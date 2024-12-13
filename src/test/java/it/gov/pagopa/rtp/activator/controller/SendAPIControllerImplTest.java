@@ -7,7 +7,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
-import it.gov.pagopa.rtp.activator.domain.rtp.RtpMapper;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
