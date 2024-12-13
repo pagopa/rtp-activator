@@ -56,7 +56,7 @@ jobs:
       contents: write # Create a new release.
 
     outputs:
-      digest: ${{ steps.image.outputs.digest }}
+      digest: ${{ steps.re_tag.outputs.stable_digest }}
 
     steps:
       - name: "Checkout the source code"
@@ -159,12 +159,13 @@ jobs:
       # STABLE - Re-tagging (remove -RC and add version tag) and push native container image.
       #
       - name: Re-tag the app image
+        id: re_tag
         run: |
           docker pull ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC
           docker image tag ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}
           docker image tag ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC ghcr.io/${{ github.repository }}:latest
           docker rmi ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}-RC
-          docker image push --all-tags ghcr.io/${{ github.repository }}
+          echo "stable_digest=$(docker image push --all-tags ghcr.io/${{ github.repository }} | tail -n 1 | cut -d' ' -f3)" >> "$GITHUB_OUTPUT"
 
       - name: "STABLE - Update Container App"
         shell: bash
@@ -175,7 +176,7 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/cstar-d-weu-rtp/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/cstar-d-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ steps.image.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/cstar-d-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ steps.needs.versioning.outputs.new_version }}@${{ steps.re_tag.outputs.stable_digest }}" -auto-approve -lock-timeout=300s
 
   uat_deployment:
     needs: [ versioning, dev_deployment]
