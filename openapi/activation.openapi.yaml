@@ -180,7 +180,7 @@ paths:
       operationId: updateActivation
       summary: Updates a RTP activation.
       description: |
-        The operation updates a RTP actviation searching it by its ID.
+        The operation updates a RTP activation searching it by its ID.
         
         When the operation is used by not-admin subject:
           - the system returns `404 Not Found` if the Payer's RTP Service
@@ -233,7 +233,7 @@ paths:
       operationId: deleteActivation
       summary: Deletes a RTP activation.
       description: |
-        The operation deletes a RTP actviation searching it by its ID.
+        The operation deletes a RTP activation searching it by its ID.
         
         When the operation is used by not-admin subject, the system returns
         `404 Not Found` if the Payer's RTP Service Provider ID of the activation
@@ -276,13 +276,13 @@ paths:
 
   /activations/findByPayerId:
     get:
-      operationId: findActivationsByPayerId
+      operationId: findActivationByPayerId
       summary: Finds a RTP activation by Payer ID.
       description: |
-        The operation finds RTP activations by Payer ID.
+        The operation finds RTP activation by Payer ID.
         
         When the operation is used by not-admin subject, the system returns
-        the RTP activations with the Payer's RTP Service Provider ID that
+        the RTP activation with the Payer's RTP Service Provider ID that
         matches the subject claim of the access token.
       tags: [read]
       security:
@@ -290,13 +290,11 @@ paths:
       parameters:
         - $ref: '#/components/parameters/RequestId'
         - $ref: '#/components/parameters/Version'
-        - $ref: '#/components/parameters/PageNumber'
-        - $ref: '#/components/parameters/PageSize'
         - $ref: '#/components/parameters/PayerId'
       responses:
         "200":
           #description: Ok.
-          $ref: '#/components/responses/PageOfActivations'
+          $ref: '#/components/responses/Activation'
         "400":
           #description: Bad request.
           $ref: '#/components/responses/Error'
