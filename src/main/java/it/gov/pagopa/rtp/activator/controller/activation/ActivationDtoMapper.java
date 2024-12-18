@@ -13,7 +13,7 @@ import it.gov.pagopa.rtp.activator.model.generated.activate.PayerDto;
 public class ActivationDtoMapper {
 
     public ActivationDto toActivationDto(Payer payer) {
-        return new ActivationDto().id(payer.payerID().getId())
+        return new ActivationDto().id(payer.activationID().getId())
                 .payer(new PayerDto().fiscalCode(payer.fiscalCode()).rtpSpId(payer.rtpSpId()))
                 .effectiveActivationDate(LocalDateTime.ofInstant(payer.effectiveActivationDate(), ZoneOffset.UTC));
     }

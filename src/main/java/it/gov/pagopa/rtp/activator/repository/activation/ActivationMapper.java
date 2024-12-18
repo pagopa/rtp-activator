@@ -5,21 +5,21 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
-import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
+import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 
 @Component
 public class ActivationMapper {
 
     public Payer toDomain(ActivationEntity activationEntity) {
-        PayerID payerID = new PayerID(
+        ActivationID activationID = new ActivationID(
                 UUID.fromString(activationEntity.getId()));
-        return new Payer(payerID,
+        return new Payer(activationID,
                 activationEntity.getRtpSpId(), activationEntity.getFiscalCode(),
                 activationEntity.getEffectiveActivationDate());
     }
 
     public ActivationEntity toDbEntity(Payer payer) {
-        return ActivationEntity.builder().id(payer.payerID().getId().toString())
+        return ActivationEntity.builder().id(payer.activationID().getId().toString())
                 .fiscalCode(payer.fiscalCode())
                 .rtpSpId(payer.rtpSpId())
                 .effectiveActivationDate(payer.effectiveActivationDate())

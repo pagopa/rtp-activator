@@ -4,7 +4,7 @@ import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
-import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
+import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PayerDto;
@@ -74,7 +74,7 @@ class ActivationAPIControllerImplTest {
     @Test
     @Users.RtpWriter
     void testActivatePayerSuccessful() {
-        Payer payer = new Payer(PayerID.createNew(), "RTP_SP_ID", "FISCAL_CODE", Instant.now());
+        Payer payer = new Payer(ActivationID.createNew(), "RTP_SP_ID", "FISCAL_CODE", Instant.now());
 
         when(activationPayerService.activatePayer(any(String.class), any(String.class)))
                 .thenReturn(Mono.just(payer));
@@ -88,7 +88,7 @@ class ActivationAPIControllerImplTest {
                 .bodyValue(generateActivationRequest())
                 .exchange()
                 .expectStatus().isCreated().expectHeader()
-                .location("http://localhost:8080/" + payer.payerID().toString());
+                .location("http://localhost:8080/" + payer.activationID().toString());
     }
 
     @Test
@@ -134,18 +134,18 @@ class ActivationAPIControllerImplTest {
     @Test
     @Users.RtpReader
     void testFindActivationByPayerIdSuccess() {
-        PayerID payerID = PayerID.createNew();
+        ActivationID activationID = ActivationID.createNew();
 
-        Payer payer = new Payer(payerID, "testRtpSpId", "fiscalCode", Instant.now());
+        Payer payer = new Payer(activationID, "testRtpSpId", "RSSMRA85T10A562S", Instant.now());
 
         PayerDto payerDto = new PayerDto().fiscalCode(payer.fiscalCode()).rtpSpId(payer.rtpSpId());
 
         ActivationDto activationDto = new ActivationDto();
-        activationDto.setId(payerID.getId());
+        activationDto.setId(activationID.getId());
         activationDto.setPayer(payerDto);
         activationDto.setEffectiveActivationDate(null);
 
-        when(activationPayerService.findPayer(payerID.toString()))
+        when(activationPayerService.findPayer(payerDto.getFiscalCode()))
             .thenReturn(Mono.just(payer));
         when(activationDtoMapper.toActivationDto(payer))
             .thenReturn(activationDto);
@@ -154,12 +154,12 @@ class ActivationAPIControllerImplTest {
             .uri("/activations/findByPayerId")
             .header("RequestId", UUID.randomUUID().toString())
             .header("Version", "v1")
-            .header("PayerId", payerID.toString())
+            .header("PayerId", payerDto.getFiscalCode())
             .exchange()
             .expectStatus().isOk()
             .expectBody(ActivationDto.class)
             .value(dto -> {
-                assert dto.getId().equals(payerID.toString());
+                assert dto.getPayer().getFiscalCode().equals(payer.fiscalCode());
             });
     }
 

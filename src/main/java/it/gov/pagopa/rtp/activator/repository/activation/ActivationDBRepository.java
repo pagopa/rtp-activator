@@ -30,9 +30,4 @@ public class ActivationDBRepository implements PayerRepository {
         return activationDB.save(activationMapper.toDbEntity(payer)).map(activationMapper::toDomain);
     }
 
-    @Override
-    public Mono<Payer> findByPayerId(String payerId) {
-        return activationDB.findByPayerId(payerId).map(activationMapper::toDomain);
-    }
-
 }

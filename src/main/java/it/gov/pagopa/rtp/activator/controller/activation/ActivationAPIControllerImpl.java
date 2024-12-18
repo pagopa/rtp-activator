@@ -34,69 +34,69 @@ import static it.gov.pagopa.rtp.activator.utils.Authorizations.verifySubjectRequ
 @Validated
 public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
 
-        private final ActivationPayerService activationPayerService;
+    private final ActivationPayerService activationPayerService;
 
-        private final ActivationPropertiesConfig activationPropertiesConfig;
+    private final ActivationPropertiesConfig activationPropertiesConfig;
 
-        private final ActivationDtoMapper activationDtoMapper;
+    private final ActivationDtoMapper activationDtoMapper;
 
-        public ActivationAPIControllerImpl(ActivationPayerService activationPayerService,
-                        ActivationPropertiesConfig activationPropertiesConfig,
-                        ActivationDtoMapper activationDtoMapper) {
-                this.activationPayerService = activationPayerService;
-                this.activationPropertiesConfig = activationPropertiesConfig;
-                this.activationDtoMapper = activationDtoMapper;
-        }
+    public ActivationAPIControllerImpl(ActivationPayerService activationPayerService,
+            ActivationPropertiesConfig activationPropertiesConfig,
+            ActivationDtoMapper activationDtoMapper) {
+        this.activationPayerService = activationPayerService;
+        this.activationPropertiesConfig = activationPropertiesConfig;
+        this.activationDtoMapper = activationDtoMapper;
+    }
 
-        @Override
-        @PreAuthorize("hasRole('write_rtp_activations')")
-        public Mono<ResponseEntity<Void>> activate(
-                        UUID requestId,
-                        String version,
-                        Mono<ActivationReqDto> activationReqDto,
-                        ServerWebExchange exchange) {
+    @Override
+    @PreAuthorize("hasRole('write_rtp_activations')")
+    public Mono<ResponseEntity<Void>> activate(
+            UUID requestId,
+            String version,
+            Mono<ActivationReqDto> activationReqDto,
+            ServerWebExchange exchange) {
 
-                return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
-                                .flatMap(t -> activationPayerService.activatePayer(t.getPayer().getRtpSpId(),
-                                                t.getPayer().getFiscalCode()))
-                                .<ResponseEntity<Void>>map(payer -> ResponseEntity
-                                                .created(URI.create(activationPropertiesConfig.baseUrl()
-                                                                + payer.payerID().toString()))
-                                                .build())
-                                .onErrorReturn(PayerAlreadyExists.class, ResponseEntity.status(409).build());
-        }
+        return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
+                .flatMap(t -> activationPayerService.activatePayer(t.getPayer().getRtpSpId(),
+                        t.getPayer().getFiscalCode()))
+                .<ResponseEntity<Void>>map(payer -> ResponseEntity
+                        .created(URI.create(activationPropertiesConfig.baseUrl()
+                                + payer.activationID().toString()))
+                        .build())
+                .onErrorReturn(PayerAlreadyExists.class, ResponseEntity.status(409).build());
+    }
 
-        @Override
-        @PreAuthorize("hasRole('read_rtp_activations')")
-        public Mono<ResponseEntity<ActivationDto>> findActivationByPayerId(
-                        UUID requestId,
-                        String payerId,
-                        String version, 
-                        ServerWebExchange exchange) {
-                return verifySubjectRequest(Mono.just(payerId), it -> it)
-                                .flatMap(activationPayerService::findPayer)
-                                .map(activationDtoMapper::toActivationDto)
-                                .<ResponseEntity<ActivationDto>>map(activationDto -> ResponseEntity.ok(activationDto));
-        }
+    @Override
+    @PreAuthorize("hasRole('read_rtp_activations')")
+    public Mono<ResponseEntity<ActivationDto>> findActivationByPayerId(
+            UUID requestId,
+            String payerId,
+            String version,
+            ServerWebExchange exchange) {
+        return Mono.just(payerId)
+                .flatMap(activationPayerService::findPayer)
+                .map(activationDtoMapper::toActivationDto)
+                .<ResponseEntity<ActivationDto>>map(activationDto -> ResponseEntity.ok(activationDto));
+    }
 
-        @Override
-        @PreAuthorize("hasRole('read_rtp_activations')")
-        public Mono<ResponseEntity<ActivationDto>> getActivation(@NotNull UUID requestId, UUID activationId,
-                        @Pattern(regexp = "^[ -~]{1,64}$") @Size(min = 1, max = 64) String version,
-                        ServerWebExchange exchange) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'getActivation'");
-        }
+    @Override
+    @PreAuthorize("hasRole('read_rtp_activations')")
+    public Mono<ResponseEntity<ActivationDto>> getActivation(UUID requestId, UUID activationId,
+            String version,
+            ServerWebExchange exchange) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getActivation'");
+    }
 
-        @Override
-        @PreAuthorize("hasRole('read_rtp_activations')")
-        public Mono<ResponseEntity<PageOfActivationsDto>> getActivations(@NotNull UUID requestId,
-                        @NotNull @Min(0) @Max(2147483647) @Valid Integer page,
-                        @NotNull @Min(1) @Max(128) @Valid Integer size,
-                        @Pattern(regexp = "^[ -~]{1,64}$") @Size(min = 1, max = 64) String version,
-                        ServerWebExchange exchange) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
-        }
+    @Override
+    @PreAuthorize("hasRole('read_rtp_activations')")
+    public Mono<ResponseEntity<PageOfActivationsDto>> getActivations(UUID requestId,
+            Integer page,
+            Integer size,
+            String version,
+            ServerWebExchange exchange) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
+    }
 
 }

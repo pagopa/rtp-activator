@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
-import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
+import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -31,7 +31,7 @@ class ActivationPayerServiceImplTest {
     private ActivationPayerServiceImpl activationPayerService;
 
     private Payer payer;
-    private PayerID payerId;
+    private ActivationID activationID;
     private String rtpSpId;
     private String fiscalCode;
 
@@ -40,8 +40,8 @@ class ActivationPayerServiceImplTest {
         rtpSpId = "testRtpSpId";
         fiscalCode = "TSTFSC12A34B567C";
 
-        payerId = PayerID.createNew();
-        payer = new Payer(payerId, rtpSpId, fiscalCode, Instant.now());
+        activationID = ActivationID.createNew();
+        payer = new Payer(activationID, rtpSpId, fiscalCode, Instant.now());
     }
 
     @Test
@@ -56,7 +56,7 @@ class ActivationPayerServiceImplTest {
             // Verify payer details
             assert payer.rtpSpId().equals(rtpSpId);
             assert payer.fiscalCode().equals(fiscalCode);
-            assert payer.payerID() != null;
+            assert payer.activationID() != null;
             assert payer.effectiveActivationDate() != null;
             return true;
         })
@@ -82,12 +82,12 @@ class ActivationPayerServiceImplTest {
     @Test
     @DisplayName("Find Payer - Successful Retrieval")
     void testFindPayerSuccessful() {
-        when(activationDBRepository.findByPayerId(payerId.toString())).thenReturn(Mono.just(payer));
+        when(activationDBRepository.findByFiscalCode(fiscalCode)).thenReturn(Mono.just(payer));
 
-        StepVerifier.create(activationPayerService.findPayer(payerId.toString()))
+        StepVerifier.create(activationPayerService.findPayer(fiscalCode))
                 .expectNextMatches(payer -> payer.equals(payer)).verifyComplete();
 
-        verify(activationDBRepository).findByPayerId(payerId.toString());
+        verify(activationDBRepository).findByFiscalCode(fiscalCode);
 
     }
 
@@ -95,14 +95,14 @@ class ActivationPayerServiceImplTest {
     @DisplayName("Find Payer - Not Found")
     void testFindPayerNotFound() {
 
-        String payerId = "nonExistentPayerId";
+        String notExFiscalCode = "nonExistentPayerId";
 
-        when(activationDBRepository.findByPayerId(payerId))
+        when(activationDBRepository.findByFiscalCode(notExFiscalCode))
             .thenReturn(Mono.empty());
 
-        StepVerifier.create(activationPayerService.findPayer(payerId))
+        StepVerifier.create(activationPayerService.findPayer(notExFiscalCode))
             .verifyComplete();
 
-        verify(activationDBRepository).findByPayerId(payerId);
+        verify(activationDBRepository).findByFiscalCode(notExFiscalCode);
     }
 }
