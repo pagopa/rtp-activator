@@ -1,4 +1,4 @@
-package it.gov.pagopa.rtp.activator.controller;
+package it.gov.pagopa.rtp.activator.controller.activation;
 
 import it.gov.pagopa.rtp.activator.controller.generated.activate.CreateApi;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;

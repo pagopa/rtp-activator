@@ -1,4 +1,4 @@
-package it.gov.pagopa.rtp.activator.controller;
+package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import java.time.LocalDateTime;
 
