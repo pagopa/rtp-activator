@@ -29,4 +29,9 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
             .flatMap(existingEntity -> Mono.<Payer>error(new PayerAlreadyExists())) 
             .switchIfEmpty(Mono.defer(() -> activationDBRepository.save(payer)));
     }
+
+    @Override
+    public Mono<Payer> findPayer(String payer) {
+            return activationDBRepository.findByPayerId(payer);
+    }
 }

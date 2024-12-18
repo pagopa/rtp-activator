@@ -10,4 +10,5 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface ActivationDB extends ReactiveMongoRepository<ActivationEntity, String> {
     Mono<ActivationEntity> findByFiscalCode(String fiscalCode);
+    Mono<ActivationEntity> findByPayerId(String payerId);
 }
