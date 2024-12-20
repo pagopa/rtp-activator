@@ -67,7 +67,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
     }
 
     @Override
-    @PreAuthorize("hasRole('read_rtp_activations')")
+    @PreAuthorize("hasRole('write_rtp_send')")
     public Mono<ResponseEntity<ActivationDto>> findActivationByPayerId(
             UUID requestId,
             String payerId,
