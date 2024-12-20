@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.5'
@@ -41,6 +43,10 @@ dependencies {
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
+	// https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api
+	compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
+	// https://mvnrepository.com/artifact/org.reflections/reflections
+	implementation group: 'org.reflections', name: 'reflections', version: '0.10.2'
 
 	// opentelemetry
 	// implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
@@ -80,7 +86,7 @@ sourceSets {
     }
 }
 
-task generateOpenAPIActivate(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+tasks.register('generateOpenAPIActivate', GenerateTask) {
 	generatorName.set("spring")
 	inputSpec.set("$rootDir/openapi/activation.openapi.yaml")
 	outputDir.set("$projectDir/build/generated")
@@ -92,25 +98,24 @@ task generateOpenAPIActivate(type: org.openapitools.generator.gradle.plugin.task
 	generateApiTests.set(false)
 	generateModelTests.set(false)
 	library.set("spring-boot")
-    configOptions.set([
-        "dateLibrary"                         : "java8",
-        "useSpringBoot3"                      : "true",
-        "interfaceOnly"                       : "true",
-        "useTags"                             : "true",
-		"useSwaggerUI"                        : "false",
-		"reactive"							  : "true",
-		"swaggerAnnotations"				  : "false",
-		"skipDefaultInterface"				  : "true",
-		"openApiNullable" 					  : "true",
-    ])
-    typeMappings.set([
-        "DateTime"        : "java.time.LocalDateTime",
-        "zoned-date-time" : "java.time.ZonedDateTime"
-    ])
+	configOptions.set([
+			"dateLibrary"         : "java8",
+			"useSpringBoot3"      : "true",
+			"interfaceOnly"       : "true",
+			"useTags"             : "true",
+			"useSwaggerUI"        : "false",
+			"reactive"            : "true",
+			"swaggerAnnotations"  : "false",
+			"skipDefaultInterface": "true",
+			"openApiNullable"     : "true",
+	])
+	typeMappings.set([
+			"DateTime"       : "java.time.LocalDateTime",
+			"zoned-date-time": "java.time.ZonedDateTime"
+	])
 }
 
-
-task generateOpenAPISend(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+tasks.register('generateOpenAPISend', GenerateTask) {
 	generatorName.set("spring")
 	inputSpec.set("$rootDir/openapi/send.openapi.yaml")
 	outputDir.set("$projectDir/build/generated")
@@ -123,23 +128,23 @@ task generateOpenAPISend(type: org.openapitools.generator.gradle.plugin.tasks.Ge
 	generateModelTests.set(false)
 	library.set("spring-boot")
 	configOptions.set([
-			"dateLibrary"                         : "java8",
-			"useSpringBoot3"                      : "true",
-			"interfaceOnly"                       : "true",
-			"useTags"                             : "true",
-			"useSwaggerUI"                        : "false",
-			"reactive"							  : "true",
-			"swaggerAnnotations"				  : "false",
-			"skipDefaultInterface"				  : "true",
-			"openApiNullable" 					  : "true",
+			"dateLibrary"         : "java8",
+			"useSpringBoot3"      : "true",
+			"interfaceOnly"       : "true",
+			"useTags"             : "true",
+			"useSwaggerUI"        : "false",
+			"reactive"            : "true",
+			"swaggerAnnotations"  : "false",
+			"skipDefaultInterface": "true",
+			"openApiNullable"     : "true",
 	])
 	typeMappings.set([
-			"DateTime"        : "java.time.LocalDateTime",
-			"zoned-date-time" : "java.time.ZonedDateTime"
+			"DateTime"       : "java.time.LocalDateTime",
+			"zoned-date-time": "java.time.ZonedDateTime"
 	])
 }
 
-task generateOpenAPIEPC(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+tasks.register('generateOpenAPIEPC', GenerateTask) {
 	generatorName.set("spring")
 	inputSpec.set("$rootDir/openapi/EPC133-22 v3.1 - SRTP scheme rulebook v3.1 related API specifications_optimized.yaml")
 	outputDir.set("$projectDir/build/generated")
@@ -152,19 +157,18 @@ task generateOpenAPIEPC(type: org.openapitools.generator.gradle.plugin.tasks.Gen
 	generateModelTests.set(false)
 	library.set("spring-boot")
 	configOptions.set([
-			"dateLibrary"                         : "java8",
-			"useSpringBoot3"                      : "true",
-			"interfaceOnly"                       : "true",
-			"useTags"                             : "true",
-			"useSwaggerUI"                        : "false",
-			"reactive"							  : "true",
-			"swaggerAnnotations"				  : "false",
-			"skipDefaultInterface"				  : "true",
-			"openApiNullable" 					  : "true",
+			"dateLibrary"         : "java8",
+			"useSpringBoot3"      : "true",
+			"interfaceOnly"       : "true",
+			"useTags"             : "true",
+			"useSwaggerUI"        : "false",
+			"swaggerAnnotations"  : "false",
+			"skipDefaultInterface": "true",
+			"openApiNullable"     : "true",
 	])
 	typeMappings.set([
-			"DateTime"        : "java.time.LocalDateTime",
-			"zoned-date-time" : "java.time.ZonedDateTime"
+			"DateTime"       : "java.time.LocalDateTime",
+			"zoned-date-time": "java.time.ZonedDateTime"
 	])
 }
 
@@ -184,7 +188,7 @@ bootRun {
 	]
 }
 
-tasks.withType(JavaExec) {
+tasks.withType(JavaExec).configureEach {
 	jvmArgs += '-Djava.security.properties=src/main/resources/custom.security'
 }
 
