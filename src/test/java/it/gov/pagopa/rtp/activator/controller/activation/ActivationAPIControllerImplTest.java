@@ -14,6 +14,7 @@ import it.gov.pagopa.rtp.activator.utils.Users;
 import reactor.core.publisher.Mono;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -129,7 +130,6 @@ class ActivationAPIControllerImplTest {
                 .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
     }
 
-
     @Test
     @Users.RtpSenderWriter
     void testFindActivationByPayerIdSuccess() {
@@ -145,21 +145,56 @@ class ActivationAPIControllerImplTest {
         activationDto.setEffectiveActivationDate(null);
 
         when(activationPayerService.findPayer(payerDto.getFiscalCode()))
-            .thenReturn(Mono.just(payer));
+                .thenReturn(Mono.just(payer));
         when(activationDtoMapper.toActivationDto(payer))
-            .thenReturn(activationDto);
+                .thenReturn(activationDto);
 
         webTestClient.get()
-            .uri("/activations/findByPayerId")
-            .header("RequestId", UUID.randomUUID().toString())
-            .header("Version", "v1")
-            .header("PayerId", payerDto.getFiscalCode())
-            .exchange()
-            .expectStatus().isOk()
-            .expectBody(ActivationDto.class)
-            .value(dto -> {
-                assert dto.getPayer().getFiscalCode().equals(payer.fiscalCode());
-            });
+                .uri("/activations/findByPayerId")
+                .header("RequestId", UUID.randomUUID().toString())
+                .header("Version", "v1")
+                .header("PayerId", payerDto.getFiscalCode())
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(ActivationDto.class)
+                .value(dto -> {
+                    assert dto.getPayer().getFiscalCode().equals(payer.fiscalCode());
+                });
+    }
+
+    @Test
+    @Users.RtpReader
+    void getActivationThrowsException() {
+
+        webTestClient.get()
+                .uri("/activations/activation/{activationId}", UUID.randomUUID().toString())
+                .header("RequestId", UUID.randomUUID().toString())
+                .header("Version", "v1")
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(404)
+                .jsonPath("$.error").isEqualTo("Not Found");
+    }
+
+    @Test
+    @Users.RtpReader
+    void getActivationsThrowsException() {
+
+        webTestClient.get()
+                .uri(uriBuilder -> 
+                    uriBuilder
+                    .path("/activations")
+                    .queryParam("PageNumber", 0)
+                    .queryParam("PageSize", 10)
+                    .build())
+                .header("RequestId", UUID.randomUUID().toString())
+                .header("Version", "v1")
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.error").isEqualTo("Bad Request");
     }
 
     private ActivationReqDto generateActivationRequest() {
