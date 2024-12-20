@@ -45,7 +45,6 @@ class ActivationPayerServiceImplTest {
     }
 
     @Test
-    @DisplayName("Activate Payer - Successful Activation")
     void testActivatePayerSuccessful() {
 
         when(activationDBRepository.findByFiscalCode(fiscalCode)).thenReturn(Mono.empty());
@@ -67,7 +66,6 @@ class ActivationPayerServiceImplTest {
     }
 
     @Test
-    @DisplayName("Activate Payer - Payer Already Exists")
     void testActivatePayerAlreadyExists() {
 
         when(activationDBRepository.findByFiscalCode(fiscalCode)).thenReturn(Mono.just(payer));
@@ -80,7 +78,6 @@ class ActivationPayerServiceImplTest {
     }
 
     @Test
-    @DisplayName("Find Payer - Successful Retrieval")
     void testFindPayerSuccessful() {
         when(activationDBRepository.findByFiscalCode(fiscalCode)).thenReturn(Mono.just(payer));
 
@@ -92,7 +89,6 @@ class ActivationPayerServiceImplTest {
     }
 
     @Test
-    @DisplayName("Find Payer - Not Found")
     void testFindPayerNotFound() {
 
         String notExFiscalCode = "nonExistentPayerId";
