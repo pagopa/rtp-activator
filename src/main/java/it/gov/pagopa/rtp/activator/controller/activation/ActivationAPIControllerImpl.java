@@ -70,7 +70,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
         return Mono.just(payerId)
                 .flatMap(activationPayerService::findPayer)
                 .map(activationDtoMapper::toActivationDto)
-                .<ResponseEntity<ActivationDto>>map(activationDto -> ResponseEntity.ok(activationDto));
+                .<ResponseEntity<ActivationDto>>map(ResponseEntity::ok);
     }
 
     @Override
@@ -78,7 +78,6 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
     public Mono<ResponseEntity<ActivationDto>> getActivation(UUID requestId, UUID activationId,
             String version,
             ServerWebExchange exchange) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getActivation'");
     }
 
@@ -89,7 +88,6 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
             Integer size,
             String version,
             ServerWebExchange exchange) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
     }
 

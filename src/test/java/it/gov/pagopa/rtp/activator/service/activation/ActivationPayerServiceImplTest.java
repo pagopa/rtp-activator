@@ -52,12 +52,12 @@ class ActivationPayerServiceImplTest {
         when(activationDBRepository.save(any(Payer.class)))
                 .thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-        StepVerifier.create(activationPayerService.activatePayer(rtpSpId, fiscalCode)).expectNextMatches(payer -> {
+        StepVerifier.create(activationPayerService.activatePayer(rtpSpId, fiscalCode)).expectNextMatches(pay    -> {
             // Verify payer details
-            assert payer.rtpSpId().equals(rtpSpId);
-            assert payer.fiscalCode().equals(fiscalCode);
-            assert payer.activationID() != null;
-            assert payer.effectiveActivationDate() != null;
+            assert pay.rtpSpId().equals(rtpSpId);
+            assert pay.fiscalCode().equals(fiscalCode);
+            assert pay.activationID() != null;
+            assert pay.effectiveActivationDate() != null;
             return true;
         })
                 .verifyComplete();
@@ -85,7 +85,7 @@ class ActivationPayerServiceImplTest {
         when(activationDBRepository.findByFiscalCode(fiscalCode)).thenReturn(Mono.just(payer));
 
         StepVerifier.create(activationPayerService.findPayer(fiscalCode))
-                .expectNextMatches(payer -> payer.equals(payer)).verifyComplete();
+                .expectNextMatches(pay -> pay.equals(payer)).verifyComplete();
 
         verify(activationDBRepository).findByFiscalCode(fiscalCode);
 

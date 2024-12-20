@@ -131,7 +131,7 @@ class ActivationAPIControllerImplTest {
 
 
     @Test
-    @Users.RtpReader
+    @Users.RtpSenderWriter
     void testFindActivationByPayerIdSuccess() {
         ActivationID activationID = ActivationID.createNew();
 
