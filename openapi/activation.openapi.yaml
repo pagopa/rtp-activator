@@ -419,7 +419,6 @@ components:
     ActivationId:
       description: Identifier of the RTP activation resource.
       type: string
-      pattern: "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
       format: uuid
       example: "d0d654e6-97da-4848-b568-99fedccb642b"
 
@@ -435,7 +434,6 @@ components:
     RequestId:
       description: Identifier of the request.
       type: string
-      pattern: "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
       format: uuid
       example: "bd615b4a-066d-443e-8dd2-a28a39931fef"
 
