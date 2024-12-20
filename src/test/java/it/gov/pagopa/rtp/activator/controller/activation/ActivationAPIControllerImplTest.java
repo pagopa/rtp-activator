@@ -88,7 +88,7 @@ class ActivationAPIControllerImplTest {
                 .bodyValue(generateActivationRequest())
                 .exchange()
                 .expectStatus().isCreated().expectHeader()
-                .location("http://localhost:8080/" + payer.activationID().toString());
+                .location("http://localhost:8080/" + payer.activationID().getId().toString());
     }
 
     @Test

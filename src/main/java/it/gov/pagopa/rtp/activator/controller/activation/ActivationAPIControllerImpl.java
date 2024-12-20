@@ -61,7 +61,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
                         t.getPayer().getFiscalCode()))
                 .<ResponseEntity<Void>>map(payer -> ResponseEntity
                         .created(URI.create(activationPropertiesConfig.baseUrl()
-                                + payer.activationID().toString()))
+                                + payer.activationID().getId().toString()))
                         .build())
                 .onErrorReturn(PayerAlreadyExists.class, ResponseEntity.status(409).build());
     }
