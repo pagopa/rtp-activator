@@ -5,17 +5,17 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class PayerID {
+public class ActivationID {
 
     private final UUID id;
 
-    public PayerID(UUID uuid) {
+    public ActivationID(UUID uuid) {
         this.id = uuid;
     }
 
-    public static PayerID createNew() {
+    public static ActivationID createNew() {
         UUID uuid = UUID.randomUUID();
-        return new PayerID(uuid);
+        return new ActivationID(uuid);
     }
 
 }
