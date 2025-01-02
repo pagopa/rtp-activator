@@ -45,8 +45,6 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	// https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api
 	compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
-	// https://mvnrepository.com/artifact/org.reflections/reflections
-	implementation group: 'org.reflections', name: 'reflections', version: '0.10.2'
 
 	// opentelemetry
 	// implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
@@ -132,13 +130,6 @@ tasks.register('generateOpenAPIActivateClient', GenerateTask) {
 	configOptions.set([
 			"dateLibrary"         : "java8",
 			"useJakartaEe"        : "true",
-//			"interfaceOnly"       : "true",
-//			"useTags"             : "true",
-//			"useSwaggerUI"        : "false",
-//			"reactive"            : "true",
-//			"swaggerAnnotations"  : "false",
-//			"skipDefaultInterface": "true",
-//			"openApiNullable"     : "true",
 	])
 	typeMappings.set([
 			"DateTime"       : "java.time.LocalDateTime",
