@@ -76,6 +76,7 @@ tasks.compileJava {
 	dependsOn("generateOpenAPIActivate")
 	dependsOn("generateOpenAPISend")
 	dependsOn("generateOpenAPIEPC")
+	dependsOn("generateOpenAPIActivateClient")
 }
 
 sourceSets {
@@ -108,6 +109,36 @@ tasks.register('generateOpenAPIActivate', GenerateTask) {
 			"swaggerAnnotations"  : "false",
 			"skipDefaultInterface": "true",
 			"openApiNullable"     : "true",
+	])
+	typeMappings.set([
+			"DateTime"       : "java.time.LocalDateTime",
+			"zoned-date-time": "java.time.ZonedDateTime"
+	])
+}
+
+tasks.register('generateOpenAPIActivateClient', GenerateTask) {
+	generatorName.set("java")
+	inputSpec.set("$rootDir/openapi/activation.openapi.yaml")
+	outputDir.set("$projectDir/build/generated")
+	apiPackage.set("it.gov.pagopa.rtp.activator.activateClient.api")
+	modelPackage.set("it.gov.pagopa.rtp.activator.activateClient.model")
+	invokerPackage.set("it.gov.pagopa.rtp.activator.activateClient.invoker")
+	modelNameSuffix.set("Dto")
+	generateApiTests.set(false)
+	generateApiDocumentation.set(false)
+	generateApiTests.set(false)
+	generateModelTests.set(false)
+	library.set("webclient")
+	configOptions.set([
+			"dateLibrary"         : "java8",
+			"useJakartaEe"        : "true",
+//			"interfaceOnly"       : "true",
+//			"useTags"             : "true",
+//			"useSwaggerUI"        : "false",
+//			"reactive"            : "true",
+//			"swaggerAnnotations"  : "false",
+//			"skipDefaultInterface": "true",
+//			"openApiNullable"     : "true",
 	])
 	typeMappings.set([
 			"DateTime"       : "java.time.LocalDateTime",
