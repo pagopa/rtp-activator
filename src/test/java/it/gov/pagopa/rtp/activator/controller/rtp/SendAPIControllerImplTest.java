@@ -114,6 +114,7 @@ class SendAPIControllerImplTest {
 
 
     @Test
+    @Users.RtpSenderWriter
     void testSendRtpWithWrongAmount() {
 
         when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
