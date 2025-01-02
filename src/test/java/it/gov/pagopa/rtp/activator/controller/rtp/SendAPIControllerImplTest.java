@@ -27,6 +27,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.aot.DisabledInAotMode;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
@@ -138,6 +139,23 @@ class SendAPIControllerImplTest {
                 .exchange()
                 .expectStatus()
                 .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @Users.RtpSenderWriter
+    void givenUserNotActivatedWhenSendRTPThenReturnUnprocessableEntity() {
+
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(sendRTPService.send(any()))
+            .thenReturn(Mono.error(WebClientResponseException
+                .create(HttpStatus.UNPROCESSABLE_ENTITY.value(), "Whatever", null, null, null)));
+
+        webTestClient.post()
+                .uri("/rtps")
+                .bodyValue(generateSendRequest())
+                .exchange()
+                .expectStatus()
+                .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     private CreateRtpDto generateSendRequest() {
