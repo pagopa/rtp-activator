@@ -274,7 +274,7 @@ paths:
           #description: Unexpected error
           $ref: '#/components/responses/Error'
 
-  /activations/findByPayerId:
+  /activations/payer:
     get:
       operationId: findActivationByPayerId
       summary: Finds a RTP activation by Payer ID.
