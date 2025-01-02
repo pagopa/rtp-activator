@@ -5,6 +5,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,7 +41,7 @@ class SendRTPServiceTest {
     @Test
     void testSend() {
         String noticeNumber = "12345";
-        Integer amount = 100;
+        BigDecimal amount = new BigDecimal("99999999999");
         String description = "Payment Description";
         LocalDate expiryDate = LocalDate.now();
         String payerId = "payerId";
@@ -52,16 +53,20 @@ class SendRTPServiceTest {
         String payTrxRef = "payTrxRef";
         String flgConf = "flgConf";
 
-        Rtp expectedRtp = new Rtp(noticeNumber, amount, description, expiryDate, payerId, payeeName, payeeId,
-                ResourceID.createNew(), LocalDateTime.now(),"rtpSpId", endToEndId, iban, payTrxRef, flgConf);
-
+        Rtp expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
+                .expiryDate(expiryDate)
+                .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
+                .resourceID(ResourceID.createNew())
+                .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
+                .iban(iban).payTrxRef(payTrxRef)
+                .flgConf(flgConf).build();
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto(
                 URI.create("http://callback.url"));
 
-        when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class))).thenReturn(mockSepaRequestToPayRequestResource);
+        when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class)))
+                .thenReturn(mockSepaRequestToPayRequestResource);
 
-        Mono<Rtp> result = sendRTPService.send(noticeNumber, amount, description, expiryDate, payerId, payeeName,
-                payeeId, rtpSpId, endToEndId, iban, payTrxRef, flgConf);
+        Mono<Rtp> result = sendRTPService.send(expectedRtp);
         StepVerifier.create(result)
                 .expectNextMatches(rtp -> rtp.noticeNumber().equals(expectedRtp.noticeNumber())
                         && rtp.amount().equals(expectedRtp.amount())
@@ -72,7 +77,8 @@ class SendRTPServiceTest {
                         && rtp.payeeId().equals(expectedRtp.payeeId())
                         && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
                         && rtp.endToEndId().equals(expectedRtp.endToEndId())
-                        && rtp.iban().equals(expectedRtp.iban()) && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
+                        && rtp.iban().equals(expectedRtp.iban())
+                        && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
                         && rtp.flgConf().equals(expectedRtp.flgConf()))
                 .verifyComplete();
         verify(sepaRequestToPayMapper, times(1)).toRequestToPay(any(Rtp.class));

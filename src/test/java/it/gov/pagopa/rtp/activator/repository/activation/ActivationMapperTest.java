@@ -3,7 +3,7 @@ package it.gov.pagopa.rtp.activator.repository.activation;
 import org.junit.jupiter.api.Test;
 
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
-import it.gov.pagopa.rtp.activator.domain.payer.PayerID;
+import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +25,7 @@ class ActivationMapperTest {
         Payer payer = mapper.toDomain(activationEntity);
 
         assertNotNull(payer);
-        assertEquals(activationEntity.getId(), payer.payerID().getId().toString());
+        assertEquals(activationEntity.getId(), payer.activationID().getId().toString());
         assertEquals(activationEntity.getRtpSpId(), payer.rtpSpId());
         assertEquals(activationEntity.getFiscalCode(), payer.fiscalCode());
         assertEquals(activationEntity.getEffectiveActivationDate(), payer.effectiveActivationDate());
@@ -33,13 +33,13 @@ class ActivationMapperTest {
 
     @Test
     void testToDbEntity() {
-        PayerID payerID = new PayerID(UUID.randomUUID());
-        Payer payer = new Payer(payerID, "RTP_SP_ID", "FISCAL_CODE", Instant.ofEpochSecond(1732517304));
+        ActivationID activationID = new ActivationID(UUID.randomUUID());
+        Payer payer = new Payer(activationID, "RTP_SP_ID", "FISCAL_CODE", Instant.ofEpochSecond(1732517304));
 
         ActivationEntity activationEntity = mapper.toDbEntity(payer);
 
         assertNotNull(activationEntity);
-        assertEquals(payer.payerID().getId().toString(), activationEntity.getId());
+        assertEquals(payer.activationID().getId().toString(), activationEntity.getId());
         assertEquals(payer.rtpSpId(), activationEntity.getRtpSpId());
         assertEquals(payer.fiscalCode(), activationEntity.getFiscalCode());
         assertEquals(payer.effectiveActivationDate(), activationEntity.getEffectiveActivationDate());

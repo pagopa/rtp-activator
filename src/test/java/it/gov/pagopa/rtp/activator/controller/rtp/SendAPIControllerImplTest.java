@@ -1,5 +1,16 @@
-package it.gov.pagopa.rtp.activator.controller;
+package it.gov.pagopa.rtp.activator.controller.rtp;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
+
+import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
+import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
+import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
+import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,13 +51,40 @@ class SendAPIControllerImplTest {
     @MockBean
     private SendRTPService sendRTPService;
 
+    @MockBean
+    private RtpMapper rtpMapper;
+
     private WebTestClient webTestClient;
 
     @Autowired
     private ApplicationContext context;
 
+    private Rtp expectedRtp;
+
     @BeforeEach
     void setup() {
+        String noticeNumber = "12345";
+        BigDecimal amount = new BigDecimal("99999999999");
+        String description = "Payment Description";
+        LocalDate expiryDate = LocalDate.now();
+        String payerId = "payerId";
+        String payeeName = "Payee Name";
+        String payeeId = "payeeId";
+        String endToEndId = "endToEndId";
+        String rtpSpId = "rtpSpId";
+        String iban = "IT60X0542811101000000123456";
+        String payTrxRef = "payTrxRef";
+        String flgConf = "flgConf";
+
+        expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
+                .expiryDate(expiryDate)
+                .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
+                .resourceID(ResourceID.createNew())
+                .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
+                .iban(iban).payTrxRef(payTrxRef)
+                .flgConf(flgConf).build();
+
+
         webTestClient = WebTestClient
                 .bindToApplicationContext(context)
                 .apply(springSecurity())
@@ -58,9 +96,8 @@ class SendAPIControllerImplTest {
     @Users.RtpSenderWriter
     void testSendRtpSuccessful() {
 
-        when(sendRTPService.send(anyString(), anyInt(), anyString(), any(), anyString(), anyString(), anyString(),
-                anyString(), anyString(),anyString(), anyString(), anyString()))
-                .thenReturn(Mono.empty());
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(sendRTPService.send(expectedRtp)).thenReturn(Mono.empty());
 
         webTestClient.post()
                 .uri("/rtps")
@@ -76,13 +113,29 @@ class SendAPIControllerImplTest {
     @Users.RtpSenderWriter
     void testSendRtpWithWrongBody() {
 
-        when(sendRTPService.send(anyString(), anyInt(), anyString(), any(), anyString(), anyString(), anyString(),
-                anyString(), anyString(),anyString(), anyString(), anyString()))
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(sendRTPService.send(any()))
                 .thenReturn(Mono.empty());
 
         webTestClient.post()
                 .uri("/rtps")
                 .bodyValue(generateWrongSendRequest())
+                .exchange()
+                .expectStatus()
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+
+    @Test
+    void testSendRtpWithWrongAmount() {
+
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(sendRTPService.send(any()))
+                .thenReturn(Mono.empty());
+
+        webTestClient.post()
+                .uri("/rtps")
+                .bodyValue(generateWrongAmountSendRequest())
                 .exchange()
                 .expectStatus()
                 .isEqualTo(HttpStatus.BAD_REQUEST);
@@ -100,12 +153,20 @@ class SendAPIControllerImplTest {
     }
 
     private CreateRtpDto generateSendRequest() {
-        return new CreateRtpDto("311111111112222222", 1, "description", LocalDate.now(), "payerId",
+        return new CreateRtpDto("311111111112222222", BigDecimal.valueOf(1), "description", LocalDate.now(),
+                "payerId",
                 new PayeeDto("77777777777", "payeeName"));
     }
 
     private CreateRtpDto generateWrongSendRequest() {
-        return new CreateRtpDto("noticenumber", 1, "description", LocalDate.now(), "payerId",
+        return new CreateRtpDto("noticenumber", BigDecimal.valueOf(1), "description", LocalDate.now(),
+                "payerId",
                 new PayeeDto("dsds", "payeeName"));
+    }
+
+    private CreateRtpDto generateWrongAmountSendRequest() {
+        return new CreateRtpDto("311111111112222222", new BigDecimal("999999999999"), "description", LocalDate.now(),
+                "payerId",
+                new PayeeDto("77777777777", "payeeName"));
     }
 }

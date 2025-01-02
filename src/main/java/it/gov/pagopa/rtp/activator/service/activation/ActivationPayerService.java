@@ -5,4 +5,5 @@ import reactor.core.publisher.Mono;
 
 public interface ActivationPayerService {
    Mono<Payer> activatePayer(String payer, String fiscalCode);
+   Mono<Payer> findPayer(String payer);
 }

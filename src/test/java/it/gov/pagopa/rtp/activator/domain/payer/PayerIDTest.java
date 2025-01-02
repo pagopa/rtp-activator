@@ -4,20 +4,20 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.UUID;
 
-class PayerIDTest {
+class ActivationIDTest {
 
     @Test
     void testCreateNew() {
-        PayerID payerID = PayerID.createNew();
-        assertNotNull(payerID);
-        assertNotNull(payerID.getId());
+        ActivationID activationID = ActivationID.createNew();
+        assertNotNull(activationID);
+        assertNotNull(activationID.getId());
     }
 
     @Test
     void testConstructor() {
         UUID uuid = UUID.randomUUID();
-        PayerID payerID = new PayerID(uuid);
-        assertNotNull(payerID);
-        assertEquals(uuid, payerID.getId());
+        ActivationID activationID = new ActivationID(uuid);
+        assertNotNull(activationID);
+        assertEquals(uuid, activationID.getId());
     }
 }
