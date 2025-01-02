@@ -10,11 +10,10 @@ import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
-
+import it.gov.pagopa.rtp.activator.utils.Users;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +23,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.aot.DisabledInAotMode;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -39,7 +39,7 @@ class SendAPIControllerImplTest {
     private SendRTPService sendRTPService;
 
     @MockBean
-    private RtpMapper rtpMapper; 
+    private RtpMapper rtpMapper;
 
     private WebTestClient webTestClient;
 
@@ -80,9 +80,10 @@ class SendAPIControllerImplTest {
     }
 
     @Test
+    @Users.RtpSenderWriter
     void testSendRtpSuccessful() {
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp); 
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
         when(sendRTPService.send(expectedRtp)).thenReturn(Mono.empty());
 
         webTestClient.post()
@@ -96,9 +97,10 @@ class SendAPIControllerImplTest {
     }
 
     @Test
+    @Users.RtpSenderWriter
     void testSendRtpWithWrongBody() {
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp); 
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
         when(sendRTPService.send(any()))
                 .thenReturn(Mono.empty());
 
@@ -112,9 +114,10 @@ class SendAPIControllerImplTest {
 
 
     @Test
+    @Users.RtpSenderWriter
     void testSendRtpWithWrongAmount() {
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp); 
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
         when(sendRTPService.send(any()))
                 .thenReturn(Mono.empty());
 
@@ -124,6 +127,17 @@ class SendAPIControllerImplTest {
                 .exchange()
                 .expectStatus()
                 .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    @WithMockUser
+    void userWithoutEnoughPermissionShouldNotSendRtp() {
+        webTestClient.post()
+                .uri("/rtps")
+                .bodyValue(generateSendRequest())
+                .exchange()
+                .expectStatus()
+                .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     private CreateRtpDto generateSendRequest() {
