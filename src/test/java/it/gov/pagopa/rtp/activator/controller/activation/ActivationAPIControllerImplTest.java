@@ -149,7 +149,7 @@ class ActivationAPIControllerImplTest {
                 .thenReturn(activationDto);
 
         webTestClient.get()
-                .uri("/activations/findByPayerId")
+                .uri("/activations/payer")
                 .header("RequestId", UUID.randomUUID().toString())
                 .header("Version", "v1")
                 .header("PayerId", payerDto.getFiscalCode())

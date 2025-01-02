@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -38,6 +39,9 @@ public class SendAPIControllerImpl implements RtpsApi {
                 if (e instanceof WebClientResponseException webClientResponseException) {
                     return Mono.just(
                         ResponseEntity.status(webClientResponseException.getStatusCode()).build());
+                }
+                if (e instanceof WebExchangeBindException) {
+                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
                 }
                 return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
             });
