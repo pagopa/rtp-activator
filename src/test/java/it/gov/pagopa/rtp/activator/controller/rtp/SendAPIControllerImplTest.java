@@ -1,4 +1,4 @@
-package it.gov.pagopa.rtp.activator.controller;
+package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
