@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -35,20 +36,21 @@ class SendRTPServiceTest {
     @InjectMocks
     private SendRTPServiceImpl sendRTPService;
 
+    final String noticeNumber = "12345";
+    final BigDecimal amount = new BigDecimal("99999999999");
+    final String description = "Payment Description";
+    final LocalDate expiryDate = LocalDate.now();
+    final String payerId = "payerId";
+    final String payeeName = "Payee Name";
+    final String payeeId = "payeeId";
+    final String endToEndId = "endToEndId";
+    final String rtpSpId = "rtpSpId";
+    final String iban = "IT60X0542811101000000123456";
+    final String payTrxRef = "payTrxRef";
+    final String flgConf = "flgConf";
+
     @Test
     void testSend() {
-        String noticeNumber = "12345";
-        BigDecimal amount = new BigDecimal("99999999999");
-        String description = "Payment Description";
-        LocalDate expiryDate = LocalDate.now();
-        String payerId = "payerId";
-        String payeeName = "Payee Name";
-        String payeeId = "payeeId";
-        String endToEndId = "endToEndId";
-        String rtpSpId = "rtpSpId";
-        String iban = "IT60X0542811101000000123456";
-        String payTrxRef = "payTrxRef";
-        String flgConf = "flgConf";
 
         var activationRtpSpId = "activationRtpSpId";
         var activationFiscalCode = "activationFiscalCode";
@@ -100,5 +102,29 @@ class SendRTPServiceTest {
                 .verifyComplete();
         verify(sepaRequestToPayMapper, times(1)).toRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+    }
+
+    @Test
+    void givenPayerIdNotActivatedWhenSendThenMonoError() {
+        Rtp inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
+            .expiryDate(expiryDate)
+            .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
+            .resourceID(ResourceID.createNew())
+            .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
+            .iban(iban).payTrxRef(payTrxRef)
+            .flgConf(flgConf).build();
+
+        when(readApi.findActivationByPayerId(any(), any(), any()))
+            .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+
+        Mono<Rtp> result = sendRTPService.send(inputRtp);
+
+        StepVerifier.create(result)
+            .expectError()
+            .verify();
+
+        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+
     }
 }
