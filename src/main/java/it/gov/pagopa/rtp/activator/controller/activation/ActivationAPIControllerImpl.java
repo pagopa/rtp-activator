@@ -1,28 +1,23 @@
 package it.gov.pagopa.rtp.activator.controller.activation;
 
+import static it.gov.pagopa.rtp.activator.utils.Authorizations.verifySubjectRequest;
+
+import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.CreateApi;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.ReadApi;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
-
+import java.net.URI;
 import java.util.UUID;
-
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
-
-import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
-import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import reactor.core.publisher.Mono;
-
-import org.springframework.security.access.prepost.PreAuthorize;
-
-import java.net.URI;
-
-import static it.gov.pagopa.rtp.activator.utils.Authorizations.verifySubjectRequest;
 
 @RestController
 @Validated
@@ -70,7 +65,8 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
         return Mono.just(payerId)
                 .flatMap(activationPayerService::findPayer)
                 .map(activationDtoMapper::toActivationDto)
-                .<ResponseEntity<ActivationDto>>map(ResponseEntity::ok);
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
     @Override

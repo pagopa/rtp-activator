@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
@@ -138,6 +139,22 @@ class SendAPIControllerImplTest {
                 .exchange()
                 .expectStatus()
                 .isEqualTo(HttpStatus.FORBIDDEN);
+    }
+
+    @Test
+    @Users.RtpSenderWriter
+    void givenUserNotActivatedWhenSendRTPThenReturnUnprocessableEntity() {
+
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(sendRTPService.send(any()))
+            .thenReturn(Mono.error(new PayerNotActivatedException()));
+
+        webTestClient.post()
+                .uri("/rtps")
+                .bodyValue(generateSendRequest())
+                .exchange()
+                .expectStatus()
+                .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     private CreateRtpDto generateSendRequest() {
