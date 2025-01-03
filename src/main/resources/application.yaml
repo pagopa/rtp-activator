@@ -18,3 +18,7 @@ spring.data.mongodb:
   uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
   database: ${DB_NAME:rtp}
 activation.base-url: ${BASE_URL:http://localhost}
+
+service-provider:
+  activation:
+    api-version: v1

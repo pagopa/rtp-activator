@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
-import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
@@ -42,24 +43,28 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final SepaRequestToPayMapper sepaRequestToPayMapper;
   private final ReadApi activationApi;
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final ServiceProviderConfig serviceProviderConfig;
 
-  public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi) {
+  public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
+      ServiceProviderConfig serviceProviderConfig) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
+    this.serviceProviderConfig = serviceProviderConfig;
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
   }
 
   @Override
   public Mono<Rtp> send(Rtp rtp) {
 
-    return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(), "v1")
+    return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(),
+            serviceProviderConfig.apiVersion())
         .map(act -> toRtpWithActivationInfo(rtp, act))
         .flatMap(rtpDto -> {
           log.info(rtpToJson(rtpDto));
           return Mono.just(rtpDto);
         })
         .onErrorMap(WebClientResponseException.class, mapResponseToException())
-        .switchIfEmpty(Mono.error(new PayerNotFoundException()));
+        .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
 
   private Rtp toRtpWithActivationInfo(Rtp rtp, ActivationDto activationDto) {
@@ -95,7 +100,7 @@ public class SendRTPServiceImpl implements SendRTPService {
   private Function<WebClientResponseException, Throwable> mapResponseToException() {
     return exception -> {
       if (exception.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-        return new PayerNotFoundException();
+        return new PayerNotActivatedException();
       }
       return new RuntimeException("Internal Server Error");
     };

@@ -1,7 +1,7 @@
 package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
-import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
 import org.springframework.http.HttpStatus;
@@ -35,7 +35,7 @@ public class SendAPIControllerImpl implements RtpsApi {
             .flatMap(sendRTPService::send)
             .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
             .onErrorResume(e -> {
-                if (e instanceof PayerNotFoundException) {
+                if (e instanceof PayerNotActivatedException) {
                     return Mono.just(ResponseEntity.unprocessableEntity().build());
                 }
                 if (e instanceof WebExchangeBindException) {

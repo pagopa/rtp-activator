@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.activateClient.model.PayerDto;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
@@ -16,9 +18,9 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -32,8 +34,8 @@ class SendRTPServiceTest {
     private SepaRequestToPayMapper sepaRequestToPayMapper;
     @Mock
     private ReadApi readApi;
+    private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig("v1");
 
-    @InjectMocks
     private SendRTPServiceImpl sendRTPService;
 
     final String noticeNumber = "12345";
@@ -48,6 +50,12 @@ class SendRTPServiceTest {
     final String iban = "IT60X0542811101000000123456";
     final String payTrxRef = "payTrxRef";
     final String flgConf = "flgConf";
+
+    @BeforeEach
+    void setUp() {
+        sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
+                serviceProviderConfig);
+    }
 
     @Test
     void testSend() {
@@ -115,12 +123,12 @@ class SendRTPServiceTest {
             .flgConf(flgConf).build();
 
         when(readApi.findActivationByPayerId(any(), any(), any()))
-            .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+            .thenReturn(Mono.error(new WebClientResponseException(404, "Internal Server Error", null, null, null)));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
 
         StepVerifier.create(result)
-            .expectError()
+            .expectError(PayerNotActivatedException.class)
             .verify();
 
         verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
