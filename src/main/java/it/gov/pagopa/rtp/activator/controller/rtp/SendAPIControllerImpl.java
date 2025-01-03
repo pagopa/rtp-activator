@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -34,14 +33,6 @@ public class SendAPIControllerImpl implements RtpsApi {
             .map(rtpMapper::toRtp)
             .flatMap(sendRTPService::send)
             .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
-            .onErrorResume(e -> {
-                if (e instanceof PayerNotActivatedException) {
-                    return Mono.just(ResponseEntity.unprocessableEntity().build());
-                }
-                if (e instanceof WebExchangeBindException) {
-                    return Mono.just(ResponseEntity.badRequest().build());
-                }
-                return Mono.just(ResponseEntity.internalServerError().build());
-            });
+            .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build());
     }
 }
