@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
@@ -27,7 +28,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.aot.DisabledInAotMode;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
@@ -147,8 +147,7 @@ class SendAPIControllerImplTest {
 
         when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
         when(sendRTPService.send(any()))
-            .thenReturn(Mono.error(WebClientResponseException
-                .create(HttpStatus.UNPROCESSABLE_ENTITY.value(), "Whatever", null, null, null)));
+            .thenReturn(Mono.error(new PayerNotFoundException("Error while sending RTP")));
 
         webTestClient.post()
                 .uri("/rtps")
