@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
@@ -17,9 +18,12 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentificatio
 import it.gov.pagopa.rtp.activator.model.generated.epc.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
 import java.util.UUID;
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -48,12 +52,14 @@ public class SendRTPServiceImpl implements SendRTPService {
   @Override
   public Mono<Rtp> send(Rtp rtp) {
 
-    return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(), "1")
+    return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(), "v1")
         .map(act -> toRtpWithActivationInfo(rtp, act))
         .flatMap(rtpDto -> {
           log.info(rtpToJson(rtpDto));
           return Mono.just(rtpDto);
-        });
+        })
+        .onErrorMap(WebClientResponseException.class, mapResponseToException())
+        .switchIfEmpty(Mono.error(new PayerNotFoundException()));
   }
 
   private Rtp toRtpWithActivationInfo(Rtp rtp, ActivationDto activationDto) {
@@ -84,5 +90,14 @@ public class SendRTPServiceImpl implements SendRTPService {
       log.error("Problem while serializing SepaRequestToPayRequestResourceDto object", e);
     }
     return jsonString;
+  }
+
+  private Function<WebClientResponseException, Throwable> mapResponseToException() {
+    return exception -> {
+      if (exception.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+        return new PayerNotFoundException();
+      }
+      return new RuntimeException("Internal Server Error");
+    };
   }
 }
