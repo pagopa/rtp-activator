@@ -34,7 +34,12 @@ paths:
               description: "The location of created rtp"
               schema:
                 $ref: "#/components/schemas/RtpLocation"
-
+        "422":
+          description: "The debtor is not activated by the Service Provider"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MismatchActivationErrorResponse'
 
 components:
   schemas:
@@ -116,3 +121,13 @@ components:
         - expiryDate
         - payerId
         - payee
+
+    MismatchActivationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Debtor's fiscal code is not activated"
+        details:
+          type: string
+          example: "The debtor's fiscal code provided is not activated by thr subject making the request."
