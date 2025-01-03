@@ -11,14 +11,8 @@ info:
 
 servers:
   - description: Development/Test
-    url: https://rtp.dev.cstar.pagopa.it
+    url: localhost:8080
     x-internal: true
-  - description: User Acceptance Test
-    url: https://rtp.uat.cstar.pagopa.it
-    x-internal: false
-  - description: Production
-    url: https://rtp.cstar.pagopa.it
-    x-internal: false
     
 tags:
   - name: create
