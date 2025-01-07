@@ -51,10 +51,19 @@ class SendRTPServiceTest {
     final String payTrxRef = "payTrxRef";
     final String flgConf = "flgConf";
 
+    Rtp inputRtp;
+
     @BeforeEach
     void setUp() {
         sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
                 serviceProviderConfig);
+        inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
+            .expiryDate(expiryDate)
+            .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
+            .resourceID(ResourceID.createNew())
+            .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
+            .iban(iban).payTrxRef(payTrxRef)
+            .flgConf(flgConf).build();
     }
 
     @Test
@@ -71,13 +80,6 @@ class SendRTPServiceTest {
         payerDto.setFiscalCode(activationFiscalCode);
         fakeActivationDto.setPayer(payerDto);
 
-        Rtp inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
-                .expiryDate(expiryDate)
-                .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
-                .resourceID(ResourceID.createNew())
-                .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
-                .iban(iban).payTrxRef(payTrxRef)
-                .flgConf(flgConf).build();
         var expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -114,14 +116,6 @@ class SendRTPServiceTest {
 
     @Test
     void givenPayerIdNotActivatedWhenSendThenMonoError() {
-        Rtp inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
-            .expiryDate(expiryDate)
-            .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
-            .resourceID(ResourceID.createNew())
-            .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
-            .iban(iban).payTrxRef(payTrxRef)
-            .flgConf(flgConf).build();
-
         when(readApi.findActivationByPayerId(any(), any(), any()))
             .thenReturn(Mono.error(new WebClientResponseException(404, "Internal Server Error", null, null, null)));
 
@@ -133,6 +127,20 @@ class SendRTPServiceTest {
 
         verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+    }
 
+    @Test
+    void givenInternalErrorWhenSendThenMonoError() {
+        when(readApi.findActivationByPayerId(any(), any(), any()))
+            .thenReturn(Mono.error(new WebClientResponseException(404, "Internal Server Error", null, null, null)));
+
+        Mono<Rtp> result = sendRTPService.send(inputRtp);
+
+        StepVerifier.create(result)
+            .expectError(RuntimeException.class)
+            .verify();
+
+        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
     }
 }
