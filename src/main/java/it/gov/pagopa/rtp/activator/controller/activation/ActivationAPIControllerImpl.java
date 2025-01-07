@@ -12,6 +12,7 @@ import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 import java.net.URI;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @Validated
+@Slf4j
 public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
 
     private final ActivationPayerService activationPayerService;
@@ -44,7 +46,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
             String version,
             Mono<ActivationReqDto> activationReqDto,
             ServerWebExchange exchange) {
-
+        log.info("Received request to activate a payer");
         return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
                 .flatMap(t -> activationPayerService.activatePayer(t.getPayer().getRtpSpId(),
                         t.getPayer().getFiscalCode()))
@@ -62,6 +64,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
             String payerId,
             String version,
             ServerWebExchange exchange) {
+        log.info("Received request to find activation by payer id");
         return Mono.just(payerId)
                 .flatMap(activationPayerService::findPayer)
                 .map(activationDtoMapper::toActivationDto)
