@@ -117,7 +117,7 @@ class SendRTPServiceTest {
     @Test
     void givenPayerIdNotActivatedWhenSendThenMonoError() {
         when(readApi.findActivationByPayerId(any(), any(), any()))
-            .thenReturn(Mono.error(new WebClientResponseException(404, "Internal Server Error", null, null, null)));
+            .thenReturn(Mono.error(new WebClientResponseException(404, "Not Found", null, null, null)));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
 
@@ -132,7 +132,7 @@ class SendRTPServiceTest {
     @Test
     void givenInternalErrorWhenSendThenMonoError() {
         when(readApi.findActivationByPayerId(any(), any(), any()))
-            .thenReturn(Mono.error(new WebClientResponseException(404, "Internal Server Error", null, null, null)));
+            .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
 
