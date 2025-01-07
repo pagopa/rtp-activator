@@ -1,17 +1,16 @@
 package it.gov.pagopa.rtp.activator;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 
-@ExtendWith(SpringExtension.class)
+@SpringBootTest
 class RtpActivatorApplicationTests {
 
-	@Test
-	void contextLoads() {
-		assertNotNull(new RtpActivatorApplication());
-	}	
+  @Test
+  void contextLoads() {
+    assertTrue(true);
+  }
 
 }
