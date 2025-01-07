@@ -8,7 +8,7 @@ RUN chmod +x ./gradlew && ./gradlew :nativeCompile
 FROM ubuntu:noble-20241011@sha256:99c35190e22d294cdace2783ac55effc69d32896daaa265f0bbedbcde4fbe3e5 AS cve
 COPY --from=builder /code/build/libs/rtp-activator-*.jar .
 
-FROM ubuntu:ubuntu:noble-20241118.1@sha256:80dd3c3b9c6cecb9f1667e9290b3bc61b78c2678c02cbdae5f0fea92cc6734ab AS runtime
+FROM ubuntu:noble-20241118.1@sha256:80dd3c3b9c6cecb9f1667e9290b3bc61b78c2678c02cbdae5f0fea92cc6734ab AS runtime
 
 WORKDIR /work/
 RUN chown 1001 /work \
