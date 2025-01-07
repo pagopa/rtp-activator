@@ -36,7 +36,8 @@ import reactor.core.publisher.Mono;
     ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto.class, Max35TextWrapperDto.class,
     OrganisationIdentification29EPC25922V30DS022WrapperDto.class,
     ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto.class,
-    IBAN2007IdentifierWrapperDto.class
+    IBAN2007IdentifierWrapperDto.class,
+    ActivationDto.class
 })
 public class SendRTPServiceImpl implements SendRTPService {
 
