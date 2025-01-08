@@ -48,6 +48,6 @@ rtp_environment_secrets = {
 
 rtp_environment_configs = {
   DB_NAME                   : "rtp"
-  BASE_URL                  : "https://api-rtp.cstar.pagopa.it/activation/activations/"
+  BASE_URL                  : "https://api-rtp.cstar.pagopa.it/rtp/activation/activations/"
   OTEL_TRACES_SAMPLER       : "always_on"
 }
