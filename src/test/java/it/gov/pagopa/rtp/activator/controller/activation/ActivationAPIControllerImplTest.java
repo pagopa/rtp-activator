@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -40,6 +41,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = { ActivationAPIControllerImpl.class })
+@EnableConfigurationProperties(value = ActivationPropertiesConfig.class) 
 @Import({ SecurityConfig.class })
 @DisabledInAotMode
 class ActivationAPIControllerImplTest {
@@ -53,7 +55,7 @@ class ActivationAPIControllerImplTest {
     @MockBean
     private ActivationDtoMapper activationDtoMapper;
 
-    @MockBean
+    @Autowired
     private ActivationPropertiesConfig activationPropertiesConfig;
 
     private WebTestClient webTestClient;
@@ -77,8 +79,6 @@ class ActivationAPIControllerImplTest {
 
         when(activationPayerService.activatePayer(any(String.class), any(String.class)))
                 .thenReturn(Mono.just(payer));
-
-        when(activationPropertiesConfig.baseUrl()).thenReturn("http://localhost:8080/");
 
         webTestClient.post()
                 .uri("/activations")

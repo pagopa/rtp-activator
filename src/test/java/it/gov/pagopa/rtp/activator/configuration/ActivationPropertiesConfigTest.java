@@ -21,6 +21,6 @@ class ActivationPropertiesConfigTest {
     @Test
     void testPropertiesLoaded() {
         assertNotNull(activationPropertiesConfig);
-        assertEquals("https://example.com", activationPropertiesConfig.baseUrl());
+        assertEquals("http://localhost:8080/", activationPropertiesConfig.baseUrl());
     }
 }
