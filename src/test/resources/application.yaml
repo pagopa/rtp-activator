@@ -1,5 +1,5 @@
 logging.level.org.springframework.security: DEBUG
-activation.baseUrl: https://example.com:8080/
+activation.baseUrl: http://localhost:8080/
 
 azure.cosmos:
   uri: https://example.com/db/endpoint
