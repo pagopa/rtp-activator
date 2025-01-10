@@ -34,6 +34,12 @@ paths:
               description: "The location of created rtp"
               schema:
                 $ref: "#/components/schemas/RtpLocation"
+        "400":
+          description: "The request is malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MalformedRequestErrorResponse'
         "422":
           description: "The debtor is not activated by the Service Provider"
           content:
@@ -121,6 +127,16 @@ components:
         - expiryDate
         - payerId
         - payee
+
+    MalformedRequestErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Malformed request"
+        details:
+          type: string
+          example: "The request is malformed. Please check the request's body and try again."
 
     MismatchActivationErrorResponse:
       type: object
