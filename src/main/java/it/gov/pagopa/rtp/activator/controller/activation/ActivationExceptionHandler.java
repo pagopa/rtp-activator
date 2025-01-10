@@ -16,7 +16,9 @@ public class ActivationExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<ErrorsDto> handleConstraintViolation(ConstraintViolationException ex) {
     var errors = ex.getConstraintViolations().stream()
-        .map(cv -> new ErrorDto().code(cv.getMessageTemplate()).description(cv.getMessage()))
+        .map(cv -> new ErrorDto()
+            .code(cv.getMessageTemplate())
+            .description(cv.getInvalidValue() + " " + cv.getMessage()))
         .toList();
     ErrorsDto errorsDto = new ErrorsDto();
     errorsDto.setErrors(errors);
