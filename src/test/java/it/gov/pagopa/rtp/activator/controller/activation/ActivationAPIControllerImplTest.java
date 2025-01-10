@@ -7,10 +7,13 @@ import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
+import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PayerDto;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 import it.gov.pagopa.rtp.activator.utils.Users;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import reactor.core.publisher.Mono;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +38,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static it.gov.pagopa.rtp.activator.utils.Users.SERVICE_PROVIDER_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
@@ -194,6 +198,22 @@ class ActivationAPIControllerImplTest {
                 .expectBody()
                 .jsonPath("$.status").isEqualTo(400)
                 .jsonPath("$.error").isEqualTo("Bad Request");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "rssmra85t10a562s", "RSSMRA85T10A56HS" })
+    @Users.RtpSenderWriter
+    void givenBadFiscalCodeWhenFindActivationThen400(String badFiscalCode) {
+
+        webTestClient.get()
+            .uri("/activations/payer")
+            .header("RequestId", UUID.randomUUID().toString())
+            .header("Version", "v1")
+            .header("PayerId", badFiscalCode)
+            .exchange()
+            .expectStatus().isBadRequest()
+            .expectBody(ErrorsDto.class)
+            .value(body -> assertThat(body.getErrors()).hasSize(1));
     }
 
     private ActivationReqDto generateActivationRequest() {
