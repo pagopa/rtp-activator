@@ -1,13 +1,15 @@
 package it.gov.pagopa.rtp.activator.repository.rtp;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
+import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,12 +48,12 @@ class RtpDtoMapperTest {
     assertEquals(rtpEntity.getNoticeNumber(), rtp.noticeNumber());
     assertEquals(rtpEntity.getAmount(), rtp.amount());
     assertEquals(rtpEntity.getDescription(), rtp.description());
-    assertEquals(LocalDate.from(rtpEntity.getExpiryDate()), rtp.expiryDate());
+    assertEquals(LocalDate.ofInstant(rtpEntity.getExpiryDate(), ZoneOffset.UTC), rtp.expiryDate());
     assertEquals(rtpEntity.getPayerId(), rtp.payerId());
     assertEquals(rtpEntity.getPayeeName(), rtp.payeeName());
     assertEquals(rtpEntity.getPayeeId(), rtp.payeeId());
     assertEquals(rtpEntity.getResourceID(), rtp.resourceID().getId());
-    assertEquals(LocalDateTime.from(rtpEntity.getSavingDateTime()), rtp.savingDateTime());
+    assertEquals(LocalDateTime.ofInstant(rtpEntity.getSavingDateTime(), ZoneOffset.UTC), rtp.savingDateTime());
     assertEquals(rtpEntity.getRtpSpId(), rtp.rtpSpId());
     assertEquals(rtpEntity.getIban(), rtp.iban());
     assertEquals(rtpEntity.getPayTrxRef(), rtp.payTrxRef());
@@ -83,12 +85,12 @@ class RtpDtoMapperTest {
     assertEquals(rtp.noticeNumber(), rtpEntity.getNoticeNumber());
     assertEquals(rtp.amount(), rtpEntity.getAmount());
     assertEquals(rtp.description(), rtpEntity.getDescription());
-    assertEquals(Instant.from(rtp.expiryDate()), rtpEntity.getExpiryDate());
+    assertEquals(rtp.expiryDate().atStartOfDay().toInstant(ZoneOffset.UTC), rtpEntity.getExpiryDate());
     assertEquals(rtp.payerId(), rtpEntity.getPayerId());
     assertEquals(rtp.payeeName(), rtpEntity.getPayeeName());
     assertEquals(rtp.payeeId(), rtpEntity.getPayeeId());
     assertEquals(rtp.resourceID().getId(), rtpEntity.getResourceID());
-    assertEquals(Instant.from(rtp.savingDateTime()), rtpEntity.getSavingDateTime());
+    assertEquals(rtp.savingDateTime().toInstant(ZoneOffset.UTC), rtpEntity.getSavingDateTime());
     assertEquals(rtp.rtpSpId(), rtpEntity.getRtpSpId());
     assertEquals(rtp.iban(), rtpEntity.getIban());
     assertEquals(rtp.payTrxRef(), rtpEntity.getPayTrxRef());
