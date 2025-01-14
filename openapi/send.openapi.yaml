@@ -101,7 +101,7 @@ components:
           maxLength: 140
         subject:
           type: string
-          description: "The payment's subject ( e.g. TARI 2025 )"
+          description: "The subject of payment ( e.g. TARI 2025 )"
           maxLength: 140
         expiryDate:
           type: string
