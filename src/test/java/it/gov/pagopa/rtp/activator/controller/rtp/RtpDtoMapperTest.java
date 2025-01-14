@@ -9,12 +9,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class RtpMapperTest {
-    private RtpMapper rtpMapper;
+class RtpDtoMapperTest {
+    private RtpDtoMapper rtpDtoMapper;
 
     @BeforeEach
     void setUp() {
-        rtpMapper = new RtpMapper();
+        rtpDtoMapper = new RtpDtoMapper();
     }
 
     @Test
@@ -29,7 +29,7 @@ class RtpMapperTest {
         payeeDto.setPayeeId("payee123");
         payeeDto.setName("Payee Name");
         createRtpDto.setPayee(payeeDto);
-        Rtp rtp = rtpMapper.toRtp(createRtpDto);
+        Rtp rtp = rtpDtoMapper.toRtp(createRtpDto);
         assertThat(rtp).isNotNull();
         assertThat(rtp.resourceID()).isNotNull();
         assertThat(rtp.savingDateTime()).isNotNull();

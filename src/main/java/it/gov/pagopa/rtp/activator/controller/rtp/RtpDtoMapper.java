@@ -9,7 +9,7 @@ import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 
 @Component
-public class RtpMapper {
+public class RtpDtoMapper {
     public Rtp toRtp(CreateRtpDto createRtpDto) {
 
         return Rtp.builder().noticeNumber(createRtpDto.getNoticeNumber()).amount(createRtpDto.getAmount()).resourceID(ResourceID.createNew())

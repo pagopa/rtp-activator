@@ -40,7 +40,7 @@ class SendAPIControllerImplTest {
     private SendRTPService sendRTPService;
 
     @MockBean
-    private RtpMapper rtpMapper;
+    private RtpDtoMapper rtpDtoMapper;
 
     private WebTestClient webTestClient;
 
@@ -84,7 +84,7 @@ class SendAPIControllerImplTest {
     @Users.RtpSenderWriter
     void testSendRtpSuccessful() {
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
         when(sendRTPService.send(expectedRtp)).thenReturn(Mono.empty());
 
         webTestClient.post()
@@ -101,7 +101,7 @@ class SendAPIControllerImplTest {
     @Users.RtpSenderWriter
     void testSendRtpWithWrongBody() {
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
         when(sendRTPService.send(any()))
                 .thenReturn(Mono.empty());
 
@@ -118,7 +118,7 @@ class SendAPIControllerImplTest {
     @Users.RtpSenderWriter
     void testSendRtpWithWrongAmount() {
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
         when(sendRTPService.send(any()))
                 .thenReturn(Mono.empty());
 
@@ -145,7 +145,7 @@ class SendAPIControllerImplTest {
     @Users.RtpSenderWriter
     void givenUserNotActivatedWhenSendRTPThenReturnUnprocessableEntity() {
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
         when(sendRTPService.send(any()))
             .thenReturn(Mono.error(new PayerNotActivatedException()));
 
