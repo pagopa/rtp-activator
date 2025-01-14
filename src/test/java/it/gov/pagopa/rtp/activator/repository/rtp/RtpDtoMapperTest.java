@@ -23,6 +23,7 @@ class RtpDtoMapperTest {
 
   @Test
   void toDomain() {
+    var uuid = UUID.randomUUID();
     RtpEntity rtpEntity = RtpEntity.builder()
         .noticeNumber("12345")
         .amount(BigDecimal.valueOf(100.50))
@@ -31,7 +32,7 @@ class RtpDtoMapperTest {
         .payerId("payer123")
         .payeeName("Payee Name")
         .payeeId("payee123")
-        .resourceID(UUID.fromString("resource123"))
+        .resourceID(uuid)
         .savingDateTime(Instant.now())
         .rtpSpId("rtpSpId")
         .iban("iban123")
@@ -59,6 +60,7 @@ class RtpDtoMapperTest {
 
   @Test
   void toDbEntity() {
+    var uuid = UUID.randomUUID();
     Rtp rtp = Rtp.builder()
         .noticeNumber("12345")
         .amount(BigDecimal.valueOf(100.50))
@@ -67,7 +69,7 @@ class RtpDtoMapperTest {
         .payerId("payer123")
         .payeeName("Payee Name")
         .payeeId("payee123")
-        .resourceID(new ResourceID(UUID.fromString("resource123")))
+        .resourceID(new ResourceID(uuid))
         .savingDateTime(LocalDateTime.now())
         .rtpSpId("rtpSpId")
         .iban("iban123")
