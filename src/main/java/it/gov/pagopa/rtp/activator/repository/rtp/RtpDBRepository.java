@@ -1,14 +1,15 @@
 package it.gov.pagopa.rtp.activator.repository.rtp;
 
-
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class RtpDBRepository implements RtpRepository {
 
   private final RtpDB rtpDB;
@@ -16,6 +17,7 @@ public class RtpDBRepository implements RtpRepository {
 
   @Override
   public Mono<Rtp> save(Rtp rtp) {
+    log.info("Saving RTP: {}", rtp.resourceID().getId());
     return rtpDB.save(rtpMapper.toDbEntity(rtp))
         .map(rtpMapper::toDomain);
   }
