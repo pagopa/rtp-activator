@@ -10,6 +10,8 @@ import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
+import it.gov.pagopa.rtp.activator.model.generated.send.PayerDto;
+import it.gov.pagopa.rtp.activator.model.generated.send.PaymentNoticeDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
 import it.gov.pagopa.rtp.activator.utils.Users;
 import java.math.BigDecimal;
@@ -36,142 +38,187 @@ import reactor.core.publisher.Mono;
 @DisabledInAotMode
 class SendAPIControllerImplTest {
 
-    @MockBean
-    private SendRTPService sendRTPService;
+  @MockBean
+  private SendRTPService sendRTPService;
 
-    @MockBean
-    private RtpMapper rtpMapper;
+  @MockBean
+  private RtpMapper rtpMapper;
 
-    private WebTestClient webTestClient;
+  private WebTestClient webTestClient;
 
-    @Autowired
-    private ApplicationContext context;
+  @Autowired
+  private ApplicationContext context;
 
-    private Rtp expectedRtp;
+  private Rtp expectedRtp;
 
-    @BeforeEach
-    void setup() {
-        String noticeNumber = "12345";
-        BigDecimal amount = new BigDecimal("99999999999");
-        String description = "Payment Description";
-        LocalDate expiryDate = LocalDate.now();
-        String payerId = "payerId";
-        String payeeName = "Payee Name";
-        String payeeId = "payeeId";
-        String endToEndId = "endToEndId";
-        String rtpSpId = "rtpSpId";
-        String iban = "IT60X0542811101000000123456";
-        String payTrxRef = "payTrxRef";
-        String flgConf = "flgConf";
+  @BeforeEach
+  void setup() {
+    String noticeNumber = "12345";
+    BigDecimal amount = new BigDecimal("99999999999");
+    String description = "Payment Description";
+    LocalDate expiryDate = LocalDate.now();
+    String payerId = "payerId";
+    String payeeName = "Payee Name";
+    String payeeId = "payeeId";
+    String endToEndId = "endToEndId";
+    String rtpSpId = "rtpSpId";
+    String iban = "IT60X0542811101000000123456";
+    String payTrxRef = "payTrxRef";
+    String flgConf = "flgConf";
 
-        expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
-                .expiryDate(expiryDate)
-                .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
-                .resourceID(ResourceID.createNew())
-                .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
-                .iban(iban).payTrxRef(payTrxRef)
-                .flgConf(flgConf).build();
+    expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
+        .expiryDate(expiryDate)
+        .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
+        .resourceID(ResourceID.createNew())
+        .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
+        .iban(iban).payTrxRef(payTrxRef)
+        .flgConf(flgConf).build();
 
+    webTestClient = WebTestClient
+        .bindToApplicationContext(context)
+        .apply(springSecurity())
+        .configureClient()
+        .build();
+  }
 
-        webTestClient = WebTestClient
-                .bindToApplicationContext(context)
-                .apply(springSecurity())
-                .configureClient()
-                .build();
-    }
+  @Test
+  @Users.RtpSenderWriter
+  void testSendRtpSuccessful() {
 
-    @Test
-    @Users.RtpSenderWriter
-    void testSendRtpSuccessful() {
+    when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(expectedRtp)).thenReturn(Mono.empty());
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-        when(sendRTPService.send(expectedRtp)).thenReturn(Mono.empty());
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateSendRequest())
+        .exchange()
+        .expectStatus()
+        .isCreated()
+        .expectBody()
+        .isEmpty();
+  }
 
-        webTestClient.post()
-                .uri("/rtps")
-                .bodyValue(generateSendRequest())
-                .exchange()
-                .expectStatus()
-                .isCreated()
-                .expectBody()
-                .isEmpty();
-    }
+  @Test
+  @Users.RtpSenderWriter
+  void testSendRtpWithWrongBody() {
 
-    @Test
-    @Users.RtpSenderWriter
-    void testSendRtpWithWrongBody() {
+    when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(any()))
+        .thenReturn(Mono.empty());
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-        when(sendRTPService.send(any()))
-                .thenReturn(Mono.empty());
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateWrongSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.BAD_REQUEST);
+  }
 
-        webTestClient.post()
-                .uri("/rtps")
-                .bodyValue(generateWrongSendRequest())
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.BAD_REQUEST);
-    }
+  @Test
+  @Users.RtpSenderWriter
+  void testSendRtpWithWrongAmount() {
 
+    when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(any()))
+        .thenReturn(Mono.empty());
 
-    @Test
-    @Users.RtpSenderWriter
-    void testSendRtpWithWrongAmount() {
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateWrongAmountSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.BAD_REQUEST);
+  }
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-        when(sendRTPService.send(any()))
-                .thenReturn(Mono.empty());
+  @Test
+  @WithMockUser
+  void userWithoutEnoughPermissionShouldNotSendRtp() {
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.FORBIDDEN);
+  }
 
-        webTestClient.post()
-                .uri("/rtps")
-                .bodyValue(generateWrongAmountSendRequest())
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.BAD_REQUEST);
-    }
+  @Test
+  @Users.RtpSenderWriter
+  void givenUserNotActivatedWhenSendRTPThenReturnUnprocessableEntity() {
 
-    @Test
-    @WithMockUser
-    void userWithoutEnoughPermissionShouldNotSendRtp() {
-        webTestClient.post()
-                .uri("/rtps")
-                .bodyValue(generateSendRequest())
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.FORBIDDEN);
-    }
+    when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(any()))
+        .thenReturn(Mono.error(new PayerNotActivatedException()));
 
-    @Test
-    @Users.RtpSenderWriter
-    void givenUserNotActivatedWhenSendRTPThenReturnUnprocessableEntity() {
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+  }
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-        when(sendRTPService.send(any()))
-            .thenReturn(Mono.error(new PayerNotActivatedException()));
+  private CreateRtpDto generateSendRequest() {
 
-        webTestClient.post()
-                .uri("/rtps")
-                .bodyValue(generateSendRequest())
-                .exchange()
-                .expectStatus()
-                .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-    }
+    PayeeDto payeeDto = new PayeeDto();
 
-    private CreateRtpDto generateSendRequest() {
-        return new CreateRtpDto("311111111112222222", BigDecimal.valueOf(1), "description", LocalDate.now(),
-                "payerId",
-                new PayeeDto("77777777777", "payeeName"));
-    }
+    PayerDto payerDto = new PayerDto();
 
-    private CreateRtpDto generateWrongSendRequest() {
-        return new CreateRtpDto("noticenumber", BigDecimal.valueOf(1), "description", LocalDate.now(),
-                "payerId",
-                new PayeeDto("dsds", "payeeName"));
-    }
+    PaymentNoticeDto paymentNoticeDto = new PaymentNoticeDto();
 
-    private CreateRtpDto generateWrongAmountSendRequest() {
-        return new CreateRtpDto("311111111112222222", new BigDecimal("999999999999"), "description", LocalDate.now(),
-                "payerId",
-                new PayeeDto("77777777777", "payeeName"));
-    }
+    payeeDto.setName("payeeName");
+    payeeDto.setPayeeId("77777777777");
+
+    payerDto.setName("payername");
+    payerDto.setPayerId("payerId");
+
+    paymentNoticeDto.setAmount(BigDecimal.valueOf(1));
+    paymentNoticeDto.setDescription("description");
+    paymentNoticeDto.setNoticeNumber("311111111112222222");
+    paymentNoticeDto.setExpiryDate(LocalDate.now());
+
+    return new CreateRtpDto(payeeDto, payerDto, paymentNoticeDto);
+  }
+
+  private CreateRtpDto generateWrongSendRequest() {
+    PayeeDto payeeDto = new PayeeDto();
+
+    PayerDto payerDto = new PayerDto();
+
+    PaymentNoticeDto paymentNoticeDto = new PaymentNoticeDto();
+
+    payeeDto.setName("payeeName");
+    payeeDto.setPayeeId("77777777777");
+
+    payerDto.setName("payername");
+    payerDto.setPayerId("dsds");
+
+    paymentNoticeDto.setAmount(BigDecimal.valueOf(1));
+    paymentNoticeDto.setDescription("description");
+    paymentNoticeDto.setNoticeNumber("noticenumber");
+    paymentNoticeDto.setExpiryDate(LocalDate.now());
+
+    return new CreateRtpDto(payeeDto, payerDto, paymentNoticeDto);
+  }
+
+  private CreateRtpDto generateWrongAmountSendRequest() {
+    PayeeDto payeeDto = new PayeeDto();
+
+    PayerDto payerDto = new PayerDto();
+
+    PaymentNoticeDto paymentNoticeDto = new PaymentNoticeDto();
+
+    payeeDto.setName("payeeName");
+    payeeDto.setPayeeId("77777777777");
+
+    payerDto.setName("payername");
+    payerDto.setPayerId("payerId");
+
+    paymentNoticeDto.setAmount(new BigDecimal("999999999999"));
+    paymentNoticeDto.setDescription("description");
+    paymentNoticeDto.setNoticeNumber("311111111112222222");
+    paymentNoticeDto.setExpiryDate(LocalDate.now());
+
+    return new CreateRtpDto(payeeDto, payerDto, paymentNoticeDto);
+
+  }
 }
