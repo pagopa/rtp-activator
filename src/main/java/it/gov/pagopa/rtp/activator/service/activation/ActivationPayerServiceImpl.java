@@ -5,12 +5,10 @@ import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
 import java.time.Instant;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
-@Slf4j
 public class ActivationPayerServiceImpl implements ActivationPayerService {
 
   private final ActivationDBRepository activationDBRepository;
