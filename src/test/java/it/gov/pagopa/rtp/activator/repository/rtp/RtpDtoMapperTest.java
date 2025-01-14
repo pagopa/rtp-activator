@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,6 +41,7 @@ class RtpDtoMapperTest {
         .iban("iban123")
         .payTrxRef("payTrxRef123")
         .flgConf("Y")
+        .status(RtpStatus.CREATED.name())
         .build();
 
     Rtp rtp = rtpMapper.toDomain(rtpEntity);
@@ -58,6 +60,7 @@ class RtpDtoMapperTest {
     assertEquals(rtpEntity.getIban(), rtp.iban());
     assertEquals(rtpEntity.getPayTrxRef(), rtp.payTrxRef());
     assertEquals(rtpEntity.getFlgConf(), rtp.flgConf());
+    assertEquals(rtpEntity.getStatus(), rtp.status().name());
   }
 
   @Test
@@ -77,6 +80,7 @@ class RtpDtoMapperTest {
         .iban("iban123")
         .payTrxRef("payTrxRef123")
         .flgConf("Y")
+        .status(RtpStatus.CREATED)
         .build();
 
     RtpEntity rtpEntity = rtpMapper.toDbEntity(rtp);
@@ -95,5 +99,6 @@ class RtpDtoMapperTest {
     assertEquals(rtp.iban(), rtpEntity.getIban());
     assertEquals(rtp.payTrxRef(), rtpEntity.getPayTrxRef());
     assertEquals(rtp.flgConf(), rtpEntity.getFlgConf());
+    assertEquals(rtp.status().name(), rtpEntity.getStatus());
   }
 }

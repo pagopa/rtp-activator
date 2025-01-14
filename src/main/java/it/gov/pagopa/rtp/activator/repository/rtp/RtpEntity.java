@@ -19,17 +19,18 @@ public class RtpEntity {
 
   @Id
   private String id;
-  String noticeNumber;
-  BigDecimal amount;
-  String description;
-  Instant expiryDate;
-  String payerId;
-  String payeeName;
-  String payeeId;
-  UUID resourceID;
-  Instant savingDateTime;
-  String rtpSpId;
-  String iban;
-  String payTrxRef;
-  String flgConf;
+  private String noticeNumber;
+  private BigDecimal amount;
+  private String description;
+  private Instant expiryDate;
+  private String payerId;
+  private String payeeName;
+  private String payeeId;
+  private UUID resourceID;
+  private Instant savingDateTime;
+  private String rtpSpId;
+  private String iban;
+  private String payTrxRef;
+  private String flgConf;
+  private String status;
 }

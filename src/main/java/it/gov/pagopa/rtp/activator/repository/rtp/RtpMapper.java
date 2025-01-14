@@ -2,6 +2,7 @@ package it.gov.pagopa.rtp.activator.repository.rtp;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -25,6 +26,7 @@ public class RtpMapper {
         .iban(rtpEntity.getIban())
         .payTrxRef(rtpEntity.getPayTrxRef())
         .flgConf(rtpEntity.getFlgConf())
+        .status(RtpStatus.valueOf(rtpEntity.getStatus()))
         .build();
   }
 
@@ -43,6 +45,7 @@ public class RtpMapper {
         .iban(rtp.iban())
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
+        .status(rtp.status().name())
         .build();
   }
 }

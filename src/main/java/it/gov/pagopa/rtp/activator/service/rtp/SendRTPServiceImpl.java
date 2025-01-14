@@ -8,6 +8,8 @@ import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto;
@@ -45,12 +47,14 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final ReadApi activationApi;
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final ServiceProviderConfig serviceProviderConfig;
+  private final RtpRepository rtpRepository;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
-      ServiceProviderConfig serviceProviderConfig) {
+      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
+    this.rtpRepository = rtpRepository;
     objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
   }
 
@@ -64,6 +68,7 @@ public class SendRTPServiceImpl implements SendRTPService {
           log.info(rtpToJson(rtpDto));
           return Mono.just(rtpDto);
         })
+        .flatMap(rtpRepository::save)
         .onErrorMap(WebClientResponseException.class, mapResponseToException())
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
@@ -84,6 +89,7 @@ public class SendRTPServiceImpl implements SendRTPService {
         .expiryDate(rtp.expiryDate())
         .resourceID(rtp.resourceID())
         .savingDateTime(rtp.savingDateTime())
+        .status(RtpStatus.CREATED)
         .build();
   }
 

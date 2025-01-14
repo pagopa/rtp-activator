@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
-class RtpDbRepositoryTest {
+class RtpDBRepositoryTest {
 
   @Mock
   private RtpDB rtpDB;
@@ -50,6 +51,7 @@ class RtpDbRepositoryTest {
         .iban("iban123")
         .payTrxRef("payTrxRef123")
         .flgConf("Y")
+        .status(RtpStatus.CREATED)
         .build();
 
     RtpEntity rtpEntity = RtpEntity.builder()
@@ -66,6 +68,7 @@ class RtpDbRepositoryTest {
         .iban(rtp.iban())
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
+        .status("CREATED")
         .build();
 
     when(rtpDB.save(any())).thenReturn(Mono.just(rtpEntity));
@@ -88,6 +91,7 @@ class RtpDbRepositoryTest {
           assertEquals(rtp.iban(), savedRtp.iban());
           assertEquals(rtp.payTrxRef(), savedRtp.payTrxRef());
           assertEquals(rtp.flgConf(), savedRtp.flgConf());
+          assertEquals(rtp.status(), savedRtp.status());
         })
         .verifyComplete();
   }
