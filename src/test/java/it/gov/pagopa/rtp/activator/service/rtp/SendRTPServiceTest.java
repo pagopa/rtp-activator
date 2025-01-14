@@ -61,7 +61,7 @@ class SendRTPServiceTest {
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
             .resourceID(ResourceID.createNew())
-            .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
+            .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
             .iban(iban).payTrxRef(payTrxRef)
             .flgConf(flgConf).build();
     }
@@ -84,7 +84,7 @@ class SendRTPServiceTest {
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
             .resourceID(ResourceID.createNew())
-            .savingDateTime(LocalDateTime.now()).rtpSpId(activationRtpSpId)
+            .savingDateTime(LocalDateTime.now()).rtpSpId(activationRtpSpId).endToEndId(endToEndId)
             .iban(iban).payTrxRef(payTrxRef)
             .flgConf(flgConf).build();
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto(
@@ -105,6 +105,7 @@ class SendRTPServiceTest {
                         && rtp.payeeName().equals(expectedRtp.payeeName())
                         && rtp.payeeId().equals(expectedRtp.payeeId())
                         && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
+                        && rtp.endToEndId().equals(expectedRtp.endToEndId())
                         && rtp.iban().equals(expectedRtp.iban())
                         && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
                         && rtp.flgConf().equals(expectedRtp.flgConf()))

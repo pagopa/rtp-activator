@@ -95,7 +95,7 @@ public class SepaRequestToPayMapper {
                                 .setFinInstnId(dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto);
 
                 PaymentIdentification6EPC25922V30DS02Dto paymentIdentification6EPC25922V30DS02Dto = new PaymentIdentification6EPC25922V30DS02Dto(
-                                rtp.resourceID().getId().toString(), rtp.noticeNumber());
+                                rtp.resourceID().getId().toString(), rtp.endToEndId());
 
                 ExternalServiceLevel1CodeWrapperDto externalServiceLevel1CodeWrapperDto = new ExternalServiceLevel1CodeWrapperDto();
                 externalServiceLevel1CodeWrapperDto.setCd(ExternalServiceLevel1CodeDto.SRTP);// FIXED
@@ -188,6 +188,7 @@ public class SepaRequestToPayMapper {
                 lCreditTransferTransaction57EPC25922V30DS02Dtos.add(creditTransferTransaction57EPC25922V30DS02Dto);
 
                 PaymentInstruction42EPC25922V30DS02Dto paymentInstruction42EPC25922V30DS02Dto = new PaymentInstruction42EPC25922V30DS02Dto();
+                paymentInstruction42EPC25922V30DS02Dto.setPmtInfId(rtp.noticeNumber());
                 paymentInstruction42EPC25922V30DS02Dto.setPmtMtd(PaymentMethod7CodeDto.TRF);// FIXED
                 paymentInstruction42EPC25922V30DS02Dto.setReqdExctnDt(isoDateWrapperDto);
                 paymentInstruction42EPC25922V30DS02Dto.setXpryDt(isoDateWrapperDto);
