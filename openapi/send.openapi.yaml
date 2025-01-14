@@ -68,10 +68,52 @@ components:
           maxLength: 140
           description: "The name of payee (e.g. EC name or Company Name)"
           example: "Comune di Roma"
+        protocolId:
+          $ref: "#/components/schemas/ProtocolId"
       required:
         - payeeId
         - name
 
+    Payer:
+      type: object
+      properties:
+        payerId:
+          $ref: "#/components/schemas/PayerId"
+        name:
+          type: string
+          maxLength: 140
+          description: "The name of payer."
+          example: "Mario Rossi"
+      required:
+        - payerId
+        - name
+
+    PaymentNotice:
+      type: object
+      properties:
+        noticeNumber:          
+          $ref: "#/components/schemas/NoticeNumber"
+        amount:
+          $ref: "#/components/schemas/AmountEuroCents"
+        description:
+          type: string
+          description: "The pagopa notice's description"
+          maxLength: 140
+        subject:
+          type: string
+          description: "The payment's subject ( e.g. TARI 2025 )"
+          maxLength: 140
+        expiryDate:
+          type: string
+          description: "The pagoPa notice's expiry date. Formatted as ISO 8601 [YYYY]-[MM]-[DD]"
+          format: date
+          example: "2024-12-03"
+
+    PayerId:
+      type: string
+      description: "The id of the recipient of the request to pay. The id is the fiscal code"
+      example: "ABCDEF12G34H567I"
+          
     PayeeId:
       type: string
       pattern: "\\d{11}|\\d{16}"
@@ -80,6 +122,11 @@ components:
       externalDocs:
         description: "See idPA field"
         url: "https://docs.pagopa.it/sanp/appendici/primitive#paverifypaymentnotice"
+
+    ProtocolId:
+      type: string
+      description: "The protocol id"
+      example: "ABC/124"
 
     RtpId:
       type: string
@@ -95,31 +142,15 @@ components:
     CreateRtp:
       type: object
       properties:
-        noticeNumber:
-          $ref: "#/components/schemas/NoticeNumber"
-        amount:
-          $ref: "#/components/schemas/AmountEuroCents"
-        description:
-          type: string
-          description: "The pagopa notice's description"
-          maxLength: 140
-        expiryDate:
-          type: string
-          description: "The pagoPa notice's expiry date. Formatted as ISO 8601 [YYYY]-[MM]-[DD]"
-          format: date
-          example: "2024-12-03"
-        payerId:
-          type: string
-          description: "The id of the recipient of the request to pay. The id is the fiscal code"
-          example: "ABCDEF12G34H567I"
         payee:
           $ref: "#/components/schemas/Payee"
+        payer:
+          $ref: "#/components/schemas/Payer"
+        paymentNotice:
+          $ref: "#/components/schemas/PaymentNotice"
       required:
-        - noticeNumber
-        - amount
-        - description
-        - expiryDate
-        - payerId
+        - paymentNotice
+        - payer
         - payee
 
     MismatchActivationErrorResponse:
