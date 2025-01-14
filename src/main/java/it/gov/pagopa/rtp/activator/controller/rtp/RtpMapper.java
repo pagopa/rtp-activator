@@ -16,7 +16,7 @@ public class RtpMapper {
                 .description(createRtpDto.getDescription()).expiryDate(createRtpDto.getExpiryDate())
                 .savingDateTime(LocalDateTime.now())
                 .payerId(createRtpDto.getPayerId()).payeeName(createRtpDto.getPayee().getName())
-                .payeeId(createRtpDto.getPayee().getPayeeId()).rtpSpId("rtpSpId").endToEndId("endToEndId").iban("iban")
+                .payeeId(createRtpDto.getPayee().getPayeeId()).rtpSpId("rtpSpId").iban("iban")
                 .payTrxRef("payTrxRef").flgConf("flgConf").build();
     }
 

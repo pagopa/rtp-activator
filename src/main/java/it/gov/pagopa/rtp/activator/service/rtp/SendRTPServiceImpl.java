@@ -71,7 +71,6 @@ public class SendRTPServiceImpl implements SendRTPService {
   private Rtp toRtpWithActivationInfo(Rtp rtp, ActivationDto activationDto) {
     return Rtp.builder()
         .rtpSpId(activationDto.getPayer().getRtpSpId())
-        .endToEndId(rtp.endToEndId())
         .iban(rtp.iban())
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
