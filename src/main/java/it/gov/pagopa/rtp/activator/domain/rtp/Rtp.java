@@ -9,5 +9,5 @@ import lombok.Builder;
 public record Rtp(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate, String payerId,
         String payeeName, String payeeId,
         ResourceID resourceID, LocalDateTime savingDateTime,
-        String rtpSpId, String iban, String payTrxRef, String flgConf) {
+        String rtpSpId, String endToEndId, String iban, String payTrxRef, String flgConf) {
 }
