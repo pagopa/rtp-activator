@@ -5,9 +5,12 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorDto;
+import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
@@ -15,6 +18,7 @@ import it.gov.pagopa.rtp.activator.utils.Users;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -157,6 +161,22 @@ class SendAPIControllerImplTest {
                 .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
+    @Test
+    @Users.RtpSenderWriter
+    void givenMessageBadFormedWhenSendRTPThenReturnBadRequest() {
+
+        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+        when(sendRTPService.send(any()))
+            .thenReturn(Mono.error(generateMessageBadFormed()));
+
+        webTestClient.post()
+            .uri("/rtps")
+            .bodyValue(generateSendRequest())
+            .exchange()
+            .expectStatus()
+            .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
     private CreateRtpDto generateSendRequest() {
         return new CreateRtpDto("311111111112222222", BigDecimal.valueOf(1), "description", LocalDate.now(),
                 "payerId",
@@ -173,5 +193,11 @@ class SendAPIControllerImplTest {
         return new CreateRtpDto("311111111112222222", new BigDecimal("999999999999"), "description", LocalDate.now(),
                 "payerId",
                 new PayeeDto("77777777777", "payeeName"));
+    }
+
+    private MessageBadFormed generateMessageBadFormed() {
+        var errors = new ErrorsDto();
+        errors.setErrors(Collections.singletonList(new ErrorDto("code", "description")));
+        return new MessageBadFormed(errors);
     }
 }
