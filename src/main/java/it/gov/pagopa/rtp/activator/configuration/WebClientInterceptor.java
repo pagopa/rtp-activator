@@ -5,8 +5,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 public class WebClientInterceptor {
 
-  private WebClientInterceptor() {
-  }
+  private WebClientInterceptor() {}
 
   public static WebClient createWebClient(WebClient.Builder builder) {
     return builder

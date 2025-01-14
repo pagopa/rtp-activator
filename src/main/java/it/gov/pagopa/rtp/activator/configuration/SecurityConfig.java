@@ -12,49 +12,38 @@ import org.springframework.security.oauth2.server.resource.authentication.Reacti
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
 
-
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity(proxyTargetClass = true) // allows to use @PreAuthorize with roles
 public class SecurityConfig {
 
-    @Bean
-    SecurityWebFilterChain securityWebFilterChain(
-            ServerHttpSecurity http,
-            ReactiveJwtAuthenticationConverter jwtConverter
-    ) {
-        return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .logout(ServerHttpSecurity.LogoutSpec::disable)
-                .authorizeExchange(it -> it
-                        .pathMatchers("/actuator/**")
-                        .permitAll()
-                        .anyExchange()
-                        .authenticated()
-                )
-                .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(it -> it.jwtAuthenticationConverter(jwtConverter))
-                )
-                .build();
-    }
+  @Bean
+  SecurityWebFilterChain securityWebFilterChain(
+      ServerHttpSecurity http, ReactiveJwtAuthenticationConverter jwtConverter) {
+    return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+        .logout(ServerHttpSecurity.LogoutSpec::disable)
+        .authorizeExchange(
+            it -> it.pathMatchers("/actuator/**").permitAll().anyExchange().authenticated())
+        .oauth2ResourceServer(
+            oauth2 -> oauth2.jwt(it -> it.jwtAuthenticationConverter(jwtConverter)))
+        .build();
+  }
 
-    @Bean
-    ReactiveJwtAuthenticationConverter jwtAuthenticationConverter() {
-        final var authoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        authoritiesConverter.setAuthoritiesClaimName("groups"); // Map "groups" claim to authorities
-        authoritiesConverter.setAuthorityPrefix("ROLE_"); // Add "ROLE_" prefix for Spring Security
+  @Bean
+  ReactiveJwtAuthenticationConverter jwtAuthenticationConverter() {
+    final var authoritiesConverter = new JwtGrantedAuthoritiesConverter();
+    authoritiesConverter.setAuthoritiesClaimName("groups"); // Map "groups" claim to authorities
+    authoritiesConverter.setAuthorityPrefix("ROLE_"); // Add "ROLE_" prefix for Spring Security
 
-        final var reactiveConverter = new ReactiveJwtAuthenticationConverter();
-        reactiveConverter.setJwtGrantedAuthoritiesConverter(
-                new ReactiveJwtGrantedAuthoritiesConverterAdapter(authoritiesConverter)
-        );
-        return reactiveConverter;
-    }
+    final var reactiveConverter = new ReactiveJwtAuthenticationConverter();
+    reactiveConverter.setJwtGrantedAuthoritiesConverter(
+        new ReactiveJwtGrantedAuthoritiesConverterAdapter(authoritiesConverter));
+    return reactiveConverter;
+  }
 
-    @Bean
-    ReactiveJwtDecoder jwtDecoder() {
-        final var decoder = new NoSignatureJwtDecoder();
-        return token -> Mono.fromSupplier(() -> decoder.decode(token));
-    }
-
+  @Bean
+  ReactiveJwtDecoder jwtDecoder() {
+    final var decoder = new NoSignatureJwtDecoder();
+    return token -> Mono.fromSupplier(() -> decoder.decode(token));
+  }
 }

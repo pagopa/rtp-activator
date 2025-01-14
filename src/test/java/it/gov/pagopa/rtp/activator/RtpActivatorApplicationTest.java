@@ -12,5 +12,4 @@ class RtpActivatorApplicationTests {
   void contextLoads() {
     assertTrue(true);
   }
-
 }

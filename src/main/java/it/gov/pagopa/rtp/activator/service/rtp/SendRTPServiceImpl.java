@@ -29,15 +29,18 @@ import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
-@RegisterReflectionForBinding({SepaRequestToPayRequestResourceDto.class,
-    PersonIdentification13EPC25922V30DS02WrapperDto.class, ISODateWrapperDto.class,
-    ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class,
-    ExternalServiceLevel1CodeWrapperDto.class,
-    ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto.class, Max35TextWrapperDto.class,
-    OrganisationIdentification29EPC25922V30DS022WrapperDto.class,
-    ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto.class,
-    IBAN2007IdentifierWrapperDto.class,
-    ActivationDto.class
+@RegisterReflectionForBinding({
+  SepaRequestToPayRequestResourceDto.class,
+  PersonIdentification13EPC25922V30DS02WrapperDto.class,
+  ISODateWrapperDto.class,
+  ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class,
+  ExternalServiceLevel1CodeWrapperDto.class,
+  ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto.class,
+  Max35TextWrapperDto.class,
+  OrganisationIdentification29EPC25922V30DS022WrapperDto.class,
+  ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto.class,
+  IBAN2007IdentifierWrapperDto.class,
+  ActivationDto.class
 })
 public class SendRTPServiceImpl implements SendRTPService {
 
@@ -46,7 +49,9 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final ServiceProviderConfig serviceProviderConfig;
 
-  public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
+  public SendRTPServiceImpl(
+      SepaRequestToPayMapper sepaRequestToPayMapper,
+      ReadApi activationApi,
       ServiceProviderConfig serviceProviderConfig) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
@@ -57,13 +62,15 @@ public class SendRTPServiceImpl implements SendRTPService {
   @Override
   public Mono<Rtp> send(Rtp rtp) {
 
-    return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(),
-            serviceProviderConfig.apiVersion())
+    return activationApi
+        .findActivationByPayerId(
+            UUID.randomUUID(), rtp.payerId(), serviceProviderConfig.apiVersion())
         .map(act -> toRtpWithActivationInfo(rtp, act))
-        .flatMap(rtpDto -> {
-          log.info(rtpToJson(rtpDto));
-          return Mono.just(rtpDto);
-        })
+        .flatMap(
+            rtpDto -> {
+              log.info(rtpToJson(rtpDto));
+              return Mono.just(rtpDto);
+            })
         .onErrorMap(WebClientResponseException.class, mapResponseToException())
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
@@ -90,8 +97,7 @@ public class SendRTPServiceImpl implements SendRTPService {
   private String rtpToJson(Rtp rtpToLog) {
     String jsonString = "";
     try {
-      jsonString = objectMapper.writeValueAsString(
-          sepaRequestToPayMapper.toRequestToPay(rtpToLog));
+      jsonString = objectMapper.writeValueAsString(sepaRequestToPayMapper.toRequestToPay(rtpToLog));
     } catch (JsonProcessingException e) {
       log.error("Problem while serializing SepaRequestToPayRequestResourceDto object", e);
     }

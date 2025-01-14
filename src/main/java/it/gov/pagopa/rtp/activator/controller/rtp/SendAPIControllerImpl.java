@@ -18,24 +18,25 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class SendAPIControllerImpl implements RtpsApi {
 
-    private final SendRTPService sendRTPService;
+  private final SendRTPService sendRTPService;
 
-    private final RtpMapper rtpMapper;
+  private final RtpMapper rtpMapper;
 
-    public SendAPIControllerImpl(SendRTPService sendRTPService, RtpMapper rtpMapper) {
-        this.sendRTPService = sendRTPService;
-        this.rtpMapper = rtpMapper;
-    }
+  public SendAPIControllerImpl(SendRTPService sendRTPService, RtpMapper rtpMapper) {
+    this.sendRTPService = sendRTPService;
+    this.rtpMapper = rtpMapper;
+  }
 
-    @Override
-    @PreAuthorize("hasRole('write_rtp_send')")
-    public Mono<ResponseEntity<Void>> createRtp(Mono<CreateRtpDto> createRtpDto,
-            ServerWebExchange exchange) {
-        log.info("Received request to create RTP");
-        return createRtpDto
-            .map(rtpMapper::toRtp)
-            .flatMap(sendRTPService::send)
-            .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
-            .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build());
-    }
+  @Override
+  @PreAuthorize("hasRole('write_rtp_send')")
+  public Mono<ResponseEntity<Void>> createRtp(
+      Mono<CreateRtpDto> createRtpDto, ServerWebExchange exchange) {
+    log.info("Received request to create RTP");
+    return createRtpDto
+        .map(rtpMapper::toRtp)
+        .flatMap(sendRTPService::send)
+        .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
+        .onErrorReturn(
+            PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build());
+  }
 }
