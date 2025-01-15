@@ -10,14 +10,16 @@ import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 
 @Component
 public class RtpMapper {
-    public Rtp toRtp(CreateRtpDto createRtpDto) {
+  public Rtp toRtp(CreateRtpDto createRtpDto) {
 
-        return Rtp.builder().noticeNumber(createRtpDto.getNoticeNumber()).amount(createRtpDto.getAmount()).resourceID(ResourceID.createNew())
-                .description(createRtpDto.getDescription()).expiryDate(createRtpDto.getExpiryDate())
-                .savingDateTime(LocalDateTime.now())
-                .payerId(createRtpDto.getPayerId()).payeeName(createRtpDto.getPayee().getName())
-                .payeeId(createRtpDto.getPayee().getPayeeId()).rtpSpId("rtpSpId").endToEndId("endToEndId").iban("iban")
-                .payTrxRef("payTrxRef").flgConf("flgConf").build();
-    }
+    return Rtp.builder().noticeNumber(createRtpDto.getPaymentNotice().getNoticeNumber())
+        .amount(createRtpDto.getPaymentNotice().getAmount()).resourceID(ResourceID.createNew())
+        .description(createRtpDto.getPaymentNotice().getDescription())
+        .expiryDate(createRtpDto.getPaymentNotice().getExpiryDate())
+        .savingDateTime(LocalDateTime.now())
+        .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
+        .payeeId(createRtpDto.getPayee().getPayeeId()).rtpSpId("rtpSpId").endToEndId("endToEndId").iban("iban")
+        .payTrxRef("payTrxRef").flgConf("flgConf").build();
+  }
 
 }
