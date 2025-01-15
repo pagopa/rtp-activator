@@ -125,6 +125,7 @@ components:
 
     ProtocolId:
       type: string
+      pattern: "^[ -~]{1,140}$"
       description: "The protocol id"
       example: "ABC/124"
 
