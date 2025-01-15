@@ -65,6 +65,7 @@ public class SendRTPServiceImpl implements SendRTPService {
         .map(rtp::toRtpWithActivationInfo)
         .flatMap(this::logRtpAsJson)
         .flatMap(rtpRepository::save)
+        .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .onErrorMap(WebClientResponseException.class, this::mapResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
