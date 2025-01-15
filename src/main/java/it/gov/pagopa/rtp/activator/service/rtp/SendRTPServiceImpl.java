@@ -63,7 +63,10 @@ public class SendRTPServiceImpl implements SendRTPService {
             serviceProviderConfig.apiVersion())
         .map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
+        .flatMap(rtpRepository::save)
+        // replace log with http request to external service
         .flatMap(this::logRtpAsJson)
+        .map(rtp::toRtpSent)
         .flatMap(rtpRepository::save)
         .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .onErrorMap(WebClientResponseException.class, this::mapResponseToException)
@@ -76,14 +79,13 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   private String rtpToJson(Rtp rtpToLog) {
-    String jsonString = "";
     try {
-      jsonString = objectMapper.writeValueAsString(
+      return objectMapper.writeValueAsString(
           sepaRequestToPayMapper.toRequestToPay(rtpToLog));
     } catch (JsonProcessingException e) {
       log.error("Problem while serializing SepaRequestToPayRequestResourceDto object", e);
+      return "";
     }
-    return jsonString;
   }
 
   private Throwable mapResponseToException(WebClientResponseException exception) {
