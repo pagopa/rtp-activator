@@ -33,8 +33,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
-@WebFluxTest(controllers = { SendAPIControllerImpl.class })
-@Import({ SecurityConfig.class })
+@WebFluxTest(controllers = {SendAPIControllerImpl.class})
+@Import({SecurityConfig.class})
 @DisabledInAotMode
 class SendAPIControllerImplTest {
 
@@ -42,7 +42,7 @@ class SendAPIControllerImplTest {
   private SendRTPService sendRTPService;
 
   @MockBean
-  private RtpMapper rtpMapper;
+  private RtpDtoMapper rtpDtoMapper;
 
   private WebTestClient webTestClient;
 
@@ -85,7 +85,7 @@ class SendAPIControllerImplTest {
   @Users.RtpSenderWriter
   void testSendRtpSuccessful() {
 
-    when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
     when(sendRTPService.send(expectedRtp)).thenReturn(Mono.empty());
 
     webTestClient.post()
@@ -102,7 +102,7 @@ class SendAPIControllerImplTest {
   @Users.RtpSenderWriter
   void testSendRtpWithWrongBody() {
 
-    when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
     when(sendRTPService.send(any()))
         .thenReturn(Mono.empty());
 
@@ -118,7 +118,7 @@ class SendAPIControllerImplTest {
   @Users.RtpSenderWriter
   void testSendRtpWithWrongAmount() {
 
-    when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
     when(sendRTPService.send(any()))
         .thenReturn(Mono.empty());
 
@@ -145,7 +145,7 @@ class SendAPIControllerImplTest {
   @Users.RtpSenderWriter
   void givenUserNotActivatedWhenSendRTPThenReturnUnprocessableEntity() {
 
-    when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
     when(sendRTPService.send(any()))
         .thenReturn(Mono.error(new PayerNotActivatedException()));
 
@@ -169,9 +169,10 @@ class SendAPIControllerImplTest {
     payeeDto.setPayeeId("77777777777");
 
     payerDto.setName("payername");
-    payerDto.setPayerId("payerId");
+    payerDto.setPayerId("12345678911");
 
     paymentNoticeDto.setAmount(BigDecimal.valueOf(1));
+    paymentNoticeDto.setSubject("subject");
     paymentNoticeDto.setDescription("description");
     paymentNoticeDto.setNoticeNumber("311111111112222222");
     paymentNoticeDto.setExpiryDate(LocalDate.now());
@@ -190,9 +191,10 @@ class SendAPIControllerImplTest {
     payeeDto.setPayeeId("77777777777");
 
     payerDto.setName("payername");
-    payerDto.setPayerId("dsds");
+    payerDto.setPayerId("badfiscalcode");
 
     paymentNoticeDto.setAmount(BigDecimal.valueOf(1));
+    paymentNoticeDto.setSubject("subject");
     paymentNoticeDto.setDescription("description");
     paymentNoticeDto.setNoticeNumber("noticenumber");
     paymentNoticeDto.setExpiryDate(LocalDate.now());

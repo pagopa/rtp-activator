@@ -20,11 +20,11 @@ public class SendAPIControllerImpl implements RtpsApi {
 
     private final SendRTPService sendRTPService;
 
-    private final RtpMapper rtpMapper;
+    private final RtpDtoMapper rtpDtoMapper;
 
-    public SendAPIControllerImpl(SendRTPService sendRTPService, RtpMapper rtpMapper) {
+    public SendAPIControllerImpl(SendRTPService sendRTPService, RtpDtoMapper rtpDtoMapper) {
         this.sendRTPService = sendRTPService;
-        this.rtpMapper = rtpMapper;
+        this.rtpDtoMapper = rtpDtoMapper;
     }
 
     @Override
@@ -33,9 +33,10 @@ public class SendAPIControllerImpl implements RtpsApi {
             ServerWebExchange exchange) {
         log.info("Received request to create RTP");
         return createRtpDto
-            .map(rtpMapper::toRtp)
+            .map(rtpDtoMapper::toRtp)
             .flatMap(sendRTPService::send)
             .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
-            .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build());
+            .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build())
+            .doOnError(a -> log.error("Error creating RTP {}", a.getMessage()));
     }
 }

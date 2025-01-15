@@ -91,7 +91,7 @@ components:
     PaymentNotice:
       type: object
       properties:
-        noticeNumber:          
+        noticeNumber:
           $ref: "#/components/schemas/NoticeNumber"
         amount:
           $ref: "#/components/schemas/AmountEuroCents"
@@ -108,12 +108,19 @@ components:
           description: "The pagoPa notice's expiry date. Formatted as ISO 8601 [YYYY]-[MM]-[DD]"
           format: date
           example: "2024-12-03"
+      required:
+        - noticeNumber
+        - amount
+        - description
+        - subject
+        - expiryDate
 
     PayerId:
       type: string
       description: "The id of the recipient of the request to pay. The id is the fiscal code"
+      pattern: "^(([A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z])|(\\d{11}))$"
       example: "ABCDEF12G34H567I"
-          
+
     PayeeId:
       type: string
       pattern: "\\d{11}|\\d{16}"

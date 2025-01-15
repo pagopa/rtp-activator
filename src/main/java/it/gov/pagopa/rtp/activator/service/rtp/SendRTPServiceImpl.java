@@ -8,6 +8,7 @@ import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto;
@@ -19,7 +20,6 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentificatio
 import it.gov.pagopa.rtp.activator.model.generated.epc.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
 import java.util.UUID;
-import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.http.HttpStatus;
@@ -43,15 +43,17 @@ public class SendRTPServiceImpl implements SendRTPService {
 
   private final SepaRequestToPayMapper sepaRequestToPayMapper;
   private final ReadApi activationApi;
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final ObjectMapper objectMapper;
   private final ServiceProviderConfig serviceProviderConfig;
+  private final RtpRepository rtpRepository;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
-      ServiceProviderConfig serviceProviderConfig) {
+      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
-    objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+    this.rtpRepository = rtpRepository;
+    this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
   }
 
   @Override
@@ -59,51 +61,37 @@ public class SendRTPServiceImpl implements SendRTPService {
 
     return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(),
             serviceProviderConfig.apiVersion())
-        .map(act -> toRtpWithActivationInfo(rtp, act))
-        .flatMap(rtpDto -> {
-          log.info(rtpToJson(rtpDto));
-          return Mono.just(rtpDto);
-        })
-        .onErrorMap(WebClientResponseException.class, mapResponseToException())
+        .map(act -> act.getPayer().getRtpSpId())
+        .map(rtp::toRtpWithActivationInfo)
+        .flatMap(rtpRepository::save)
+        // replace log with http request to external service
+        .flatMap(this::logRtpAsJson)
+        .map(rtp::toRtpSent)
+        .flatMap(rtpRepository::save)
+        .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+        .onErrorMap(WebClientResponseException.class, this::mapResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
 
-  private Rtp toRtpWithActivationInfo(Rtp rtp, ActivationDto activationDto) {
-    return Rtp.builder()
-        .rtpSpId(activationDto.getPayer().getRtpSpId())
-        .endToEndId(rtp.endToEndId())
-        .iban(rtp.iban())
-        .payTrxRef(rtp.payTrxRef())
-        .flgConf(rtp.flgConf())
-        .payerId(rtp.payerId())
-        .payeeName(rtp.payeeName())
-        .payeeId(rtp.payeeId())
-        .noticeNumber(rtp.noticeNumber())
-        .amount(rtp.amount())
-        .description(rtp.description())
-        .expiryDate(rtp.expiryDate())
-        .resourceID(rtp.resourceID())
-        .savingDateTime(rtp.savingDateTime())
-        .build();
+  private Mono<Rtp> logRtpAsJson(Rtp rtp) {
+    log.info(rtpToJson(rtp));
+    return Mono.just(rtp);
   }
 
   private String rtpToJson(Rtp rtpToLog) {
-    String jsonString = "";
     try {
-      jsonString = objectMapper.writeValueAsString(
+      return objectMapper.writeValueAsString(
           sepaRequestToPayMapper.toRequestToPay(rtpToLog));
     } catch (JsonProcessingException e) {
       log.error("Problem while serializing SepaRequestToPayRequestResourceDto object", e);
+      return "";
     }
-    return jsonString;
   }
 
-  private Function<WebClientResponseException, Throwable> mapResponseToException() {
-    return exception -> {
-      if (exception.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-        return new PayerNotActivatedException();
-      }
-      return new RuntimeException("Internal Server Error");
-    };
+  private Throwable mapResponseToException(WebClientResponseException exception) {
+    if (exception.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+      return new PayerNotActivatedException();
+    }
+    return new RuntimeException("Internal Server Error");
   }
 }

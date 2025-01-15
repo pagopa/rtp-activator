@@ -12,6 +12,8 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
 import java.math.BigDecimal;
 import java.net.URI;
@@ -35,6 +37,8 @@ class SendRTPServiceTest {
     @Mock
     private ReadApi readApi;
     private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig("v1");
+    @Mock
+    private RtpRepository rtpRepository;
 
     private SendRTPServiceImpl sendRTPService;
 
@@ -56,7 +60,7 @@ class SendRTPServiceTest {
     @BeforeEach
     void setUp() {
         sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-                serviceProviderConfig);
+                serviceProviderConfig, rtpRepository);
         inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -86,7 +90,9 @@ class SendRTPServiceTest {
             .resourceID(ResourceID.createNew())
             .savingDateTime(LocalDateTime.now()).rtpSpId(activationRtpSpId).endToEndId(endToEndId)
             .iban(iban).payTrxRef(payTrxRef)
-            .flgConf(flgConf).build();
+            .status(RtpStatus.CREATED)
+            .flgConf(flgConf)
+            .build();
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto(
                 URI.create("http://callback.url"));
 
@@ -94,6 +100,8 @@ class SendRTPServiceTest {
                 .thenReturn(mockSepaRequestToPayRequestResource);
         when(readApi.findActivationByPayerId(any(), any(), any()))
                 .thenReturn(Mono.just(fakeActivationDto));
+        when(rtpRepository.save(any()))
+                .thenReturn(Mono.just(expectedRtp));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
         StepVerifier.create(result)
@@ -108,7 +116,8 @@ class SendRTPServiceTest {
                         && rtp.endToEndId().equals(expectedRtp.endToEndId())
                         && rtp.iban().equals(expectedRtp.iban())
                         && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
-                        && rtp.flgConf().equals(expectedRtp.flgConf()))
+                        && rtp.flgConf().equals(expectedRtp.flgConf())
+                        && rtp.status().equals(expectedRtp.status()))
                 .verifyComplete();
         verify(sepaRequestToPayMapper, times(1)).toRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
