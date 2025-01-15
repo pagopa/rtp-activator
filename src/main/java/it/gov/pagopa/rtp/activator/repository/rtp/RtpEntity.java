@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class RtpEntity {
 
   @Id
-  private String id;
+  private UUID resourceID;
   private String noticeNumber;
   private BigDecimal amount;
   private String description;
@@ -26,7 +26,6 @@ public class RtpEntity {
   private String payerId;
   private String payeeName;
   private String payeeId;
-  private UUID resourceID;
   private Instant savingDateTime;
   private String rtpSpId;
   private String iban;
