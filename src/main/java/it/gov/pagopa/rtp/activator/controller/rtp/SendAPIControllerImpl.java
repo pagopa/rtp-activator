@@ -36,6 +36,7 @@ public class SendAPIControllerImpl implements RtpsApi {
             .map(rtpDtoMapper::toRtp)
             .flatMap(sendRTPService::send)
             .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
-            .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build());
+            .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build())
+            .doOnError(a -> log.error("Error creating RTP {}", a.getMessage()));
     }
 }
