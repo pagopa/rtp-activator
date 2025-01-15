@@ -30,4 +30,24 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
         .status(RtpStatus.CREATED)
         .build();
   }
+
+  public Rtp toRtpSent(Rtp rtp) {
+    return Rtp.builder()
+        .rtpSpId(rtp.rtpSpId())
+        .endToEndId(rtp.endToEndId())
+        .iban(rtp.iban())
+        .payTrxRef(rtp.payTrxRef())
+        .flgConf(rtp.flgConf())
+        .payerId(rtp.payerId())
+        .payeeName(rtp.payeeName())
+        .payeeId(rtp.payeeId())
+        .noticeNumber(rtp.noticeNumber())
+        .amount(rtp.amount())
+        .description(rtp.description())
+        .expiryDate(rtp.expiryDate())
+        .resourceID(rtp.resourceID())
+        .savingDateTime(rtp.savingDateTime())
+        .status(RtpStatus.SENT)
+        .build();
+  }
 }
