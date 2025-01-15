@@ -172,6 +172,7 @@ class SendAPIControllerImplTest {
     payerDto.setPayerId("payerId");
 
     paymentNoticeDto.setAmount(BigDecimal.valueOf(1));
+    paymentNoticeDto.setSubject("subject");
     paymentNoticeDto.setDescription("description");
     paymentNoticeDto.setNoticeNumber("311111111112222222");
     paymentNoticeDto.setExpiryDate(LocalDate.now());
