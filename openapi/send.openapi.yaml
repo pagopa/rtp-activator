@@ -118,6 +118,7 @@ components:
     PayerId:
       type: string
       description: "The id of the recipient of the request to pay. The id is the fiscal code"
+      pattern: "^(([A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z])|(\\d{11}))$"
       example: "ABCDEF12G34H567I"
 
     PayeeId:
