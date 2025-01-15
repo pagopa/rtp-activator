@@ -108,6 +108,12 @@ components:
           description: "The pagoPa notice's expiry date. Formatted as ISO 8601 [YYYY]-[MM]-[DD]"
           format: date
           example: "2024-12-03"
+      required:
+        - noticeNumber
+        - amount
+        - description
+        - subject
+        - expiryDate
 
     PayerId:
       type: string
