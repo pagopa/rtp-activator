@@ -17,7 +17,7 @@ public class RtpDBRepository implements RtpRepository {
 
   @Override
   public Mono<Rtp> save(Rtp rtp) {
-    log.info("Saving RTP: {}", rtp.resourceID().getId());
+    log.info("Saving RTP {} in state {}", rtp.resourceID().getId(), rtp.status());
     return rtpDB.save(rtpMapper.toDbEntity(rtp))
         .map(rtpMapper::toDomain);
   }
