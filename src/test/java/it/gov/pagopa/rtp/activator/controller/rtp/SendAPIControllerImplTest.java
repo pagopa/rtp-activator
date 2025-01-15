@@ -169,7 +169,7 @@ class SendAPIControllerImplTest {
     payeeDto.setPayeeId("77777777777");
 
     payerDto.setName("payername");
-    payerDto.setPayerId("payerId");
+    payerDto.setPayerId("12345678911");
 
     paymentNoticeDto.setAmount(BigDecimal.valueOf(1));
     paymentNoticeDto.setSubject("subject");
@@ -191,9 +191,10 @@ class SendAPIControllerImplTest {
     payeeDto.setPayeeId("77777777777");
 
     payerDto.setName("payername");
-    payerDto.setPayerId("dsds");
+    payerDto.setPayerId("badfiscalcode");
 
     paymentNoticeDto.setAmount(BigDecimal.valueOf(1));
+    paymentNoticeDto.setSubject("subject");
     paymentNoticeDto.setDescription("description");
     paymentNoticeDto.setNoticeNumber("noticenumber");
     paymentNoticeDto.setExpiryDate(LocalDate.now());
