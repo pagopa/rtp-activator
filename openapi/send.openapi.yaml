@@ -110,6 +110,7 @@ components:
           example: "2024-12-03"
         payerId:
           type: string
+          pattern: "^(([A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z])|(\\d{11}))$"
           description: "The id of the recipient of the request to pay. The id is the fiscal code"
           example: "ABCDEF12G34H567I"
         payee:
