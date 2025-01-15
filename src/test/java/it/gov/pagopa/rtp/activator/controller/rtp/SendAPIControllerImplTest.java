@@ -33,16 +33,16 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
-@WebFluxTest(controllers = { SendAPIControllerImpl.class })
-@Import({ SecurityConfig.class })
+@WebFluxTest(controllers = {SendAPIControllerImpl.class})
+@Import({SecurityConfig.class})
 @DisabledInAotMode
 class SendAPIControllerImplTest {
 
   @MockBean
   private SendRTPService sendRTPService;
 
-    @MockBean
-    private RtpDtoMapper rtpDtoMapper;
+  @MockBean
+  private RtpDtoMapper rtpDtoMapper;
 
   private WebTestClient webTestClient;
 
@@ -85,8 +85,8 @@ class SendAPIControllerImplTest {
   @Users.RtpSenderWriter
   void testSendRtpSuccessful() {
 
-        when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-        when(sendRTPService.send(expectedRtp)).thenReturn(Mono.empty());
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(expectedRtp)).thenReturn(Mono.empty());
 
     webTestClient.post()
         .uri("/rtps")
@@ -102,9 +102,9 @@ class SendAPIControllerImplTest {
   @Users.RtpSenderWriter
   void testSendRtpWithWrongBody() {
 
-        when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-        when(sendRTPService.send(any()))
-                .thenReturn(Mono.empty());
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(any()))
+        .thenReturn(Mono.empty());
 
     webTestClient.post()
         .uri("/rtps")
@@ -118,9 +118,9 @@ class SendAPIControllerImplTest {
   @Users.RtpSenderWriter
   void testSendRtpWithWrongAmount() {
 
-        when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-        when(sendRTPService.send(any()))
-                .thenReturn(Mono.empty());
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(any()))
+        .thenReturn(Mono.empty());
 
     webTestClient.post()
         .uri("/rtps")
@@ -145,9 +145,9 @@ class SendAPIControllerImplTest {
   @Users.RtpSenderWriter
   void givenUserNotActivatedWhenSendRTPThenReturnUnprocessableEntity() {
 
-        when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-        when(sendRTPService.send(any()))
-            .thenReturn(Mono.error(new PayerNotActivatedException()));
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(any()))
+        .thenReturn(Mono.error(new PayerNotActivatedException()));
 
     webTestClient.post()
         .uri("/rtps")
