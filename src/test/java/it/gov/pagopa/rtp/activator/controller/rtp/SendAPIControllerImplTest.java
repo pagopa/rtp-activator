@@ -63,15 +63,19 @@ class SendAPIControllerImplTest {
     String endToEndId = "endToEndId";
     String rtpSpId = "rtpSpId";
     String iban = "IT60X0542811101000000123456";
-    String payTrxRef = "payTrxRef";
     String flgConf = "flgConf";
+    String payerName = "John Doe";
+    String protocolId = "ABC/124";
+    String subject = "subject";
 
     expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
         .resourceID(ResourceID.createNew())
         .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
-        .iban(iban).payTrxRef(payTrxRef)
+        .payerName(payerName)
+        .subject(subject)
+        .iban(iban).protocolId(protocolId)
         .flgConf(flgConf).build();
 
     webTestClient = WebTestClient
@@ -167,8 +171,9 @@ class SendAPIControllerImplTest {
 
     payeeDto.setName("payeeName");
     payeeDto.setPayeeId("77777777777");
+    payeeDto.setProtocolId("ABC/124");
 
-    payerDto.setName("payername");
+    payerDto.setName("payerName");
     payerDto.setPayerId("12345678911");
 
     paymentNoticeDto.setAmount(BigDecimal.valueOf(1));
@@ -189,6 +194,7 @@ class SendAPIControllerImplTest {
 
     payeeDto.setName("payeeName");
     payeeDto.setPayeeId("77777777777");
+    payeeDto.setProtocolId("ABC/124");
 
     payerDto.setName("payername");
     payerDto.setPayerId("badfiscalcode");
@@ -211,11 +217,13 @@ class SendAPIControllerImplTest {
 
     payeeDto.setName("payeeName");
     payeeDto.setPayeeId("77777777777");
+    payeeDto.setProtocolId("ABC/124");
 
     payerDto.setName("payername");
     payerDto.setPayerId("payerId");
 
     paymentNoticeDto.setAmount(new BigDecimal("999999999999"));
+    paymentNoticeDto.setSubject("subject");
     paymentNoticeDto.setDescription("description");
     paymentNoticeDto.setNoticeNumber("311111111112222222");
     paymentNoticeDto.setExpiryDate(LocalDate.now());

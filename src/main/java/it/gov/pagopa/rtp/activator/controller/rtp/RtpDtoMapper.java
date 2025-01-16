@@ -17,10 +17,11 @@ public class RtpDtoMapper {
         .description(createRtpDto.getPaymentNotice().getDescription())
         .expiryDate(createRtpDto.getPaymentNotice().getExpiryDate())
         .savingDateTime(LocalDateTime.now())
+        .payerName(createRtpDto.getPayer().getName())
         .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
         .payeeId(createRtpDto.getPayee().getPayeeId()).rtpSpId("rtpSpId").endToEndId("endToEndId").iban("iban")
         .subject(createRtpDto.getPaymentNotice().getSubject())
-        .payTrxRef(createRtpDto.getPayee().getProtocolId()).flgConf("flgConf").build();
+        .protocolId(createRtpDto.getPayee().getProtocolId()).flgConf("flgConf").build();
   }
 
 }

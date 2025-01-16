@@ -153,7 +153,7 @@ public class SepaRequestToPayMapper {
                 cashAccount40EPC25922V30DS022Dto.setId(iban2007IdentifierWrapperDto);
 
                 InstructionForCreditorAgent3EPC25922V30DS02Dto payTrxRefinstructionForCreditorAgent3EPC25922V30DS02Dto = new InstructionForCreditorAgent3EPC25922V30DS02Dto(
-                                rtp.payTrxRef());
+                                rtp.protocolId());
                 InstructionForCreditorAgent3EPC25922V30DS02Dto flgConfRefinstructionForCreditorAgent3EPC25922V30DS02Dto = new InstructionForCreditorAgent3EPC25922V30DS02Dto(
                                 rtp.flgConf());
 

@@ -42,7 +42,7 @@ class SepaRequestToPayMapperTest {
         LocalDate expiryDate = LocalDate.now().plusDays(5);
         String description = "Pagamento TARI";
         String noticeNumber = "123456";
-        String payTrxRef = "payTrxRef123";
+        String protocolId = "ABC/124";
         String flgConf = "flgConf123";
 
         when(rtp.resourceID()).thenReturn(resourceId);
@@ -57,7 +57,7 @@ class SepaRequestToPayMapperTest {
         when(rtp.expiryDate()).thenReturn(expiryDate);
         when(rtp.description()).thenReturn(description);
         when(rtp.noticeNumber()).thenReturn(noticeNumber);
-        when(rtp.payTrxRef()).thenReturn(payTrxRef);
+        when(rtp.protocolId()).thenReturn(protocolId);
         when(rtp.flgConf()).thenReturn(flgConf);
 
         SepaRequestToPayRequestResourceDto result = sepaRequestToPayMapper.toRequestToPay(rtp);
