@@ -10,7 +10,7 @@ import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 
 @Component
 public class RtpDtoMapper {
-    public Rtp toRtp(CreateRtpDto createRtpDto) {
+  public Rtp toRtp(CreateRtpDto createRtpDto) {
 
     return Rtp.builder().noticeNumber(createRtpDto.getPaymentNotice().getNoticeNumber())
         .amount(createRtpDto.getPaymentNotice().getAmount()).resourceID(ResourceID.createNew())
@@ -19,7 +19,8 @@ public class RtpDtoMapper {
         .savingDateTime(LocalDateTime.now())
         .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
         .payeeId(createRtpDto.getPayee().getPayeeId()).rtpSpId("rtpSpId").endToEndId("endToEndId").iban("iban")
-        .payTrxRef("payTrxRef").flgConf("flgConf").build();
+        .subject(createRtpDto.getPaymentNotice().getSubject())
+        .payTrxRef(createRtpDto.getPayee().getProtocolId()).flgConf("flgConf").build();
   }
 
 }

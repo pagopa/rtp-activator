@@ -83,7 +83,7 @@ public class SepaRequestToPayMapper {
                 personIdentification13EPC25922V30DS02WrapperDto.setPrvtId(personIdentification13EPC25922V30DS02Dto);
 
                 PartyIdentification135EPC25922V30DS022Dto partyIdentification135EPC25922V30DS022Dto = new PartyIdentification135EPC25922V30DS022Dto();
-                partyIdentification135EPC25922V30DS022Dto.setNm("Mario Rossi");// FIXED TO CHANGE
+                partyIdentification135EPC25922V30DS022Dto.setNm(rtp.payerName());
                 partyIdentification135EPC25922V30DS022Dto
                                 .setId(personIdentification13EPC25922V30DS02WrapperDto);
 
@@ -164,7 +164,7 @@ public class SepaRequestToPayMapper {
                                 .add(flgConfRefinstructionForCreditorAgent3EPC25922V30DS02Dto);
 
                 List<String> lUstrd = new ArrayList<>();
-                lUstrd.add("TARI immobile 1234/BU-2024-23231312 -");// FIXED VALUE TO CHANGE
+                lUstrd.add(rtp.subject()+"/ fixed value to change -");// FIXED VALUE TO CHANGE
                 lUstrd.add(rtp.description());
 
                 RemittanceInformation21EPC25922V30DS02Dto remittanceInformation21EPC25922V30DS02Dto = new RemittanceInformation21EPC25922V30DS02Dto();
