@@ -95,7 +95,7 @@ public class SepaRequestToPayMapper {
                                 .setFinInstnId(dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto);
 
                 PaymentIdentification6EPC25922V30DS02Dto paymentIdentification6EPC25922V30DS02Dto = new PaymentIdentification6EPC25922V30DS02Dto(
-                                rtp.resourceID().getId().toString(), rtp.endToEndId());
+                                rtp.resourceID().getId().toString(), rtp.noticeNumber());
 
                 ExternalServiceLevel1CodeWrapperDto externalServiceLevel1CodeWrapperDto = new ExternalServiceLevel1CodeWrapperDto();
                 externalServiceLevel1CodeWrapperDto.setCd(ExternalServiceLevel1CodeDto.SRTP);// FIXED
