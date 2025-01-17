@@ -73,7 +73,8 @@ components:
       required:
         - payeeId
         - name
-
+        - payTrxRef
+  
     Payer:
       type: object
       properties:
