@@ -68,8 +68,8 @@ components:
           maxLength: 140
           description: "The name of payee (e.g. EC name or Company Name)"
           example: "Comune di Roma"
-        protocolId:
-          $ref: "#/components/schemas/ProtocolId"
+        payTrxRef:
+          $ref: "#/components/schemas/PayTrxRef"
       required:
         - payeeId
         - name
@@ -130,10 +130,10 @@ components:
         description: "See idPA field"
         url: "https://docs.pagopa.it/sanp/appendici/primitive#paverifypaymentnotice"
 
-    ProtocolId:
+    PayTrxRef:
       type: string
       pattern: "^[ -~]{1,140}$"
-      description: "The protocol id"
+      description: "The Pay Transaction Reference"
       example: "ABC/124"
 
     RtpId:

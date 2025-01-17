@@ -52,7 +52,7 @@ class SendRTPServiceTest {
     final String endToEndId = "endToEndId";
     final String rtpSpId = "rtpSpId";
     final String iban = "IT60X0542811101000000123456";
-    final String payTrxRef = "payTrxRef";
+    final String payTrxRef = "ABC/124";
     final String flgConf = "flgConf";
 
     Rtp inputRtp;

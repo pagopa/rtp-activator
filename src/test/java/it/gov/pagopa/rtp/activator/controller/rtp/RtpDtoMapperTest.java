@@ -31,11 +31,14 @@ class RtpDtoMapperTest {
     paymentNoticeDto.setNoticeNumber("12345");
     paymentNoticeDto.setDescription("Payment Description");
     paymentNoticeDto.setExpiryDate(LocalDate.now());
+    paymentNoticeDto.setSubject("Subject");
     createRtpDto.setPaymentNotice(paymentNoticeDto);
     payerDto.setPayerId("payer123");
+    payerDto.setName("John Doe");
     createRtpDto.setPayer(payerDto);
     payeeDto.setPayeeId("payee123");
     payeeDto.setName("Payee Name");
+    payeeDto.setPayTrxRef("ABC/124");
     createRtpDto.setPayee(payeeDto);
     Rtp rtp = rtpDtoMapper.toRtp(createRtpDto);
     assertThat(rtp).isNotNull();
@@ -45,13 +48,15 @@ class RtpDtoMapperTest {
     assertThat(rtp.amount()).isEqualTo(createRtpDto.getPaymentNotice().getAmount());
     assertThat(rtp.description()).isEqualTo(createRtpDto.getPaymentNotice().getDescription());
     assertThat(rtp.expiryDate()).isEqualTo(createRtpDto.getPaymentNotice().getExpiryDate());
+    assertThat(rtp.payerName()).isEqualTo(createRtpDto.getPayer().getName());
+    assertThat(rtp.subject()).isEqualTo(createRtpDto.getPaymentNotice().getSubject());
     assertThat(rtp.payerId()).isEqualTo(createRtpDto.getPayer().getPayerId());
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.rtpSpId()).isEqualTo("rtpSpId");
     assertThat(rtp.endToEndId()).isEqualTo("endToEndId");
     assertThat(rtp.iban()).isEqualTo("iban");
-    assertThat(rtp.payTrxRef()).isEqualTo("payTrxRef");
+    assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
   }
 }

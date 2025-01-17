@@ -23,9 +23,11 @@ public class RtpEntity {
   private BigDecimal amount;
   private String description;
   private Instant expiryDate;
+  private String payerName;
   private String payerId;
   private String payeeName;
   private String payeeId;
+  private String subject;
   private Instant savingDateTime;
   private String rtpSpId;
   private String iban;

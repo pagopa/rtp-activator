@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.service.rtp;
 
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +82,7 @@ public class SepaRequestToPayMapper {
                 personIdentification13EPC25922V30DS02WrapperDto.setPrvtId(personIdentification13EPC25922V30DS02Dto);
 
                 PartyIdentification135EPC25922V30DS022Dto partyIdentification135EPC25922V30DS022Dto = new PartyIdentification135EPC25922V30DS022Dto();
-                partyIdentification135EPC25922V30DS022Dto.setNm("Mario Rossi");// FIXED TO CHANGE
+                partyIdentification135EPC25922V30DS022Dto.setNm(rtp.payerName());
                 partyIdentification135EPC25922V30DS022Dto
                                 .setId(personIdentification13EPC25922V30DS02WrapperDto);
 
@@ -95,7 +94,7 @@ public class SepaRequestToPayMapper {
                                 .setFinInstnId(dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto);
 
                 PaymentIdentification6EPC25922V30DS02Dto paymentIdentification6EPC25922V30DS02Dto = new PaymentIdentification6EPC25922V30DS02Dto(
-                                rtp.resourceID().getId().toString(), rtp.endToEndId());
+                                rtp.resourceID().getId().toString(), rtp.noticeNumber());
 
                 ExternalServiceLevel1CodeWrapperDto externalServiceLevel1CodeWrapperDto = new ExternalServiceLevel1CodeWrapperDto();
                 externalServiceLevel1CodeWrapperDto.setCd(ExternalServiceLevel1CodeDto.SRTP);// FIXED
@@ -125,22 +124,27 @@ public class SepaRequestToPayMapper {
                                 .setFinInstnId(financialInstitutionIdentification18EPC25922V30DS02Dto);
 
                 ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto externalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto = new ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto();
-                externalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto.setCd(ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto.BOID);
+                externalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto
+                                .setCd(ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto.BOID);
 
                 GenericOrganisationIdentification1EPC25922V30DS022Dto genericOrganisationIdentification1EPC25922V30DS022Dto = new GenericOrganisationIdentification1EPC25922V30DS022Dto();
                 genericOrganisationIdentification1EPC25922V30DS022Dto.setId(rtp.payeeId());
-                genericOrganisationIdentification1EPC25922V30DS022Dto.setSchmeNm(externalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto);
+                genericOrganisationIdentification1EPC25922V30DS022Dto
+                                .setSchmeNm(externalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto);
 
                 List<GenericOrganisationIdentification1EPC25922V30DS022Dto> lGenericOrganisationIdentification1EPC25922V30DS022Dtos = new ArrayList<>();
-                lGenericOrganisationIdentification1EPC25922V30DS022Dtos.add(genericOrganisationIdentification1EPC25922V30DS022Dto);
+                lGenericOrganisationIdentification1EPC25922V30DS022Dtos
+                                .add(genericOrganisationIdentification1EPC25922V30DS022Dto);
 
                 OrganisationIdentification29EPC25922V30DS022Dto organisationIdentification29EPC25922V30DS022Dto = new OrganisationIdentification29EPC25922V30DS022Dto();
-                
-                organisationIdentification29EPC25922V30DS022Dto.setOthr(lGenericOrganisationIdentification1EPC25922V30DS022Dtos);
+
+                organisationIdentification29EPC25922V30DS022Dto
+                                .setOthr(lGenericOrganisationIdentification1EPC25922V30DS022Dtos);
 
                 OrganisationIdentification29EPC25922V30DS022WrapperDto organisationIdentification29EPC25922V30DS022WrapperDto = new OrganisationIdentification29EPC25922V30DS022WrapperDto();
-                organisationIdentification29EPC25922V30DS022WrapperDto.setOrgId(organisationIdentification29EPC25922V30DS022Dto);
-                
+                organisationIdentification29EPC25922V30DS022WrapperDto
+                                .setOrgId(organisationIdentification29EPC25922V30DS022Dto);
+
                 PartyIdentification135EPC25922V30DS023Dto partyIdentification135EPC25922V30DS023Dto = new PartyIdentification135EPC25922V30DS023Dto();
                 partyIdentification135EPC25922V30DS023Dto.setNm(rtp.payeeName());
                 partyIdentification135EPC25922V30DS023Dto
@@ -153,7 +157,7 @@ public class SepaRequestToPayMapper {
                 cashAccount40EPC25922V30DS022Dto.setId(iban2007IdentifierWrapperDto);
 
                 InstructionForCreditorAgent3EPC25922V30DS02Dto payTrxRefinstructionForCreditorAgent3EPC25922V30DS02Dto = new InstructionForCreditorAgent3EPC25922V30DS02Dto(
-                                rtp.payTrxRef());
+                                "ATR113/"+rtp.payTrxRef());
                 InstructionForCreditorAgent3EPC25922V30DS02Dto flgConfRefinstructionForCreditorAgent3EPC25922V30DS02Dto = new InstructionForCreditorAgent3EPC25922V30DS02Dto(
                                 rtp.flgConf());
 
@@ -164,8 +168,8 @@ public class SepaRequestToPayMapper {
                                 .add(flgConfRefinstructionForCreditorAgent3EPC25922V30DS02Dto);
 
                 List<String> lUstrd = new ArrayList<>();
-                lUstrd.add("TARI immobile 1234/BU-2024-23231312 -");// FIXED VALUE TO CHANGE
-                lUstrd.add(rtp.description());
+                lUstrd.add(rtp.subject() + "/" + rtp.noticeNumber() + " -");
+                lUstrd.add("ATS001/" + rtp.description());
 
                 RemittanceInformation21EPC25922V30DS02Dto remittanceInformation21EPC25922V30DS02Dto = new RemittanceInformation21EPC25922V30DS02Dto();
                 remittanceInformation21EPC25922V30DS02Dto.setUstrd(lUstrd);
