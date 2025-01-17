@@ -31,7 +31,7 @@ public class RtpEntity {
   private Instant savingDateTime;
   private String rtpSpId;
   private String iban;
-  private String protocolId;
+  private String payTrxRef;
   private String flgConf;
   private String status;
 }

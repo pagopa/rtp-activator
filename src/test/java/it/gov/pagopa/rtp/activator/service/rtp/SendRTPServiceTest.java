@@ -52,7 +52,7 @@ class SendRTPServiceTest {
     final String endToEndId = "endToEndId";
     final String rtpSpId = "rtpSpId";
     final String iban = "IT60X0542811101000000123456";
-    final String protocolId = "ABC/124";
+    final String payTrxRef = "ABC/124";
     final String flgConf = "flgConf";
 
     Rtp inputRtp;
@@ -66,7 +66,7 @@ class SendRTPServiceTest {
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
             .resourceID(ResourceID.createNew())
             .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
-            .iban(iban).protocolId(protocolId)
+            .iban(iban).payTrxRef(payTrxRef)
             .flgConf(flgConf).build();
     }
 
@@ -89,7 +89,7 @@ class SendRTPServiceTest {
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
             .resourceID(ResourceID.createNew())
             .savingDateTime(LocalDateTime.now()).rtpSpId(activationRtpSpId).endToEndId(endToEndId)
-            .iban(iban).protocolId(protocolId)
+            .iban(iban).payTrxRef(payTrxRef)
             .status(RtpStatus.CREATED)
             .flgConf(flgConf)
             .build();
@@ -115,7 +115,7 @@ class SendRTPServiceTest {
                         && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
                         && rtp.endToEndId().equals(expectedRtp.endToEndId())
                         && rtp.iban().equals(expectedRtp.iban())
-                        && rtp.protocolId().equals(expectedRtp.protocolId())
+                        && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
                         && rtp.flgConf().equals(expectedRtp.flgConf())
                         && rtp.status().equals(expectedRtp.status()))
                 .verifyComplete();

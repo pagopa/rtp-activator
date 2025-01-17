@@ -51,7 +51,7 @@ class RtpDBRepositoryTest {
         .savingDateTime(LocalDateTime.now())
         .rtpSpId("rtpSpId")
         .iban("iban123")
-        .protocolId("ABC/124")
+        .payTrxRef("ABC/124")
         .flgConf("Y")
         .status(RtpStatus.CREATED)
         .build();
@@ -68,7 +68,7 @@ class RtpDBRepositoryTest {
         .savingDateTime(rtp.savingDateTime().toInstant(ZoneOffset.UTC))
         .rtpSpId(rtp.rtpSpId())
         .iban(rtp.iban())
-        .protocolId(rtp.protocolId())
+        .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
         .status("CREATED")
         .build();
@@ -91,7 +91,7 @@ class RtpDBRepositoryTest {
           assertEquals(rtp.savingDateTime(), savedRtp.savingDateTime());
           assertEquals(rtp.rtpSpId(), savedRtp.rtpSpId());
           assertEquals(rtp.iban(), savedRtp.iban());
-          assertEquals(rtp.protocolId(), savedRtp.protocolId());
+          assertEquals(rtp.payTrxRef(), savedRtp.payTrxRef());
           assertEquals(rtp.flgConf(), savedRtp.flgConf());
           assertEquals(rtp.status(), savedRtp.status());
         })

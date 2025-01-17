@@ -42,7 +42,7 @@ class SepaRequestToPayMapperTest {
         LocalDate expiryDate = LocalDate.now().plusDays(5);
         String description = "Pagamento TARI";
         String noticeNumber = "123456";
-        String protocolId = "ABC/124";
+        String payTrxRef = "ABC/124";
         String flgConf = "flgConf123";
 
         when(rtp.resourceID()).thenReturn(resourceId);
@@ -57,7 +57,7 @@ class SepaRequestToPayMapperTest {
         when(rtp.expiryDate()).thenReturn(expiryDate);
         when(rtp.description()).thenReturn(description);
         when(rtp.noticeNumber()).thenReturn(noticeNumber);
-        when(rtp.protocolId()).thenReturn(protocolId);
+        when(rtp.payTrxRef()).thenReturn(payTrxRef);
         when(rtp.flgConf()).thenReturn(flgConf);
 
         SepaRequestToPayRequestResourceDto result = sepaRequestToPayMapper.toRequestToPay(rtp);
@@ -66,7 +66,7 @@ class SepaRequestToPayMapperTest {
         assertEquals(resourceId.getId().toString(), result.getResourceId());
         assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
         assertEquals(resourceId.getId().toString(), result.getDocument().getCdtrPmtActvtnReq().getGrpHdr().getMsgId());
-        assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0).getRmtInf().getUstrd().contains(description));
+        assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0).getRmtInf().getUstrd().get(1).contains(description));
     }
 }
 

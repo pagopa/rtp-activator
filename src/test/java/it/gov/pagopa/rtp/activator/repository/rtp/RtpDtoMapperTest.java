@@ -41,7 +41,7 @@ class RtpDtoMapperTest {
         .savingDateTime(Instant.now())
         .rtpSpId("rtpSpId")
         .iban("iban123")
-        .protocolId("ABC/124")
+        .payTrxRef("ABC/124")
         .flgConf("Y")
         .status(RtpStatus.CREATED.name())
         .build();
@@ -60,7 +60,7 @@ class RtpDtoMapperTest {
     assertEquals(LocalDateTime.ofInstant(rtpEntity.getSavingDateTime(), ZoneOffset.UTC), rtp.savingDateTime());
     assertEquals(rtpEntity.getRtpSpId(), rtp.rtpSpId());
     assertEquals(rtpEntity.getIban(), rtp.iban());
-    assertEquals(rtpEntity.getProtocolId(), rtp.protocolId());
+    assertEquals(rtpEntity.getPayTrxRef(), rtp.payTrxRef());
     assertEquals(rtpEntity.getFlgConf(), rtp.flgConf());
     assertEquals(rtpEntity.getStatus(), rtp.status().name());
   }
@@ -82,7 +82,7 @@ class RtpDtoMapperTest {
         .savingDateTime(LocalDateTime.now())
         .rtpSpId("rtpSpId")
         .iban("iban123")
-        .protocolId("ABC/124")
+        .payTrxRef("ABC/124")
         .flgConf("Y")
         .status(RtpStatus.CREATED)
         .build();
@@ -101,7 +101,7 @@ class RtpDtoMapperTest {
     assertEquals(rtp.savingDateTime().toInstant(ZoneOffset.UTC), rtpEntity.getSavingDateTime());
     assertEquals(rtp.rtpSpId(), rtpEntity.getRtpSpId());
     assertEquals(rtp.iban(), rtpEntity.getIban());
-    assertEquals(rtp.protocolId(), rtpEntity.getProtocolId());
+    assertEquals(rtp.payTrxRef(), rtpEntity.getPayTrxRef());
     assertEquals(rtp.flgConf(), rtpEntity.getFlgConf());
     assertEquals(rtp.status().name(), rtpEntity.getStatus());
   }

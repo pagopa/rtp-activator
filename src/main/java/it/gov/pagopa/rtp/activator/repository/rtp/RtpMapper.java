@@ -24,7 +24,7 @@ public class RtpMapper {
         .savingDateTime(LocalDateTime.ofInstant(rtpEntity.getSavingDateTime(), ZoneOffset.UTC))
         .rtpSpId(rtpEntity.getRtpSpId())
         .iban(rtpEntity.getIban())
-        .protocolId(rtpEntity.getProtocolId())
+        .payTrxRef(rtpEntity.getPayTrxRef())
         .flgConf(rtpEntity.getFlgConf())
         .status(RtpStatus.valueOf(rtpEntity.getStatus()))
         .build();
@@ -43,7 +43,7 @@ public class RtpMapper {
         .savingDateTime(rtp.savingDateTime().toInstant(ZoneOffset.UTC))
         .rtpSpId(rtp.rtpSpId())
         .iban(rtp.iban())
-        .protocolId(rtp.protocolId())
+        .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
         .status(rtp.status().name())
         .build();

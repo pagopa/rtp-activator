@@ -38,7 +38,7 @@ class RtpDtoMapperTest {
     createRtpDto.setPayer(payerDto);
     payeeDto.setPayeeId("payee123");
     payeeDto.setName("Payee Name");
-    payeeDto.setProtocolId("ABC/124");
+    payeeDto.setPayTrxRef("ABC/124");
     createRtpDto.setPayee(payeeDto);
     Rtp rtp = rtpDtoMapper.toRtp(createRtpDto);
     assertThat(rtp).isNotNull();
@@ -56,7 +56,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.rtpSpId()).isEqualTo("rtpSpId");
     assertThat(rtp.endToEndId()).isEqualTo("endToEndId");
     assertThat(rtp.iban()).isEqualTo("iban");
-    assertThat(rtp.protocolId()).isEqualTo(createRtpDto.getPayee().getProtocolId());
+    assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
   }
 }

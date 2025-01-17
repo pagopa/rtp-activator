@@ -65,7 +65,7 @@ class SendAPIControllerImplTest {
     String iban = "IT60X0542811101000000123456";
     String flgConf = "flgConf";
     String payerName = "John Doe";
-    String protocolId = "ABC/124";
+    String payTrxRef = "ABC/124";
     String subject = "subject";
 
     expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
@@ -75,7 +75,7 @@ class SendAPIControllerImplTest {
         .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
         .payerName(payerName)
         .subject(subject)
-        .iban(iban).protocolId(protocolId)
+        .iban(iban).payTrxRef(payTrxRef)
         .flgConf(flgConf).build();
 
     webTestClient = WebTestClient
@@ -171,7 +171,7 @@ class SendAPIControllerImplTest {
 
     payeeDto.setName("payeeName");
     payeeDto.setPayeeId("77777777777");
-    payeeDto.setProtocolId("ABC/124");
+    payeeDto.setPayTrxRef("ABC/124");
 
     payerDto.setName("payerName");
     payerDto.setPayerId("12345678911");
@@ -194,7 +194,7 @@ class SendAPIControllerImplTest {
 
     payeeDto.setName("payeeName");
     payeeDto.setPayeeId("77777777777");
-    payeeDto.setProtocolId("ABC/124");
+    payeeDto.setPayTrxRef("ABC/124");
 
     payerDto.setName("payername");
     payerDto.setPayerId("badfiscalcode");
@@ -217,7 +217,7 @@ class SendAPIControllerImplTest {
 
     payeeDto.setName("payeeName");
     payeeDto.setPayeeId("77777777777");
-    payeeDto.setProtocolId("ABC/124");
+    payeeDto.setPayTrxRef("ABC/124");
 
     payerDto.setName("payername");
     payerDto.setPayerId("payerId");

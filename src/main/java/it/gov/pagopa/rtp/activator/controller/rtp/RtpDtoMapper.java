@@ -21,7 +21,7 @@ public class RtpDtoMapper {
         .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
         .payeeId(createRtpDto.getPayee().getPayeeId()).rtpSpId("rtpSpId").endToEndId("endToEndId").iban("iban")
         .subject(createRtpDto.getPaymentNotice().getSubject())
-        .protocolId(createRtpDto.getPayee().getProtocolId()).flgConf("flgConf").build();
+        .payTrxRef(createRtpDto.getPayee().getPayTrxRef()).flgConf("flgConf").build();
   }
 
 }
