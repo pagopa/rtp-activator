@@ -133,7 +133,7 @@ components:
     PayTrxRef:
       type: string
       pattern: "^[ -~]{1,140}$"
-      description: "The protocol id"
+      description: "The Pay Transaction Reference"
       example: "ABC/124"
 
     RtpId:
