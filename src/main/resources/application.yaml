@@ -19,6 +19,8 @@ spring.data.mongodb:
   database: ${DB_NAME:rtp}
 activation.base-url: ${BASE_URL:http://localhost}
 
+spring.cloud.azure.monitor.instrumentation.mongo.enabled: true
+
 service-provider:
   activation:
     api-version: v1
