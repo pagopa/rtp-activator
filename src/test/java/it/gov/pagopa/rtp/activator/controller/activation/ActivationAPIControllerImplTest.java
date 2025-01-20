@@ -59,9 +59,6 @@ class ActivationAPIControllerImplTest {
   @MockBean
   private ActivationDtoMapper activationDtoMapper;
 
-  @Autowired
-  private ActivationPropertiesConfig activationPropertiesConfig;
-
   private WebTestClient webTestClient;
 
   @Autowired
