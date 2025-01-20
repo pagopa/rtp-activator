@@ -4,6 +4,9 @@ import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +30,11 @@ public class SendAPIControllerImpl implements RtpsApi {
         this.rtpDtoMapper = rtpDtoMapper;
     }
 
+    
     @Override
     @PreAuthorize("hasRole('write_rtp_send')")
     public Mono<ResponseEntity<Void>> createRtp(Mono<CreateRtpDto> createRtpDto,
-            ServerWebExchange exchange) {
+            String version, ServerWebExchange exchange) {
         log.info("Received request to create RTP");
         return createRtpDto
             .map(rtpDtoMapper::toRtp)
@@ -39,4 +43,5 @@ public class SendAPIControllerImpl implements RtpsApi {
             .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build())
             .doOnError(a -> log.error("Error creating RTP {}", a.getMessage()));
     }
+
 }
