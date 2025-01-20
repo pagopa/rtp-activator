@@ -9,6 +9,7 @@ import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.activateClient.model.PayerDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
@@ -17,6 +18,7 @@ import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -49,7 +51,6 @@ class SendRTPServiceTest {
     final String payerId = "payerId";
     final String payeeName = "Payee Name";
     final String payeeId = "payeeId";
-    final String endToEndId = "endToEndId";
     final String rtpSpId = "rtpSpId";
     final String iban = "IT60X0542811101000000123456";
     final String payTrxRef = "ABC/124";
@@ -65,7 +66,7 @@ class SendRTPServiceTest {
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
             .resourceID(ResourceID.createNew())
-            .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
+            .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
             .iban(iban).payTrxRef(payTrxRef)
             .flgConf(flgConf).build();
     }
@@ -88,7 +89,7 @@ class SendRTPServiceTest {
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
             .resourceID(ResourceID.createNew())
-            .savingDateTime(LocalDateTime.now()).rtpSpId(activationRtpSpId).endToEndId(endToEndId)
+            .savingDateTime(LocalDateTime.now()).rtpSpId(activationRtpSpId)
             .iban(iban).payTrxRef(payTrxRef)
             .status(RtpStatus.CREATED)
             .flgConf(flgConf)
@@ -113,7 +114,6 @@ class SendRTPServiceTest {
                         && rtp.payeeName().equals(expectedRtp.payeeName())
                         && rtp.payeeId().equals(expectedRtp.payeeId())
                         && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
-                        && rtp.endToEndId().equals(expectedRtp.endToEndId())
                         && rtp.iban().equals(expectedRtp.iban())
                         && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
                         && rtp.flgConf().equals(expectedRtp.flgConf())
@@ -132,6 +132,22 @@ class SendRTPServiceTest {
 
         StepVerifier.create(result)
             .expectError(PayerNotActivatedException.class)
+            .verify();
+
+        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+    }
+
+    @Test
+    void givenPayerIdBadFormedWhenSendThenMonoError() {
+        when(readApi.findActivationByPayerId(any(), any(), any()))
+            .thenReturn(Mono.error(new WebClientResponseException(400, "Bad Request", null,
+                "{}".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8)));
+
+        Mono<Rtp> result = sendRTPService.send(inputRtp);
+
+        StepVerifier.create(result)
+            .expectError(MessageBadFormed.class)
             .verify();
 
         verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));

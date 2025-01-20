@@ -16,6 +16,10 @@ paths:
       tags:
         - rtps
       operationId: "createRtp"
+      parameters:
+        - $ref: '#/components/parameters/Version'
+      security:
+        - oAuth2: [ admin_rtp_send, write_rtp_send ]
       summary: "Create and send a new RTP from a pagoPa notice"
       description: "Create and send a new RTP from a pagoPa notice"
       requestBody:
@@ -34,6 +38,12 @@ paths:
               description: "The location of created rtp"
               schema:
                 $ref: "#/components/schemas/RtpLocation"
+        "400":
+          description: "The request is malformed"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MalformedRequestErrorResponse'
         "422":
           description: "The debtor is not activated by the Service Provider"
           content:
@@ -161,6 +171,16 @@ components:
         - paymentNotice
         - payer
         - payee
+  
+    MalformedRequestErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Malformed request"
+        details:
+          type: string
+          example: "The request is malformed. Please check the request's body and try again."
 
     MismatchActivationErrorResponse:
       type: object
@@ -171,3 +191,22 @@ components:
         details:
           type: string
           example: "The debtor's fiscal code provided is not activated by thr subject making the request."
+    
+    Version:
+      description: Version of the required API.
+      type: string
+      pattern: "^[ -~]{1,64}$"
+      minLength: 1
+      maxLength: 64
+      example: "v1"
+
+
+  parameters:
+
+    Version:
+      name: Version
+      in: header
+      description: Version of the required API.
+      required: false
+      schema:
+        $ref: '#/components/schemas/Version'

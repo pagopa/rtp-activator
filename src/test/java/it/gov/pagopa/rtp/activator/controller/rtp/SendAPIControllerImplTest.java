@@ -1,13 +1,18 @@
 package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorDto;
+import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayerDto;
@@ -17,6 +22,7 @@ import it.gov.pagopa.rtp.activator.utils.Users;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,7 +66,6 @@ class SendAPIControllerImplTest {
     String payerId = "payerId";
     String payeeName = "Payee Name";
     String payeeId = "payeeId";
-    String endToEndId = "endToEndId";
     String rtpSpId = "rtpSpId";
     String iban = "IT60X0542811101000000123456";
     String flgConf = "flgConf";
@@ -72,7 +77,7 @@ class SendAPIControllerImplTest {
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
         .resourceID(ResourceID.createNew())
-        .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
+        .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
         .payerName(payerName)
         .subject(subject)
         .iban(iban).payTrxRef(payTrxRef)
@@ -132,6 +137,9 @@ class SendAPIControllerImplTest {
         .exchange()
         .expectStatus()
         .isEqualTo(HttpStatus.BAD_REQUEST);
+
+    verify(sendRTPService, times(0)).send(any());
+    verify(rtpDtoMapper, times(0)).toRtp(any());
   }
 
   @Test
@@ -159,6 +167,43 @@ class SendAPIControllerImplTest {
         .exchange()
         .expectStatus()
         .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+    verify(sendRTPService, times(1)).send(any());
+    verify(rtpDtoMapper, times(1)).toRtp(any());
+  }
+
+  @Test
+  @Users.RtpSenderWriter
+  void givenMessageBadFormedWhenSendRTPThenReturnBadRequest() {
+
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(any()))
+        .thenReturn(Mono.error(generateMessageBadFormed()));
+
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.BAD_REQUEST);
+
+    verify(sendRTPService, times(1)).send(any());
+    verify(rtpDtoMapper, times(1)).toRtp(any());
+  }
+
+  @Test
+  @Users.RtpSenderWriter
+  void givenBadFiscalCodeWhenSendRTPThenReturnBadRequest() {
+
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateWrongSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.BAD_REQUEST);
+
+    verify(sendRTPService, times(0)).send(any());
+    verify(rtpDtoMapper, times(0)).toRtp(any());
   }
 
   private CreateRtpDto generateSendRequest() {
@@ -230,5 +275,11 @@ class SendAPIControllerImplTest {
 
     return new CreateRtpDto(payeeDto, payerDto, paymentNoticeDto);
 
+  }
+
+  private MessageBadFormed generateMessageBadFormed() {
+    var errors = new ErrorsDto();
+    errors.setErrors(Collections.singletonList(new ErrorDto("code", "description")));
+    return new MessageBadFormed(errors);
   }
 }
