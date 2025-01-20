@@ -45,178 +45,177 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = { ActivationAPIControllerImpl.class })
-@EnableConfigurationProperties(value = ActivationPropertiesConfig.class) 
+@EnableConfigurationProperties(value = ActivationPropertiesConfig.class)
 @Import({ SecurityConfig.class })
 @DisabledInAotMode
 class ActivationAPIControllerImplTest {
 
-    @MockBean
-    private ActivationDBRepository activationDBRepository;
+  @MockBean
+  private ActivationDBRepository activationDBRepository;
 
-    @MockBean
-    private ActivationPayerService activationPayerService;
+  @MockBean
+  private ActivationPayerService activationPayerService;
 
-    @MockBean
-    private ActivationDtoMapper activationDtoMapper;
+  @MockBean
+  private ActivationDtoMapper activationDtoMapper;
 
-    @Autowired
-    private ActivationPropertiesConfig activationPropertiesConfig;
+  @Autowired
+  private ActivationPropertiesConfig activationPropertiesConfig;
 
-    private WebTestClient webTestClient;
+  private WebTestClient webTestClient;
 
-    @Autowired
-    private ApplicationContext context;
+  @Autowired
+  private ApplicationContext context;
 
-    @BeforeEach
-    void setup() {
-        webTestClient = WebTestClient
-                .bindToApplicationContext(context)
-                .apply(springSecurity())
-                .configureClient()
-                .build();
-    }
+  @BeforeEach
+  void setup() {
+    webTestClient = WebTestClient
+        .bindToApplicationContext(context)
+        .apply(springSecurity())
+        .configureClient()
+        .build();
+  }
 
-    @Test
-    @Users.RtpWriter
-    void testActivatePayerSuccessful() {
-        Payer payer = new Payer(ActivationID.createNew(), "RTP_SP_ID", "FISCAL_CODE", Instant.now());
+  @Test
+  @Users.RtpWriter
+  void testActivatePayerSuccessful() {
+    Payer payer = new Payer(ActivationID.createNew(), "RTP_SP_ID", "FISCAL_CODE", Instant.now());
 
-        when(activationPayerService.activatePayer(any(String.class), any(String.class)))
-                .thenReturn(Mono.just(payer));
+    when(activationPayerService.activatePayer(any(String.class), any(String.class)))
+        .thenReturn(Mono.just(payer));
 
-        webTestClient.post()
-                .uri("/activations")
-                .header("RequestId", UUID.randomUUID().toString())
-                .header("Version", "v1")
-                .bodyValue(generateActivationRequest())
-                .exchange()
-                .expectStatus().isCreated().expectHeader()
-                .location("http://localhost:8080/" + payer.activationID().getId().toString());
-    }
+    webTestClient.post()
+        .uri("/activations")
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .bodyValue(generateActivationRequest())
+        .exchange()
+        .expectStatus().isCreated().expectHeader()
+        .location("http://localhost:8080/" + payer.activationID().getId().toString());
+  }
 
-    @Test
-    @Users.RtpWriter
-    void testActivatePayerAlreadyExists() {
-        when(activationPayerService.activatePayer(any(String.class),
-                any(String.class)))
-                .thenReturn(Mono.error(new PayerAlreadyExists()));
-        webTestClient.post()
-                .uri("/activations")
-                .header("RequestId", UUID.randomUUID().toString())
-                .header("Version", "v1")
-                .bodyValue(generateActivationRequest())
-                .exchange()
-                .expectStatus().isEqualTo(409);
-    }
+  @Test
+  @Users.RtpWriter
+  void testActivatePayerAlreadyExists() {
+    when(activationPayerService.activatePayer(any(String.class),
+        any(String.class)))
+        .thenReturn(Mono.error(new PayerAlreadyExists()));
+    webTestClient.post()
+        .uri("/activations")
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .bodyValue(generateActivationRequest())
+        .exchange()
+        .expectStatus().isEqualTo(409);
+  }
 
-    @Test
-    @WithMockUser(value = "another", roles = Users.ACTIVATION_WRITE_ROLE)
-    void authorizedUserShouldNotActivateForAnotherServiceProvider() {
-        webTestClient.post()
-                .uri("/activations")
-                .header("RequestId", UUID.randomUUID().toString())
-                .header("Version", "v1")
-                .bodyValue(generateActivationRequest())
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
-    }
+  @Test
+  @WithMockUser(value = "another", roles = Users.ACTIVATION_WRITE_ROLE)
+  void authorizedUserShouldNotActivateForAnotherServiceProvider() {
+    webTestClient.post()
+        .uri("/activations")
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .bodyValue(generateActivationRequest())
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
+  }
 
-    @Test
-    @WithMockUser
-    void userWithoutEnoughPermissionShouldNotCreateNewActivation() {
-        webTestClient.post()
-                .uri("/activations")
-                .header("RequestId", UUID.randomUUID().toString())
-                .header("Version", "v1")
-                .bodyValue(generateActivationRequest())
-                .exchange()
-                .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
-    }
+  @Test
+  @WithMockUser
+  void userWithoutEnoughPermissionShouldNotCreateNewActivation() {
+    webTestClient.post()
+        .uri("/activations")
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .bodyValue(generateActivationRequest())
+        .exchange()
+        .expectStatus().isEqualTo(HttpStatus.FORBIDDEN);
+  }
 
-    @Test
-    @Users.RtpSenderWriter
-    void testFindActivationByPayerIdSuccess() {
-        ActivationID activationID = ActivationID.createNew();
+  @Test
+  @Users.RtpSenderWriter
+  void testFindActivationByPayerIdSuccess() {
+    ActivationID activationID = ActivationID.createNew();
 
-        Payer payer = new Payer(activationID, "testRtpSpId", "RSSMRA85T10A562S", Instant.now());
+    Payer payer = new Payer(activationID, "testRtpSpId", "RSSMRA85T10A562S", Instant.now());
 
-        PayerDto payerDto = new PayerDto().fiscalCode(payer.fiscalCode()).rtpSpId(payer.rtpSpId());
+    PayerDto payerDto = new PayerDto().fiscalCode(payer.fiscalCode()).rtpSpId(payer.rtpSpId());
 
-        ActivationDto activationDto = new ActivationDto();
-        activationDto.setId(activationID.getId());
-        activationDto.setPayer(payerDto);
-        activationDto.setEffectiveActivationDate(null);
+    ActivationDto activationDto = new ActivationDto();
+    activationDto.setId(activationID.getId());
+    activationDto.setPayer(payerDto);
+    activationDto.setEffectiveActivationDate(null);
 
-        when(activationPayerService.findPayer(payerDto.getFiscalCode()))
-                .thenReturn(Mono.just(payer));
-        when(activationDtoMapper.toActivationDto(payer))
-                .thenReturn(activationDto);
+    when(activationPayerService.findPayer(payerDto.getFiscalCode()))
+        .thenReturn(Mono.just(payer));
+    when(activationDtoMapper.toActivationDto(payer))
+        .thenReturn(activationDto);
 
-        webTestClient.get()
-                .uri("/activations/payer")
-                .header("RequestId", UUID.randomUUID().toString())
-                .header("Version", "v1")
-                .header("PayerId", payerDto.getFiscalCode())
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(ActivationDto.class)
-                .value(dto -> {
-                    assert dto.getPayer().getFiscalCode().equals(payer.fiscalCode());
-                });
-    }
+    webTestClient.get()
+        .uri("/activations/payer")
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .header("PayerId", payerDto.getFiscalCode())
+        .exchange()
+        .expectStatus().isOk()
+        .expectBody(ActivationDto.class)
+        .value(dto -> {
+          assert dto.getPayer().getFiscalCode().equals(payer.fiscalCode());
+        });
+  }
 
-    @Test
-    @Users.RtpReader
-    void getActivationThrowsException() {
+  @Test
+  @Users.RtpReader
+  void getActivationThrowsException() {
 
-        webTestClient.get()
-                .uri("/activations/activation/{activationId}", UUID.randomUUID().toString())
-                .header("RequestId", UUID.randomUUID().toString())
-                .header("Version", "v1")
-                .exchange()
-                .expectStatus().is4xxClientError()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(404)
-                .jsonPath("$.error").isEqualTo("Not Found");
-    }
+    webTestClient.get()
+        .uri("/activations/activation/{activationId}", UUID.randomUUID().toString())
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().is4xxClientError()
+        .expectBody()
+        .jsonPath("$.status").isEqualTo(404)
+        .jsonPath("$.error").isEqualTo("Not Found");
+  }
 
-    @Test
-    @Users.RtpReader
-    void getActivationsThrowsException() {
+  @Test
+  @Users.RtpReader
+  void getActivationsThrowsException() {
 
-        webTestClient.get()
-                .uri(uriBuilder -> 
-                    uriBuilder
-                    .path("/activations")
-                    .queryParam("PageNumber", 0)
-                    .queryParam("PageSize", 10)
-                    .build())
-                .header("RequestId", UUID.randomUUID().toString())
-                .header("Version", "v1")
-                .exchange()
-                .expectStatus().is4xxClientError()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo(400)
-                .jsonPath("$.error").isEqualTo("Bad Request");
-    }
+    webTestClient.get()
+        .uri(uriBuilder -> uriBuilder
+            .path("/activations")
+            .queryParam("PageNumber", 0)
+            .queryParam("PageSize", 10)
+            .build())
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().is4xxClientError()
+        .expectBody()
+        .jsonPath("$.status").isEqualTo(400)
+        .jsonPath("$.error").isEqualTo("Bad Request");
+  }
 
-    @ParameterizedTest
-    @ValueSource(strings = { "rssmra85t10a562s", "RSSMRA85T10A56HS" })
-    @Users.RtpSenderWriter
-    void givenBadFiscalCodeWhenFindActivationThen400(String badFiscalCode) {
+  @ParameterizedTest
+  @ValueSource(strings = { "rssmra85t10a562s", "RSSMRA85T10A56HS" })
+  @Users.RtpSenderWriter
+  void givenBadFiscalCodeWhenFindActivationThen400(String badFiscalCode) {
 
-        webTestClient.get()
-            .uri("/activations/payer")
-            .header("RequestId", UUID.randomUUID().toString())
-            .header("Version", "v1")
-            .header("PayerId", badFiscalCode)
-            .exchange()
-            .expectStatus().isBadRequest()
-            .expectBody(ErrorsDto.class)
-            .value(body -> assertThat(body.getErrors()).hasSize(1));
-    }
+    webTestClient.get()
+        .uri("/activations/payer")
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .header("PayerId", badFiscalCode)
+        .exchange()
+        .expectStatus().isBadRequest()
+        .expectBody(ErrorsDto.class)
+        .value(body -> assertThat(body.getErrors()).hasSize(1));
+  }
 
-    private ActivationReqDto generateActivationRequest() {
-        return new ActivationReqDto(new PayerDto("RSSMRA85T10A562S", SERVICE_PROVIDER_ID));
-    }
+  private ActivationReqDto generateActivationRequest() {
+    return new ActivationReqDto(new PayerDto("RSSMRA85T10A562S", SERVICE_PROVIDER_ID));
+  }
 }
