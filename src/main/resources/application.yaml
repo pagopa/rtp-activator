@@ -17,24 +17,20 @@ activation.base-url: ${BASE_URL:http://localhost}
 management:
   endpoints:
     enabled-by-default: false
-    web:
-      exposure:
-        include: health
+    web.exposure.include: health
   endpoint:
     health:
       enabled: true
       probes:
         enabled: true
-      mongo:
-        enabled: false
-  tracing:
-    enabled: true
+#repository
+  health.mongo.enabled: false
+
 
 # OpenTelemetry
-azure:
-  applicationinsights:
-    enabled: true
-    connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:myconnectionstring}
+applicationinsights:
+  enabled: true
+  connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:myconnectionstring}
 
 service-provider:
   activation:
