@@ -1,7 +1,5 @@
 logging.level:
   root: INFO
-  io:
-    opentelemetry: DEBUG
 
 spring:
   application:
@@ -23,14 +21,14 @@ management:
       enabled: true
       probes:
         enabled: true
+  tracing:
+    opentelemetry:
+      instrumentation:
+        reactor:
+          enabled: true
 #repository
   health.mongo.enabled: false
 
-
-# OpenTelemetry
-applicationinsights:
-  enabled: true
-  connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:myconnectionstring}
 
 service-provider:
   activation:
