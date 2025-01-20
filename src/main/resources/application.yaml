@@ -1,4 +1,6 @@
-logging.level.root: INFO
+logging.level:
+  root: INFO
+  io.opentelemetry: DEBUG
 
 spring.application.name: rtp-activator
 
