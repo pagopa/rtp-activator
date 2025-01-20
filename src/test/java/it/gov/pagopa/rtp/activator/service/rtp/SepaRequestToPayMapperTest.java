@@ -1,7 +1,6 @@
 package it.gov.pagopa.rtp.activator.service.rtp;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +45,7 @@ class SepaRequestToPayMapperTest {
 
         Rtp nRtp = Rtp.builder().resourceID(resourceId).payerId(payerId).payeeName(payerName).payeeId(payeeId)
                 .payeeName(payeeName).rtpSpId(rtpSpId).iban(iban).amount(amount)
-                .savingDateTime(savingDateTime).expiryDate(expiryDate).description(description).subject("subject")
+                .savingDateTime(savingDateTime).expiryDate(expiryDate).description(description).subject(subject)
                 .noticeNumber(noticeNumber).payTrxRef(payTrxRef).flgConf(flgConf).build();
 
         SepaRequestToPayRequestResourceDto result = sepaRequestToPayMapper.toRequestToPay(nRtp);
