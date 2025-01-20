@@ -188,21 +188,22 @@ class SendAPIControllerImplTest {
 
     return new CreateRtpDto(payeeDto, payerDto, paymentNoticeDto);
   }
-    @Test
-    @Users.RtpSenderWriter
-    void givenMessageBadFormedWhenSendRTPThenReturnBadRequest() {
 
-        when(rtpMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-        when(sendRTPService.send(any()))
-            .thenReturn(Mono.error(generateMessageBadFormed()));
+  @Test
+  @Users.RtpSenderWriter
+  void givenMessageBadFormedWhenSendRTPThenReturnBadRequest() {
 
-        webTestClient.post()
-            .uri("/rtps")
-            .bodyValue(generateSendRequest())
-            .exchange()
-            .expectStatus()
-            .isEqualTo(HttpStatus.BAD_REQUEST);
-    }
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(any()))
+        .thenReturn(Mono.error(generateMessageBadFormed()));
+
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.BAD_REQUEST);
+  }
 
   private CreateRtpDto generateWrongSendRequest() {
     PayeeDto payeeDto = new PayeeDto();
@@ -251,9 +252,9 @@ class SendAPIControllerImplTest {
 
   }
 
-    private MessageBadFormed generateMessageBadFormed() {
-        var errors = new ErrorsDto();
-        errors.setErrors(Collections.singletonList(new ErrorDto("code", "description")));
-        return new MessageBadFormed(errors);
-    }
+  private MessageBadFormed generateMessageBadFormed() {
+    var errors = new ErrorsDto();
+    errors.setErrors(Collections.singletonList(new ErrorDto("code", "description")));
+    return new MessageBadFormed(errors);
+  }
 }

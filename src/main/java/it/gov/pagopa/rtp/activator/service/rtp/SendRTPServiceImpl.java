@@ -93,28 +93,11 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   private Throwable mapResponseToException(WebClientResponseException exception) {
-    if (exception.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-      return new PayerNotActivatedException();
-    }
-    return new RuntimeException("Internal Server Error");
-  private Function<WebClientResponseException, Throwable> mapResponseToException() {
-    return exception -> {
-      exception.setBodyDecodeFunction(body -> pippo());
-      return switch (exception.getStatusCode()) {
-        case NOT_FOUND -> new PayerNotActivatedException();
-        case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAs(ErrorsDto.class));
-        default -> new RuntimeException("Internal Server Error");
-      };
+    return switch (exception.getStatusCode()) {
+      case NOT_FOUND -> new PayerNotActivatedException();
+      case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAs(ErrorsDto.class));
+      default -> new RuntimeException("Internal Server Error");
     };
   }
 
-  private Function<String, ErrorsDto> pippo() {
-    return json -> {
-      try {
-        return objectMapper.readValue(json, ErrorsDto.class);
-      } catch (JsonProcessingException e) {
-        throw new RuntimeException(e);
-      }
-    };
-  }
 }
