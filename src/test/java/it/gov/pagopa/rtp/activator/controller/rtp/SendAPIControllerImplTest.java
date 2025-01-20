@@ -1,6 +1,8 @@
 package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
@@ -136,6 +138,9 @@ class SendAPIControllerImplTest {
         .exchange()
         .expectStatus()
         .isEqualTo(HttpStatus.BAD_REQUEST);
+
+    verify(sendRTPService, times(0)).send(any());
+    verify(rtpDtoMapper, times(0)).toRtp(any());
   }
 
   @Test
@@ -163,6 +168,43 @@ class SendAPIControllerImplTest {
         .exchange()
         .expectStatus()
         .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+    verify(sendRTPService, times(1)).send(any());
+    verify(rtpDtoMapper, times(1)).toRtp(any());
+  }
+
+  @Test
+  @Users.RtpSenderWriter
+  void givenMessageBadFormedWhenSendRTPThenReturnBadRequest() {
+
+    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(sendRTPService.send(any()))
+        .thenReturn(Mono.error(generateMessageBadFormed()));
+
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.BAD_REQUEST);
+
+    verify(sendRTPService, times(1)).send(any());
+    verify(rtpDtoMapper, times(1)).toRtp(any());
+  }
+
+  @Test
+  @Users.RtpSenderWriter
+  void givenBadFiscalCodeWhenSendRTPThenReturnBadRequest() {
+
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateWrongSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.BAD_REQUEST);
+
+    verify(sendRTPService, times(0)).send(any());
+    verify(rtpDtoMapper, times(0)).toRtp(any());
   }
 
   private CreateRtpDto generateSendRequest() {
@@ -187,22 +229,6 @@ class SendAPIControllerImplTest {
     paymentNoticeDto.setExpiryDate(LocalDate.now());
 
     return new CreateRtpDto(payeeDto, payerDto, paymentNoticeDto);
-  }
-
-  @Test
-  @Users.RtpSenderWriter
-  void givenMessageBadFormedWhenSendRTPThenReturnBadRequest() {
-
-    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
-    when(sendRTPService.send(any()))
-        .thenReturn(Mono.error(generateMessageBadFormed()));
-
-    webTestClient.post()
-        .uri("/rtps")
-        .bodyValue(generateSendRequest())
-        .exchange()
-        .expectStatus()
-        .isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   private CreateRtpDto generateWrongSendRequest() {
