@@ -5,18 +5,23 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.activateClient.model.PayerDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
+import java.io.DataInput;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -132,6 +137,22 @@ class SendRTPServiceTest {
 
         StepVerifier.create(result)
             .expectError(PayerNotActivatedException.class)
+            .verify();
+
+        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+    }
+
+    @Test
+    void givenPayerIdBadFormedWhenSendThenMonoError() {
+        when(readApi.findActivationByPayerId(any(), any(), any()))
+            .thenReturn(Mono.error(new WebClientResponseException(400, "Bad Request", null,
+                "{}".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8)));
+
+        Mono<Rtp> result = sendRTPService.send(inputRtp);
+
+        StepVerifier.create(result)
+            .expectError(MessageBadFormed.class)
             .verify();
 
         verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));

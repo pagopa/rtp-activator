@@ -1,14 +1,19 @@
 package it.gov.pagopa.rtp.activator.service.rtp;
 
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
+import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto;
@@ -22,7 +27,6 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestRe
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -89,9 +93,11 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   private Throwable mapResponseToException(WebClientResponseException exception) {
-    if (exception.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-      return new PayerNotActivatedException();
-    }
-    return new RuntimeException("Internal Server Error");
+    return switch (exception.getStatusCode()) {
+      case NOT_FOUND -> new PayerNotActivatedException();
+      case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAsString());
+      default -> new RuntimeException("Internal Server Error");
+    };
   }
+
 }
