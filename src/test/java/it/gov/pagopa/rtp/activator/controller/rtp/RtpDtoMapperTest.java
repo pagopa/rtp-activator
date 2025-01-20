@@ -54,7 +54,6 @@ class RtpDtoMapperTest {
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.rtpSpId()).isEqualTo("rtpSpId");
-    assertThat(rtp.endToEndId()).isEqualTo("endToEndId");
     assertThat(rtp.iban()).isEqualTo("iban");
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");

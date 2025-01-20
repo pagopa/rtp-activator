@@ -26,6 +26,7 @@ public class RtpMapper {
         .iban(rtpEntity.getIban())
         .payTrxRef(rtpEntity.getPayTrxRef())
         .flgConf(rtpEntity.getFlgConf())
+        .subject(rtpEntity.getSubject())
         .status(RtpStatus.valueOf(rtpEntity.getStatus()))
         .build();
   }
@@ -45,6 +46,7 @@ public class RtpMapper {
         .iban(rtp.iban())
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
+        .subject(rtp.subject())
         .status(rtp.status().name())
         .build();
   }

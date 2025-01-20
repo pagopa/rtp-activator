@@ -5,7 +5,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.activateClient.model.PayerDto;
@@ -17,8 +16,6 @@ import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
-import java.io.DataInput;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -54,7 +51,6 @@ class SendRTPServiceTest {
     final String payerId = "payerId";
     final String payeeName = "Payee Name";
     final String payeeId = "payeeId";
-    final String endToEndId = "endToEndId";
     final String rtpSpId = "rtpSpId";
     final String iban = "IT60X0542811101000000123456";
     final String payTrxRef = "ABC/124";
@@ -70,7 +66,7 @@ class SendRTPServiceTest {
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
             .resourceID(ResourceID.createNew())
-            .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId).endToEndId(endToEndId)
+            .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
             .iban(iban).payTrxRef(payTrxRef)
             .flgConf(flgConf).build();
     }
@@ -93,7 +89,7 @@ class SendRTPServiceTest {
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
             .resourceID(ResourceID.createNew())
-            .savingDateTime(LocalDateTime.now()).rtpSpId(activationRtpSpId).endToEndId(endToEndId)
+            .savingDateTime(LocalDateTime.now()).rtpSpId(activationRtpSpId)
             .iban(iban).payTrxRef(payTrxRef)
             .status(RtpStatus.CREATED)
             .flgConf(flgConf)
@@ -118,7 +114,6 @@ class SendRTPServiceTest {
                         && rtp.payeeName().equals(expectedRtp.payeeName())
                         && rtp.payeeId().equals(expectedRtp.payeeId())
                         && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
-                        && rtp.endToEndId().equals(expectedRtp.endToEndId())
                         && rtp.iban().equals(expectedRtp.iban())
                         && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
                         && rtp.flgConf().equals(expectedRtp.flgConf())
