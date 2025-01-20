@@ -95,7 +95,7 @@ public class SendRTPServiceImpl implements SendRTPService {
   private Throwable mapResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
       case NOT_FOUND -> new PayerNotActivatedException();
-      case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAs(ErrorsDto.class));
+      case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAsString());
       default -> new RuntimeException("Internal Server Error");
     };
   }

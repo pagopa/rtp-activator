@@ -21,7 +21,7 @@ public class MessageBadFormed extends RuntimeException {
     try {
       this.errorsDto = objectMapper.readValue(jsonValue, ErrorsDto.class);
     } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+      throw new IllegalArgumentException(e);
     }
   }
 }
