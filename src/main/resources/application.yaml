@@ -1,6 +1,7 @@
 logging.level:
   root: INFO
-  io.opentelemetry: DEBUG
+  io:
+    opentelemetry: DEBUG
 
 spring.application.name: rtp-activator
 
@@ -22,13 +23,17 @@ spring.data.mongodb:
 activation.base-url: ${BASE_URL:http://localhost}
 
 # Enable general instrumentation
-spring.cloud.azure.monitor.instrumentation.enabled: true
-
-# Enable MongoDB specific instrumentation
-spring.cloud.azure.monitor.instrumentation.mongo.enabled: true
-
-# Enable reactor instrumentation (important for reactive stack)
-spring.cloud.azure.monitor.instrumentation.reactor.enabled: true
+spring:
+  cloud:
+    azure:
+      monitor:
+        instrumentation:
+          enabled: true
+          mongo: 
+            enabled: true
+          reactor:
+            enabled: true
+        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING}
 
 service-provider:
   activation:
