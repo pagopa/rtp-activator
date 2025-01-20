@@ -3,37 +3,38 @@ logging.level:
   io:
     opentelemetry: DEBUG
 
-spring.application.name: rtp-activator
+spring:
+  application:
+    name: rtp-activator
+  data:
+    mongodb:
+      uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
+      database: ${DB_NAME:rtp}
+
+activation.base-url: ${BASE_URL:http://localhost}
 
 # enable spring boot actuator health endpoint
 management:
   endpoints:
     enabled-by-default: false
-    web.exposure.include: health
+    web:
+      exposure:
+        include: health
   endpoint:
     health:
       enabled: true
-      probes.enabled: true
-#repository
-  health.mongo.enabled: false
+      probes:
+        enabled: true
+      mongo:
+        enabled: false
+  tracing:
+    enabled: true
 
-spring.data.mongodb:
-  uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
-  database: ${DB_NAME:rtp}
-activation.base-url: ${BASE_URL:http://localhost}
-
-# Enable general instrumentation
-spring:
-  cloud:
-    azure:
-      monitor:
-        instrumentation:
-          enabled: true
-          mongo: 
-            enabled: true
-          reactor:
-            enabled: true
-        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING}
+# OpenTelemetry
+azure:
+  applicationinsights:
+    enabled: true
+    connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:myconnectionstring}
 
 service-provider:
   activation:
