@@ -75,6 +75,7 @@ tasks.compileJava {
 	dependsOn("generateOpenAPISend")
 	dependsOn("generateOpenAPIEPC")
 	dependsOn("generateOpenAPIActivateClient")
+	dependsOn("generateOpenAPIEPCClient")
 }
 
 sourceSets {
