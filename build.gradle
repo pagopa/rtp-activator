@@ -26,6 +26,7 @@ repositories {
 ext {
 	set('springCloudAzureVersion', "5.18.0")
 	set('otelInstrumentationVersion','2.12.0')
+	set('mongodbInstrumentationVersion', '1.32.0')
 }
 
 dependencies {
@@ -47,10 +48,11 @@ dependencies {
 	compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
 
 	// opentelemetry
-	implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
+	//implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
 	// provides the same functionality of spring-boot-starter but configure the azure exporter
 	implementation("com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6")
-
+  	implementation("io.opentelemetry.instrumentation:opentelemetry-mongo-3.7:${mongodbInstrumentationVersion}")
+ 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'io.projectreactor:reactor-test'
