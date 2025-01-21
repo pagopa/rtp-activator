@@ -21,11 +21,7 @@ management:
       enabled: true
       probes:
         enabled: true
-  tracing:
-    opentelemetry:
-      instrumentation:
-        reactor:
-          enabled: true
+
 #repository
   health.mongo.enabled: false
 
@@ -33,3 +29,4 @@ management:
 service-provider:
   activation:
     api-version: v1
+

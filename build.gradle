@@ -25,7 +25,7 @@ repositories {
 
 ext {
 	set('springCloudAzureVersion', "5.18.0")
-	set('otelInstrumentationVersion','2.10.0')
+	set('otelInstrumentationVersion','2.12.0')
 }
 
 dependencies {
