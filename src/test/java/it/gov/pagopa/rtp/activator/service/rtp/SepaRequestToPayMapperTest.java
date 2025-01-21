@@ -48,7 +48,7 @@ class SepaRequestToPayMapperTest {
                 .savingDateTime(savingDateTime).expiryDate(expiryDate).description(description).subject(subject)
                 .noticeNumber(noticeNumber).payTrxRef(payTrxRef).flgConf(flgConf).build();
 
-        SepaRequestToPayRequestResourceDto result = sepaRequestToPayMapper.toRequestToPay(nRtp);
+        var result = sepaRequestToPayMapper.toRequestToPay(nRtp);
 
         assertNotNull(result);
         assertEquals(resourceId.getId().toString(), result.getResourceId());

@@ -15,7 +15,9 @@ import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
-import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
+
+import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
+import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -41,6 +43,8 @@ class SendRTPServiceTest {
     private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig("v1");
     @Mock
     private RtpRepository rtpRepository;
+    @Mock
+    private DefaultApi defaultApi;
 
     private SendRTPServiceImpl sendRTPService;
 
@@ -61,7 +65,7 @@ class SendRTPServiceTest {
     @BeforeEach
     void setUp() {
         sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-                serviceProviderConfig, rtpRepository);
+                serviceProviderConfig, rtpRepository, defaultApi);
         inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -94,8 +98,8 @@ class SendRTPServiceTest {
             .status(RtpStatus.CREATED)
             .flgConf(flgConf)
             .build();
-        SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto(
-                URI.create("http://callback.url"));
+        SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
+            .callbackUrl(URI.create("http://callback.url"));
 
         when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class)))
                 .thenReturn(mockSepaRequestToPayRequestResource);
