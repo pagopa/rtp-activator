@@ -13,6 +13,7 @@ import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
+import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto;
@@ -49,13 +50,15 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final ObjectMapper objectMapper;
   private final ServiceProviderConfig serviceProviderConfig;
   private final RtpRepository rtpRepository;
+  private final DefaultApi sendApi;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
-      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository) {
+      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository, DefaultApi sendApi) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
     this.rtpRepository = rtpRepository;
+    this.sendApi = sendApi;
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
   }
 
@@ -69,6 +72,7 @@ public class SendRTPServiceImpl implements SendRTPService {
         .flatMap(rtpRepository::save)
         // replace log with http request to external service
         .flatMap(this::logRtpAsJson)
+        .flatMap(rtpToSend -> sendApi.postRequestToPayRequests(null, null, sepaRequestToPayMapper.toRequestToPay(rtpToSend)))
         .map(rtp::toRtpSent)
         .flatMap(rtpRepository::save)
         .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
