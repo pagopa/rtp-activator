@@ -47,7 +47,7 @@ dependencies {
 	compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
 
 	// opentelemetry
-	// implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
+	implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
 	// provides the same functionality of spring-boot-starter but configure the azure exporter
 	implementation("com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6")
 
