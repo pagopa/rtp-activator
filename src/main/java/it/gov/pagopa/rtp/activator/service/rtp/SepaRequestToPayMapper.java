@@ -45,7 +45,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SepaRequestToPayMapper {
 
-        public SepaRequestToPayRequestResourceDto toRequestToPay(Rtp rtp) {
+        public SepaRequestToPayRequestResourceDto toEpcRequestToPay(Rtp rtp) {
 
                 SepaRequestToPayRequestResourceDto sepaRequestToPayRequestResourceDto = new SepaRequestToPayRequestResourceDto();
 

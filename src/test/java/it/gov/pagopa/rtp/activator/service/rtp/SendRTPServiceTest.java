@@ -101,7 +101,7 @@ class SendRTPServiceTest {
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
             .callbackUrl(URI.create("http://callback.url"));
 
-        when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class)))
+        when(sepaRequestToPayMapper.toEpcRequestToPay(any(Rtp.class)))
                 .thenReturn(mockSepaRequestToPayRequestResource);
         when(readApi.findActivationByPayerId(any(), any(), any()))
                 .thenReturn(Mono.just(fakeActivationDto));
@@ -121,9 +121,10 @@ class SendRTPServiceTest {
                         && rtp.iban().equals(expectedRtp.iban())
                         && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
                         && rtp.flgConf().equals(expectedRtp.flgConf())
-                        && rtp.status().equals(expectedRtp.status()))
+                        && rtp.status().equals(expectedRtp.status())
+                        && rtp.subject().equals(expectedRtp.subject()))
                 .verifyComplete();
-        verify(sepaRequestToPayMapper, times(1)).toRequestToPay(any(Rtp.class));
+        verify(sepaRequestToPayMapper, times(1)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
     }
 
@@ -138,7 +139,7 @@ class SendRTPServiceTest {
             .expectError(PayerNotActivatedException.class)
             .verify();
 
-        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
     }
 
@@ -154,7 +155,7 @@ class SendRTPServiceTest {
             .expectError(MessageBadFormed.class)
             .verify();
 
-        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
     }
 
@@ -169,7 +170,7 @@ class SendRTPServiceTest {
             .expectError(RuntimeException.class)
             .verify();
 
-        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
     }
 }

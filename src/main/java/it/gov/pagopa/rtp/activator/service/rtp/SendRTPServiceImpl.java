@@ -72,8 +72,8 @@ public class SendRTPServiceImpl implements SendRTPService {
         .flatMap(rtpRepository::save)
         // replace log with http request to external service
         .flatMap(this::logRtpAsJson)
-        .flatMap(rtpToSend -> sendApi.postRequestToPayRequests(null, null, sepaRequestToPayMapper.toRequestToPay(rtpToSend)))
-        .map(rtp::toRtpSent)
+        .flatMap(rtpToSend -> sendApi.postRequestToPayRequests(null, null, sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend)))
+        .map(epcResponse -> Rtp.builder().build())
         .flatMap(rtpRepository::save)
         .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .onErrorMap(WebClientResponseException.class, this::mapResponseToException)
@@ -88,7 +88,7 @@ public class SendRTPServiceImpl implements SendRTPService {
   private String rtpToJson(Rtp rtpToLog) {
     try {
       return objectMapper.writeValueAsString(
-          sepaRequestToPayMapper.toRequestToPay(rtpToLog));
+          sepaRequestToPayMapper.toEpcRequestToPay(rtpToLog));
     } catch (JsonProcessingException e) {
       log.error("Problem while serializing SepaRequestToPayRequestResourceDto object", e);
       return "";
