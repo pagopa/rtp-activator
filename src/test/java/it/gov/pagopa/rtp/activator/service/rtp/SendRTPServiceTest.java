@@ -15,9 +15,9 @@ import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
-
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -110,6 +110,8 @@ class SendRTPServiceTest {
                 .thenReturn(Mono.just(fakeActivationDto));
         when(rtpRepository.save(any()))
                 .thenReturn(Mono.just(expectedRtp));
+        when(defaultApi.postRequestToPayRequests(any(), any(), any()))
+            .thenReturn(Mono.just(new SynchronousSepaRequestToPayCreationResponseDto()));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
         StepVerifier.create(result)
@@ -130,6 +132,7 @@ class SendRTPServiceTest {
         verify(sepaRequestToPayMapper, times(2)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
         verify(defaultApi, times(1)).postRequestToPayRequests(any(), any(), any());
+        verify(rtpRepository, times(2)).save(any());
     }
 
     @Test
@@ -176,5 +179,37 @@ class SendRTPServiceTest {
 
         verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+    }
+
+    @Test
+    void givenInternalErrorOnExternalSendWhenSendThenPropagateMonoError() {
+        var activationRtpSpId = "activationRtpSpId";
+        var activationFiscalCode = "activationFiscalCode";
+        var fakeActivationDto = new ActivationDto();
+        fakeActivationDto.setId(UUID.randomUUID());
+        fakeActivationDto.setEffectiveActivationDate(LocalDateTime.now());
+        var payerDto = new PayerDto();
+        payerDto.setRtpSpId(activationRtpSpId);
+        payerDto.setFiscalCode(activationFiscalCode);
+        fakeActivationDto.setPayer(payerDto);
+        var expectedRtp = Rtp.builder().resourceID(ResourceID.createNew()).build();
+
+        when(readApi.findActivationByPayerId(any(), any(), any()))
+            .thenReturn(Mono.just(fakeActivationDto));
+        when(defaultApi.postRequestToPayRequests(any(), any(), any()))
+            .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+        when(rtpRepository.save(any()))
+            .thenReturn(Mono.just(expectedRtp));
+
+        Mono<Rtp> result = sendRTPService.send(inputRtp);
+
+        StepVerifier.create(result)
+            .expectError(UnsupportedOperationException.class)
+            .verify();
+
+        verify(sepaRequestToPayMapper, times(2)).toEpcRequestToPay(any(Rtp.class));
+        verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+        verify(defaultApi, times(1)).postRequestToPayRequests(any(), any(), any());
+        verify(rtpRepository, times(1)).save(any());
     }
 }

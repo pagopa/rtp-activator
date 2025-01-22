@@ -53,7 +53,8 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final DefaultApi sendApi;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
-      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository, DefaultApi sendApi) {
+      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
+      DefaultApi sendApi) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
@@ -72,11 +73,12 @@ public class SendRTPServiceImpl implements SendRTPService {
         .map(rtp::toRtpWithActivationInfo)
         .flatMap(rtpRepository::save)
         .flatMap(this::logRtpAsJson)
-        .flatMap(rtpToSend -> {
-          // response is ignored atm
-          sendApi.postRequestToPayRequests(null, null, sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
-          return Mono.just(rtpToSend);
-        })
+        .flatMap(rtpToSend ->
+            // response is ignored atm
+            sendApi.postRequestToPayRequests(null, null,
+                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
+                .map(response -> rtpToSend)
+        )
         .map(rtp::toRtpSent)
         .flatMap(rtpRepository::save)
         .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
