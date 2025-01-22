@@ -32,10 +32,6 @@ service-provider:
 
 
 otel:
-  service.name: rtp-activator
-  metrics.exporter: true
-  logs.exporter: true
-
   instrumentation:
     mongo:
       enabled: true 
