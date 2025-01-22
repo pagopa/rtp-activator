@@ -16,13 +16,13 @@ public class ApplicationConfig {
     return WebClientInterceptor.createWebClient(WebClient.builder());
   }
 
-  @Bean("apiClientActivation")
+  @Bean
   public ApiClient apiClient(WebClient webClient) {
     return new ApiClient(webClient);
   }
 
   @Bean
-  public ReadApi readApi(@Qualifier("apiClientActivation") ApiClient apiClient) {
+  public ReadApi readApi(ApiClient apiClient) {
     return new ReadApi(apiClient);
   }
 
