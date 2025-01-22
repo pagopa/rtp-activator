@@ -30,4 +30,19 @@ service-provider:
   activation:
     api-version: v1
 
-otel.instrumentation.mongo.enabled: true
+
+otel:
+  service.name: rtp-activator
+  metrics.exporter: true
+  logs.exporter: true
+
+  instrumentation:
+    mongo:
+      enabled: true 
+      statement-sanitizer.enabled: true
+
+    spring-webflux:
+      enabled: true
+
+    reactor:
+      enabled: true
