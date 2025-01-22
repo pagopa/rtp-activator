@@ -29,3 +29,5 @@ management:
 service-provider:
   activation:
     api-version: v1
+
+otel.instrumentation.mongo.enabled: true
