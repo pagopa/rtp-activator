@@ -37,6 +37,7 @@ import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentificationSchemeNam
 import it.gov.pagopa.rtp.activator.epcClient.model.RemittanceInformation21EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ServiceLevel8ChoiceDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -260,4 +261,34 @@ public class SepaRequestToPayMapper {
 
                 return sepaRequestToPayRequestResourceDto;
         }
+
+        public Rtp toRequestToPay(
+            SynchronousSepaRequestToPayCreationResponseDto responseDto) {
+                // TODO to implement
+                throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
+//                var document = responseDto.getDocument();
+//                var creditorPaymentActivationRequest = document.getCdtrPmtActvtnReqStsRpt();
+//                var groupHeader = creditorPaymentActivationRequest.getGrpHdr();
+//                var paymentInstruction = creditorPaymentActivationRequest.getOrgnlPmtInfAndSts().get(0);
+//                var creditTransferTransaction = paymentInstruction.getTxInfAndSts().getOrgnlTxRef();
+//
+//                return Rtp.builder()
+//                    .resourceID(new ResourceID(UUID.fromString(responseDto.getResourceId())))
+//                    .payerName(paymentInstruction.getTxInfAndSts().getOrgnlTxRef().getDbtrAgt().getFinInstnId().getOthr().getIssr())
+//                    .payerId(paymentInstruction.getTxInfAndSts().getOrgnlTxRef().getDbtrAgt().getFinInstnId().getOthr().getId())
+//                    .rtpSpId(paymentInstruction.getTxInfAndSts().getOrgnlTxRef().getDbtrAgt().getFinInstnId().getBICFI())
+//                    .noticeNumber(creditTransferTransaction.getPmtId().getEndToEndId())
+//                    .payeeName(creditTransferTransaction.getCdtr().getNm())
+//                    .payeeId(creditTransferTransaction.getCdtr().getId().getOrgId().getOthr().get(0).getId())
+//                    .iban(creditTransferTransaction.getCdtrAcct().getId().getIBAN())
+//                    .amount(creditTransferTransaction.getAmt().getInstdAmt().movePointRight(2))
+//                    .payTrxRef(creditTransferTransaction.getCdtrAgt().get(0).getInstrInf().substring(7))
+//                    .flgConf(creditTransferTransaction.get().get(1).getInstrInf())
+//                    .subject(creditTransferTransaction.getRmtInf().getUstrd().get(0).split("/")[0])
+//                    .description(creditTransferTransaction.getRmtInf().getUstrd().get(1).substring(7))
+//                    .expiryDate(LocalDate.parse(paymentInstruction.getXpryDt().getDt()))
+//                    .savingDateTime(LocalDateTime.parse(groupHeader.getCreDtTm()))
+//                    .build();
+        }
+
 }

@@ -59,6 +59,7 @@ class SendRTPServiceTest {
     final String iban = "IT60X0542811101000000123456";
     final String payTrxRef = "ABC/124";
     final String flgConf = "flgConf";
+    final String subject = "subject";
 
     Rtp inputRtp;
 
@@ -72,7 +73,8 @@ class SendRTPServiceTest {
             .resourceID(ResourceID.createNew())
             .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
             .iban(iban).payTrxRef(payTrxRef)
-            .flgConf(flgConf).build();
+            .flgConf(flgConf)
+            .subject(subject).build();
     }
 
     @Test
@@ -97,6 +99,7 @@ class SendRTPServiceTest {
             .iban(iban).payTrxRef(payTrxRef)
             .status(RtpStatus.CREATED)
             .flgConf(flgConf)
+            .subject(subject)
             .build();
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
             .callbackUrl(URI.create("http://callback.url"));
@@ -124,8 +127,9 @@ class SendRTPServiceTest {
                         && rtp.status().equals(expectedRtp.status())
                         && rtp.subject().equals(expectedRtp.subject()))
                 .verifyComplete();
-        verify(sepaRequestToPayMapper, times(1)).toEpcRequestToPay(any(Rtp.class));
+        verify(sepaRequestToPayMapper, times(2)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+        verify(defaultApi, times(1)).postRequestToPayRequests(any(), any(), any());
     }
 
     @Test

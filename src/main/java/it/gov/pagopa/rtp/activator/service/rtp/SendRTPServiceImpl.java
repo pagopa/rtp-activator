@@ -67,16 +67,20 @@ public class SendRTPServiceImpl implements SendRTPService {
 
     return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(),
             serviceProviderConfig.apiVersion())
+        .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException)
         .map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
         .flatMap(rtpRepository::save)
-        // replace log with http request to external service
         .flatMap(this::logRtpAsJson)
-        .flatMap(rtpToSend -> sendApi.postRequestToPayRequests(null, null, sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend)))
-        .map(epcResponse -> Rtp.builder().build())
+        .flatMap(rtpToSend -> {
+          // response is ignored atm
+          sendApi.postRequestToPayRequests(null, null, sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
+          return Mono.just(rtpToSend);
+        })
+        .map(rtp::toRtpSent)
         .flatMap(rtpRepository::save)
         .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
-        .onErrorMap(WebClientResponseException.class, this::mapResponseToException)
+        .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
 
@@ -95,12 +99,16 @@ public class SendRTPServiceImpl implements SendRTPService {
     }
   }
 
-  private Throwable mapResponseToException(WebClientResponseException exception) {
+  private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
       case NOT_FOUND -> new PayerNotActivatedException();
       case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAsString());
       default -> new RuntimeException("Internal Server Error");
     };
+  }
+
+  private Throwable mapExternalSendResponseToException(WebClientResponseException exception) {
+    return new UnsupportedOperationException("Unsupported exception handling for epc response");
   }
 
 }
