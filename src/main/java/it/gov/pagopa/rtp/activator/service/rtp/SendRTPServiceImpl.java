@@ -24,12 +24,14 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
+import java.time.Duration;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 @Service
 @Slf4j
@@ -75,9 +77,12 @@ public class SendRTPServiceImpl implements SendRTPService {
         .flatMap(this::logRtpAsJson)
         .flatMap(rtpToSend ->
             // response is ignored atm
-            sendApi.postRequestToPayRequests(null, null,
+            sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
                     sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2)).jitter(0.75)
+                    .doAfterRetry(signal -> log.info("Retry number {}", signal.totalRetries())))
                 .map(response -> rtpToSend)
+                .defaultIfEmpty(rtpToSend)
         )
         .map(rtp::toRtpSent)
         .flatMap(rtpRepository::save)
