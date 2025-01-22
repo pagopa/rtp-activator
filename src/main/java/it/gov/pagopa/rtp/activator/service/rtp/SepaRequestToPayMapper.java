@@ -212,11 +212,11 @@ public class SepaRequestToPayMapper {
                     .pmtTpInf(paymentTypeInformation26EPC25922V30DS02Dto)
                     .amt(amountType4ChoiceEPC25922V30DS02Dto)
                     .chrgBr(ChargeBearerType1CodeDto.SLEV) // FIXED
-                        .cdtrAgt(cdtBranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto)
-                            .cdtr(partyIdentification135EPC25922V30DS023Dto)
-                                .cdtrAcct(cashAccount40EPC25922V30DS022Dto)
-                                    .instrForCdtrAgt(lInstructionForCreditorAgent3EPC25922V30DS02Dtos)
-                                        .rmtInf(remittanceInformation21EPC25922V30DS02Dto);
+                    .cdtrAgt(cdtBranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto)
+                    .cdtr(partyIdentification135EPC25922V30DS023Dto)
+                    .cdtrAcct(cashAccount40EPC25922V30DS022Dto)
+                    .instrForCdtrAgt(lInstructionForCreditorAgent3EPC25922V30DS02Dtos)
+                    .rmtInf(remittanceInformation21EPC25922V30DS02Dto);
 //                creditTransferTransaction57EPC25922V30DS02Dto.setPmtId(paymentIdentification6EPC25922V30DS02Dto);
 //                creditTransferTransaction57EPC25922V30DS02Dto.setPmtTpInf(paymentTypeInformation26EPC25922V30DS02Dto);
 //                creditTransferTransaction57EPC25922V30DS02Dto
