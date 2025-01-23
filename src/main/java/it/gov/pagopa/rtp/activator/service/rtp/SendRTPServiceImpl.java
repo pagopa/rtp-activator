@@ -13,6 +13,7 @@ import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
+import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto;
@@ -23,12 +24,15 @@ import it.gov.pagopa.rtp.activator.model.generated.epc.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
+import java.time.Duration;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+import reactor.util.retry.RetryBackoffSpec;
 
 @Service
 @Slf4j
@@ -49,13 +53,16 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final ObjectMapper objectMapper;
   private final ServiceProviderConfig serviceProviderConfig;
   private final RtpRepository rtpRepository;
+  private final DefaultApi sendApi;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
-      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository) {
+      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
+      DefaultApi sendApi) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
     this.rtpRepository = rtpRepository;
+    this.sendApi = sendApi;
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
   }
 
@@ -63,17 +70,34 @@ public class SendRTPServiceImpl implements SendRTPService {
   public Mono<Rtp> send(Rtp rtp) {
 
     return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(),
-            serviceProviderConfig.apiVersion())
+            serviceProviderConfig.activation().apiVersion())
+        .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException)
         .map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
         .flatMap(rtpRepository::save)
-        // replace log with http request to external service
         .flatMap(this::logRtpAsJson)
+        .flatMap(rtpToSend ->
+            // response is ignored atm
+            sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
+                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
+                .retryWhen(sendRetryPolicy())
+                .onErrorMap(Throwable::getCause)
+                .map(response -> rtpToSend)
+                .defaultIfEmpty(rtpToSend)
+        )
         .map(rtp::toRtpSent)
         .flatMap(rtpRepository::save)
         .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
-        .onErrorMap(WebClientResponseException.class, this::mapResponseToException)
+        .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
+  }
+
+  private Throwable mapActivationResponseToException(WebClientResponseException exception) {
+    return switch (exception.getStatusCode()) {
+      case NOT_FOUND -> new PayerNotActivatedException();
+      case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAsString());
+      default -> new RuntimeException("Internal Server Error");
+    };
   }
 
   private Mono<Rtp> logRtpAsJson(Rtp rtp) {
@@ -84,19 +108,22 @@ public class SendRTPServiceImpl implements SendRTPService {
   private String rtpToJson(Rtp rtpToLog) {
     try {
       return objectMapper.writeValueAsString(
-          sepaRequestToPayMapper.toRequestToPay(rtpToLog));
+          sepaRequestToPayMapper.toEpcRequestToPay(rtpToLog));
     } catch (JsonProcessingException e) {
       log.error("Problem while serializing SepaRequestToPayRequestResourceDto object", e);
       return "";
     }
   }
 
-  private Throwable mapResponseToException(WebClientResponseException exception) {
-    return switch (exception.getStatusCode()) {
-      case NOT_FOUND -> new PayerNotActivatedException();
-      case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAsString());
-      default -> new RuntimeException("Internal Server Error");
-    };
+  private RetryBackoffSpec sendRetryPolicy() {
+    return Retry.backoff(serviceProviderConfig.send().retry().maxAttempts(),
+            Duration.ofMillis(serviceProviderConfig.send().retry().backoffMinDuration()))
+        .jitter(serviceProviderConfig.send().retry().backoffJitter())
+        .doAfterRetry(signal -> log.info("Retry number {}", signal.totalRetries()));
+  }
+
+  private Throwable mapExternalSendResponseToException(WebClientResponseException exception) {
+    return new UnsupportedOperationException("Unsupported exception handling for epc response");
   }
 
 }

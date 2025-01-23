@@ -8,7 +8,6 @@ import org.mockito.*;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
-import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,7 +25,7 @@ class SepaRequestToPayMapperTest {
 
 
     @Test
-    void testToRequestToPay() {
+    void testToEpcRequestToPay() {
         ResourceID resourceId = ResourceID.createNew();
         String payerId = "payerId123";
         String payeeId = "payeeId123";
@@ -48,7 +47,7 @@ class SepaRequestToPayMapperTest {
                 .savingDateTime(savingDateTime).expiryDate(expiryDate).description(description).subject(subject)
                 .noticeNumber(noticeNumber).payTrxRef(payTrxRef).flgConf(flgConf).build();
 
-        SepaRequestToPayRequestResourceDto result = sepaRequestToPayMapper.toRequestToPay(nRtp);
+        var result = sepaRequestToPayMapper.toEpcRequestToPay(nRtp);
 
         assertNotNull(result);
         assertEquals(resourceId.getId().toString(), result.getResourceId());
