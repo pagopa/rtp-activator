@@ -81,6 +81,7 @@ public class SendRTPServiceImpl implements SendRTPService {
                     sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
                 .retryWhen(Retry.backoff(3, Duration.ofSeconds(2)).jitter(0.75)
                     .doAfterRetry(signal -> log.info("Retry number {}", signal.totalRetries())))
+                .onErrorMap(Throwable::getCause)
                 .map(response -> rtpToSend)
                 .defaultIfEmpty(rtpToSend)
         )
