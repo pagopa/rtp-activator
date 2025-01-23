@@ -41,12 +41,3 @@ otel:
 
     reactor:
       enabled: true
-
-    rxjava:
-      enabled: true
-
-    reactor-netty:
-      enabled: true
-
-    experimental:
-      span-suppression-strategy: none
