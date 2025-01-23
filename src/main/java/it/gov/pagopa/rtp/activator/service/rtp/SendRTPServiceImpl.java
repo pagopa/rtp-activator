@@ -70,7 +70,7 @@ public class SendRTPServiceImpl implements SendRTPService {
   public Mono<Rtp> send(Rtp rtp) {
 
     return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(),
-            serviceProviderConfig.apiVersion())
+            serviceProviderConfig.activation().apiVersion())
         .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException)
         .map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
@@ -116,9 +116,9 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   private RetryBackoffSpec sendRetryPolicy() {
-    return Retry.backoff(serviceProviderConfig.maxAttempts(),
-            Duration.ofMillis(serviceProviderConfig.backoffMinDuration()))
-        .jitter(serviceProviderConfig.backoffJitter())
+    return Retry.backoff(serviceProviderConfig.send().retry().maxAttempts(),
+            Duration.ofMillis(serviceProviderConfig.send().retry().backoffMinDuration()))
+        .jitter(serviceProviderConfig.send().retry().backoffJitter())
         .doAfterRetry(signal -> log.info("Retry number {}", signal.totalRetries()));
   }
 

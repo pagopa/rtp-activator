@@ -9,6 +9,9 @@ import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.activateClient.model.PayerDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Activation;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
@@ -40,9 +43,9 @@ class SendRTPServiceTest {
     private SepaRequestToPayMapper sepaRequestToPayMapper;
     @Mock
     private ReadApi readApi;
-    private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig("v1",
-        "http://localhost:8080",
-        0, 0, 0);
+    private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig(
+        new Activation("http://localhost:8080"),
+        new Send("v1", new Retry(0, 0, 0)));
     @Mock
     private RtpRepository rtpRepository;
     @Mock

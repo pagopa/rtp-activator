@@ -28,7 +28,7 @@ public class ApplicationConfig {
   @Bean
   public DefaultApi defaultApi(ServiceProviderConfig serviceProviderConfig) {
     var httpClient = new DefaultApi();
-    httpClient.getApiClient().setBasePath(serviceProviderConfig.epcMockUrl());
+    httpClient.getApiClient().setBasePath(serviceProviderConfig.send().epcMockUrl());
     return httpClient;
   }
 }
