@@ -31,28 +31,15 @@ service-provider:
   activation:
     api-version: v1
 
-# OpenTelemetry
-applicationinsights:
-  enabled: true
-  connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:myconnectionstring}
 
 otel:
-  log:
-    level: ${OPENTELEMETRY_LOG_LEVEL:INFO}
-  traces:
-    sampler:
-      probability: 1.0 # sample probability for tracing (spans)
-  metric:
-    export:
-      interval: 60000 # sampling rate for metrics (millis)
   instrumentation:
-    logback-appender:
-      enabled: true # enable logback instrumentation
-    micrometer:
-      enabled: false
     mongo:
-      enabled: true
+      enabled: true 
+
     spring-webflux:
       enabled: true
+
     reactor:
       enabled: true
+
