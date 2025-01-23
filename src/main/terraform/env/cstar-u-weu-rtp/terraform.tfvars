@@ -53,4 +53,7 @@ rtp_environment_configs = {
   BASE_URL                  : "https://api-rtp.uat.cstar.pagopa.it/rtp/activation/activations/"
   OTEL_TRACES_SAMPLER       : "always_on"
   EPC_MOCK_URL              : "https://api-rtp.uat.cstar.pagopa.it/rtp/mock"
+  EPC_SEND_RETRY_MAX_ATTEMPTS: 1
+  EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS: 1000
+  EPC_SEND_RETRY_BACKOFF_JITTER: 0.75
 }
