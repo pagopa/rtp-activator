@@ -40,7 +40,9 @@ class SendRTPServiceTest {
     private SepaRequestToPayMapper sepaRequestToPayMapper;
     @Mock
     private ReadApi readApi;
-    private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig("v1", "http://localhost:8080");
+    private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig("v1",
+        "http://localhost:8080",
+        0, 0, 0);
     @Mock
     private RtpRepository rtpRepository;
     @Mock
