@@ -37,7 +37,6 @@ import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentificationSchemeNam
 import it.gov.pagopa.rtp.activator.epcClient.model.RemittanceInformation21EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ServiceLevel8ChoiceDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
