@@ -22,3 +22,5 @@ activation.base-url: ${BASE_URL:http://localhost}
 service-provider:
   activation:
     api-version: v1
+  send:
+    epc-mock-url: ${EPC_MOCK_URL:https://api-rtp.dev.cstar.pagopa.it/rtp/mock}
