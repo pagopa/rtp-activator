@@ -54,6 +54,7 @@ class RtpDtoMapperTest {
     assertEquals(rtpEntity.getDescription(), rtp.description());
     assertEquals(LocalDate.ofInstant(rtpEntity.getExpiryDate(), ZoneOffset.UTC), rtp.expiryDate());
     assertEquals(rtpEntity.getPayerId(), rtp.payerId());
+    assertEquals(rtpEntity.getPayerName(), rtp.payerName());
     assertEquals(rtpEntity.getPayeeName(), rtp.payeeName());
     assertEquals(rtpEntity.getPayeeId(), rtp.payeeId());
     assertEquals(rtpEntity.getResourceID(), rtp.resourceID().getId());
@@ -95,6 +96,7 @@ class RtpDtoMapperTest {
     assertEquals(rtp.description(), rtpEntity.getDescription());
     assertEquals(rtp.expiryDate().atStartOfDay().toInstant(ZoneOffset.UTC), rtpEntity.getExpiryDate());
     assertEquals(rtp.payerId(), rtpEntity.getPayerId());
+    assertEquals(rtp.payerName(), rtpEntity.getPayerName());
     assertEquals(rtp.payeeName(), rtpEntity.getPayeeName());
     assertEquals(rtp.payeeId(), rtpEntity.getPayeeId());
     assertEquals(rtp.resourceID().getId(), rtpEntity.getResourceID());
