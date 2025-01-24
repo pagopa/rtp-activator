@@ -79,6 +79,7 @@ tasks.compileJava {
 	dependsOn("generateOpenAPISend")
 	dependsOn("generateOpenAPIEPC")
 	dependsOn("generateOpenAPIActivateClient")
+	dependsOn("generateOpenAPIEPCClient")
 }
 
 sourceSets {
@@ -198,6 +199,28 @@ tasks.register('generateOpenAPIEPC', GenerateTask) {
 	])
 }
 
+tasks.register('generateOpenAPIEPCClient', GenerateTask) {
+	generatorName.set("java")
+	inputSpec.set("$rootDir/openapi/EPC133-22 v3.1 - SRTP scheme rulebook v3.1 related API specifications_optimized.yaml")
+	outputDir.set("$projectDir/build/generated")
+	apiPackage.set("it.gov.pagopa.rtp.activator.epcClient.api")
+	modelPackage.set("it.gov.pagopa.rtp.activator.epcClient.model")
+	invokerPackage.set("it.gov.pagopa.rtp.activator.epcClient.invoker")
+	modelNameSuffix.set("Dto")
+	generateApiTests.set(false)
+	generateApiDocumentation.set(false)
+	generateApiTests.set(false)
+	generateModelTests.set(false)
+	library.set("webclient")
+	configOptions.set([
+			"dateLibrary"         : "java8",
+			"useJakartaEe"        : "true",
+	])
+	typeMappings.set([
+			"DateTime"       : "java.time.LocalDateTime",
+			"zoned-date-time": "java.time.ZonedDateTime"
+	])
+}
 
 graalvmNative {
 	binaries {

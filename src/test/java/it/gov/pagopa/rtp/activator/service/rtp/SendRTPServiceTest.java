@@ -9,13 +9,18 @@ import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.activateClient.model.PayerDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Activation;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
-import it.gov.pagopa.rtp.activator.model.generated.epc.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
+import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -38,9 +43,13 @@ class SendRTPServiceTest {
     private SepaRequestToPayMapper sepaRequestToPayMapper;
     @Mock
     private ReadApi readApi;
-    private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig("v1");
+    private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig(
+        new Activation("http://localhost:8080"),
+        new Send("v1", new Retry(0, 0, 0)));
     @Mock
     private RtpRepository rtpRepository;
+    @Mock
+    private DefaultApi defaultApi;
 
     private SendRTPServiceImpl sendRTPService;
 
@@ -55,20 +64,22 @@ class SendRTPServiceTest {
     final String iban = "IT60X0542811101000000123456";
     final String payTrxRef = "ABC/124";
     final String flgConf = "flgConf";
+    final String subject = "subject";
 
     Rtp inputRtp;
 
     @BeforeEach
     void setUp() {
         sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-                serviceProviderConfig, rtpRepository);
+                serviceProviderConfig, rtpRepository, defaultApi);
         inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
             .resourceID(ResourceID.createNew())
             .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
             .iban(iban).payTrxRef(payTrxRef)
-            .flgConf(flgConf).build();
+            .flgConf(flgConf)
+            .subject(subject).build();
     }
 
     @Test
@@ -93,16 +104,19 @@ class SendRTPServiceTest {
             .iban(iban).payTrxRef(payTrxRef)
             .status(RtpStatus.CREATED)
             .flgConf(flgConf)
+            .subject(subject)
             .build();
-        SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto(
-                URI.create("http://callback.url"));
+        SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
+            .callbackUrl(URI.create("http://callback.url"));
 
-        when(sepaRequestToPayMapper.toRequestToPay(any(Rtp.class)))
+        when(sepaRequestToPayMapper.toEpcRequestToPay(any(Rtp.class)))
                 .thenReturn(mockSepaRequestToPayRequestResource);
         when(readApi.findActivationByPayerId(any(), any(), any()))
                 .thenReturn(Mono.just(fakeActivationDto));
         when(rtpRepository.save(any()))
                 .thenReturn(Mono.just(expectedRtp));
+        when(defaultApi.postRequestToPayRequests(any(), any(), any()))
+            .thenReturn(Mono.just(new SynchronousSepaRequestToPayCreationResponseDto()));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
         StepVerifier.create(result)
@@ -117,10 +131,13 @@ class SendRTPServiceTest {
                         && rtp.iban().equals(expectedRtp.iban())
                         && rtp.payTrxRef().equals(expectedRtp.payTrxRef())
                         && rtp.flgConf().equals(expectedRtp.flgConf())
-                        && rtp.status().equals(expectedRtp.status()))
+                        && rtp.status().equals(expectedRtp.status())
+                        && rtp.subject().equals(expectedRtp.subject()))
                 .verifyComplete();
-        verify(sepaRequestToPayMapper, times(1)).toRequestToPay(any(Rtp.class));
+        verify(sepaRequestToPayMapper, times(2)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+        verify(defaultApi, times(1)).postRequestToPayRequests(any(), any(), any());
+        verify(rtpRepository, times(2)).save(any());
     }
 
     @Test
@@ -134,7 +151,7 @@ class SendRTPServiceTest {
             .expectError(PayerNotActivatedException.class)
             .verify();
 
-        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
     }
 
@@ -150,7 +167,7 @@ class SendRTPServiceTest {
             .expectError(MessageBadFormed.class)
             .verify();
 
-        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
     }
 
@@ -165,7 +182,39 @@ class SendRTPServiceTest {
             .expectError(RuntimeException.class)
             .verify();
 
-        verify(sepaRequestToPayMapper, times(0)).toRequestToPay(any(Rtp.class));
+        verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+    }
+
+    @Test
+    void givenInternalErrorOnExternalSendWhenSendThenPropagateMonoError() {
+        var activationRtpSpId = "activationRtpSpId";
+        var activationFiscalCode = "activationFiscalCode";
+        var fakeActivationDto = new ActivationDto();
+        fakeActivationDto.setId(UUID.randomUUID());
+        fakeActivationDto.setEffectiveActivationDate(LocalDateTime.now());
+        var payerDto = new PayerDto();
+        payerDto.setRtpSpId(activationRtpSpId);
+        payerDto.setFiscalCode(activationFiscalCode);
+        fakeActivationDto.setPayer(payerDto);
+        var expectedRtp = Rtp.builder().resourceID(ResourceID.createNew()).build();
+
+        when(readApi.findActivationByPayerId(any(), any(), any()))
+            .thenReturn(Mono.just(fakeActivationDto));
+        when(defaultApi.postRequestToPayRequests(any(), any(), any()))
+            .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+        when(rtpRepository.save(any()))
+            .thenReturn(Mono.just(expectedRtp));
+
+        Mono<Rtp> result = sendRTPService.send(inputRtp);
+
+        StepVerifier.create(result)
+            .expectError(UnsupportedOperationException.class)
+            .verify();
+
+        verify(sepaRequestToPayMapper, times(2)).toEpcRequestToPay(any(Rtp.class));
+        verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
+        verify(defaultApi, times(1)).postRequestToPayRequests(any(), any(), any());
+        verify(rtpRepository, times(1)).save(any());
     }
 }
