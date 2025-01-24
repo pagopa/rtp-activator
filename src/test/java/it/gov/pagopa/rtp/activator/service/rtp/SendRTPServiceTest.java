@@ -59,6 +59,7 @@ class SendRTPServiceTest {
     final LocalDate expiryDate = LocalDate.now();
     final String payerId = "payerId";
     final String payeeName = "Payee Name";
+    final String payerName = "Payer Name";
     final String payeeId = "payeeId";
     final String rtpSpId = "rtpSpId";
     final String iban = "IT60X0542811101000000123456";
@@ -79,6 +80,7 @@ class SendRTPServiceTest {
             .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
             .iban(iban).payTrxRef(payTrxRef)
             .flgConf(flgConf)
+            .payerName(payerName)
             .subject(subject).build();
     }
 
@@ -99,6 +101,7 @@ class SendRTPServiceTest {
         var expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
             .expiryDate(expiryDate)
             .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
+            .payerName(payerName)
             .resourceID(ResourceID.createNew())
             .savingDateTime(LocalDateTime.now()).rtpSpId(activationRtpSpId)
             .iban(iban).payTrxRef(payTrxRef)
@@ -109,7 +112,7 @@ class SendRTPServiceTest {
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
             .callbackUrl(URI.create("http://callback.url"));
 
-        when(sepaRequestToPayMapper.toEpcRequestToPay(any(Rtp.class)))
+        when(sepaRequestToPayMapper.toEpcRequestToPay(any()))
                 .thenReturn(mockSepaRequestToPayRequestResource);
         when(readApi.findActivationByPayerId(any(), any(), any()))
                 .thenReturn(Mono.just(fakeActivationDto));
@@ -125,6 +128,7 @@ class SendRTPServiceTest {
                         && rtp.description().equals(expectedRtp.description())
                         && rtp.expiryDate().equals(expectedRtp.expiryDate())
                         && rtp.payerId().equals(expectedRtp.payerId())
+                        && rtp.payerName().equals(expectedRtp.payerName())
                         && rtp.payeeName().equals(expectedRtp.payeeName())
                         && rtp.payeeId().equals(expectedRtp.payeeId())
                         && rtp.rtpSpId().equals(expectedRtp.rtpSpId())
