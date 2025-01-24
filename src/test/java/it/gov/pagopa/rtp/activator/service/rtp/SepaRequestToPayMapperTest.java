@@ -29,7 +29,7 @@ class SepaRequestToPayMapperTest {
         ResourceID resourceId = ResourceID.createNew();
         String payerId = "payerId123";
         String payeeId = "payeeId123";
-        String payeeName = "Mario Rossi";
+        String payeeName = "Comune di Bugliano";
         String rtpSpId = "BIC123456";
         String iban = "IT60X0542811101000000123456";
         BigDecimal amount = new BigDecimal("99999999999");
@@ -42,7 +42,7 @@ class SepaRequestToPayMapperTest {
         String payerName = "John Doe";
         String subject = "subject";
 
-        Rtp nRtp = Rtp.builder().resourceID(resourceId).payerId(payerId).payeeName(payerName).payeeId(payeeId)
+        Rtp nRtp = Rtp.builder().resourceID(resourceId).payerId(payerId).payerName(payerName).payeeId(payeeId)
                 .payeeName(payeeName).rtpSpId(rtpSpId).iban(iban).amount(amount)
                 .savingDateTime(savingDateTime).expiryDate(expiryDate).description(description).subject(subject)
                 .noticeNumber(noticeNumber).payTrxRef(payTrxRef).flgConf(flgConf).build();
