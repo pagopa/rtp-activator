@@ -46,14 +46,11 @@ dependencies {
 	// https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api
 	compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
 
-	// opentelemetry
-	//implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.12.0")
-	// provides the same functionality of spring-boot-starter but configure the azure exporter
-	implementation("com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6")
-	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator
- 	implementation("io.opentelemetry.instrumentation:opentelemetry-mongo-3.1:2.12.0-alpha")
+	// Alternative to com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6
+	// implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.12.0")
+    // implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.30")
 
-  	// OpenTelemetry Instrumentation
+	implementation("com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6")
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
