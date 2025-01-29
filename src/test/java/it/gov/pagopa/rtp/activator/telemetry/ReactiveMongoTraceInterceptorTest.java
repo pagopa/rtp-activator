@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
 import com.mongodb.reactivestreams.client.MongoDatabase;
@@ -17,8 +18,7 @@ import com.mongodb.reactivestreams.client.MongoDatabase;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
-import it.gov.pagopa.rtp.activator.utils.QueryAnnotatedRepository;
-import it.gov.pagopa.rtp.activator.utils.TestRepository;
+
 
 import org.aopalliance.intercept.MethodInvocation;
 import reactor.core.publisher.Mono;
@@ -106,5 +106,16 @@ public class ReactiveMongoTraceInterceptorTest {
                 "Expected query details to include the custom query from the annotation");
     }
 
+    public interface QueryAnnotatedRepository extends ReactiveMongoRepository<Object, String> {
+        @Query("customQuery")
+        Mono<Object> findByCustomQuery();
+
+    }
+
+    public interface TestRepository extends ReactiveMongoRepository<Object, String> {
+        @TraceMongo
+        Mono<Object> findById(String id);
+        Mono<Object> getMongoTemplate();
+    }
 
 }
