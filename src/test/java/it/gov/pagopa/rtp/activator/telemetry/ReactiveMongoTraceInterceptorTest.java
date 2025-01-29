@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.telemetry;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
@@ -16,6 +17,7 @@ import com.mongodb.reactivestreams.client.MongoDatabase;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanBuilder;
 import io.opentelemetry.api.trace.Tracer;
+import it.gov.pagopa.rtp.activator.utils.QueryAnnotatedRepository;
 import it.gov.pagopa.rtp.activator.utils.TestRepository;
 
 import org.aopalliance.intercept.MethodInvocation;
@@ -33,7 +35,7 @@ public class ReactiveMongoTraceInterceptorTest {
         ReactiveMongoRepository<?, ?> mockRepo = mock(ReactiveMongoRepository.class);
 
         when(invocation.getMethod()).thenReturn(Object.class.getMethod("toString"));
-        when(invocation.getThis()).thenReturn(mockRepo);  
+        when(invocation.getThis()).thenReturn(mockRepo);
         when(invocation.proceed()).thenReturn(Mono.just("data"));
 
         ReactiveMongoTraceInterceptor interceptor = new ReactiveMongoTraceInterceptor(tracer, mongoTemplate);
@@ -42,7 +44,6 @@ public class ReactiveMongoTraceInterceptorTest {
         verify(invocation).proceed();
         verifyNoInteractions(tracer);
     }
-
 
     @Test
     void invoke_AppliesTracingWhenAnnotationPresent() throws Throwable {
@@ -83,11 +84,26 @@ public class ReactiveMongoTraceInterceptorTest {
         when(invocation.proceed()).thenReturn(Mono.empty());
         when(invocation.getThis()).thenReturn(mockRepo);
 
-        ReactiveMongoTraceInterceptor interceptor = new ReactiveMongoTraceInterceptor(mock(Tracer.class), mock(ReactiveMongoTemplate.class));
+        ReactiveMongoTraceInterceptor interceptor = new ReactiveMongoTraceInterceptor(mock(Tracer.class),
+                mock(ReactiveMongoTemplate.class));
         interceptor.invoke(invocation);
-        
+
         verify(invocation).proceed();
         verifyNoInteractions(tracer);
+    }
+
+    @Test
+    void extractQueryDetails_UsesQueryAnnotation() throws NoSuchMethodException {
+        Tracer tracer = mock(Tracer.class);
+        ReactiveMongoTemplate mongoTemplate = mock(ReactiveMongoTemplate.class);
+        ReactiveMongoTraceInterceptor interceptor = new ReactiveMongoTraceInterceptor(tracer, mongoTemplate);
+
+        Method method = QueryAnnotatedRepository.class.getMethod("findByCustomQuery");
+
+        String queryDetails = interceptor.extractQueryDetails(method, new Object[] {});
+
+        assertTrue(queryDetails.contains("Query: customQuery"),
+                "Expected query details to include the custom query from the annotation");
     }
 
 

@@ -84,7 +84,7 @@ public class ReactiveMongoTraceInterceptor implements MethodInterceptor {
      * @param args   The method arguments
      * @return A string containing the query details
      */
-    private String extractQueryDetails(Method method, Object[] args) {
+    protected String extractQueryDetails(Method method, Object[] args) {
         StringBuilder queryInfo = new StringBuilder();
 
         // Check for @Query annotation
