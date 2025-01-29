@@ -54,7 +54,7 @@ public class ReactiveMongoTraceInterceptor implements MethodInterceptor {
 
         // Find the repository interface
         return java.util.Arrays.stream(interfaces)
-                .filter(iface -> ReactiveMongoRepository.class.isAssignableFrom(iface))
+                .filter(ReactiveMongoRepository.class::isAssignableFrom)
                 .findFirst()
                 .map(Class::getSimpleName)
                 .orElse(repository.getClass().getSimpleName());

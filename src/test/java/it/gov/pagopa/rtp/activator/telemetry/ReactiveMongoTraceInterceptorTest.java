@@ -24,7 +24,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-public class ReactiveMongoTraceInterceptorTest {
+class ReactiveMongoTraceInterceptorTest {
 
     @Test
     void invoke_SkipsTracingWhenAnnotationAbsent() throws Throwable {
