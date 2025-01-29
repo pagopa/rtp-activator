@@ -171,7 +171,6 @@ public class ReactiveMongoTraceInterceptor implements MethodInterceptor {
                                     .doOnSubscribe(subscription -> span.addEvent("MongoDB operation started"))
                                     .doOnSuccess(result -> span.addEvent("MongoDB operation completed successfully"))
                                     .doOnError(error -> {
-                                        System.out.println("Error occurred: " + error.getMessage());  // Log to check if error is caught
                                         span.recordException(error);
                                         span.setStatus(StatusCode.ERROR,
                                                 "MongoDB operation failed: " + error.getMessage());
