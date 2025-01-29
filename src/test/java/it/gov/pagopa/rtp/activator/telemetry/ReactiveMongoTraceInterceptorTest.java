@@ -27,7 +27,7 @@ import reactor.test.StepVerifier;
 class ReactiveMongoTraceInterceptorTest {
 
     @Test
-    void invoke_SkipsTracingWhenAnnotationAbsent() throws Throwable {
+    void invokeSkipsTracingWhenAnnotationAbsent() throws Throwable {
         Tracer tracer = mock(Tracer.class);
         ReactiveMongoTemplate mongoTemplate = mock(ReactiveMongoTemplate.class);
         MethodInvocation invocation = mock(MethodInvocation.class);
@@ -46,7 +46,7 @@ class ReactiveMongoTraceInterceptorTest {
     }
 
     @Test
-    void invoke_AppliesTracingWhenAnnotationPresent() throws Throwable {
+    void invokeAppliesTracingWhenAnnotationPresent() throws Throwable {
         Tracer tracer = mock(Tracer.class);
         SpanBuilder spanBuilder = mock(SpanBuilder.class);
         Span span = mock(Span.class);
@@ -74,7 +74,7 @@ class ReactiveMongoTraceInterceptorTest {
     }
 
     @Test
-    void tracingLogic_IgnoresMethodsInIgnoreList() throws Throwable {
+    void tracingLogicIgnoresMethodsInIgnoreList() throws Throwable {
         Tracer tracer = mock(Tracer.class);
         MethodInvocation invocation = mock(MethodInvocation.class);
         Method method = TestRepository.class.getMethod("getMongoTemplate");
@@ -93,7 +93,7 @@ class ReactiveMongoTraceInterceptorTest {
     }
 
     @Test
-    void extractQueryDetails_UsesQueryAnnotation() throws NoSuchMethodException {
+    void extractQueryDetailsUsesQueryAnnotation() throws NoSuchMethodException {
         Tracer tracer = mock(Tracer.class);
         ReactiveMongoTemplate mongoTemplate = mock(ReactiveMongoTemplate.class);
         ReactiveMongoTraceInterceptor interceptor = new ReactiveMongoTraceInterceptor(tracer, mongoTemplate);
