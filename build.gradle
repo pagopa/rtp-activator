@@ -2,10 +2,10 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.3.5'
-	id 'io.spring.dependency-management' version '1.1.6'
-	id 'org.graalvm.buildtools.native' version '0.10.3'
-	id("org.openapi.generator") version "7.10.0"
+	id 'org.springframework.boot' version '3.4.1'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.graalvm.buildtools.native' version '0.10.4'
+	id("org.openapi.generator") version "7.11.0"
 	id "org.sonarqube" version "6.0.0.5145"
 	id 'jacoco'
 }
@@ -24,8 +24,8 @@ repositories {
 }
 
 ext {
-	set('springCloudAzureVersion', "5.18.0")
-	set('otelInstrumentationVersion','2.10.0')
+	set('springCloudAzureVersion', "5.19.0")
+	set('otelInstrumentationVersion','2.12.0')
 }
 
 dependencies {
@@ -39,16 +39,17 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-oauth2-jose'
 
 //	implementation 'com.azure.spring:spring-cloud-azure-starter-actuator'
-	implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
+	implementation("io.swagger.core.v3:swagger-annotations:2.2.28")
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6")
 	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	// https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api
 	compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
 
-	// opentelemetry
-	// implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
-	// provides the same functionality of spring-boot-starter but configure the azure exporter
+	// Alternative to com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6
+	// implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.12.0")
+    // implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.30")
+
 	implementation("com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6")
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
