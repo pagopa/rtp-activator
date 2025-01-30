@@ -32,6 +32,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.aot.DisabledInAotMode;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -205,6 +206,49 @@ class SendAPIControllerImplTest {
     verify(sendRTPService, times(0)).send(any());
     verify(rtpDtoMapper, times(0)).toRtp(any());
   }
+
+
+  @Test
+  @Users.RtpSenderWriter
+  void givenBadExpiryDate_whenSendRTP_thenReturnBadRequest() {
+
+    String invalidJson = """
+            {
+                "payee": {
+                    "name": "Comune di Smartino",
+                    "payeeId": "77777777777",
+                    "payTrxRef": "ABC/124"
+                },
+                "payer": {
+                    "name": "Pigrolo",
+                    "payerId": "NNAPRL01D01H501T"
+                },
+                "paymentNotice": {
+                    "noticeNumber": "311111111112222222",
+                    "description": "Paga questo avviso",
+                    "subject": "TARI 2025",
+                    "amount": 40000,
+                    "expiryDate": "UNPARSABLE"
+                }
+            }
+            """;
+
+    // When: Sending a POST request with invalid type
+    webTestClient.post()
+            .uri("/rtps")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(invalidJson)
+            .exchange()
+            // Then: Verify the response
+            .expectStatus().isBadRequest()
+            .expectBody()
+            .jsonPath("$.error").isEqualTo("Malformed request")
+            .jsonPath("$.details").exists();
+
+    verify(sendRTPService, times(0)).send(any());
+    verify(rtpDtoMapper, times(0)).toRtp(any());
+  }
+
 
   private CreateRtpDto generateSendRequest() {
 
