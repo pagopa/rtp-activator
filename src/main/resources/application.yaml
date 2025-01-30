@@ -1,6 +1,15 @@
-logging.level.root: INFO
+logging.level:
+  root: INFO
 
-spring.application.name: rtp-activator
+spring:
+  application:
+    name: rtp-activator
+  data:
+    mongodb:
+      uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
+      database: ${DB_NAME:rtp}
+
+activation.base-url: ${BASE_URL:http://localhost}
 
 # enable spring boot actuator health endpoint
 management:
@@ -10,14 +19,14 @@ management:
   endpoint:
     health:
       enabled: true
-      probes.enabled: true
+      probes:
+        enabled: true
+  otlp:
+    tracing:
+      export:
+        type: console
 #repository
   health.mongo.enabled: false
-
-spring.data.mongodb:
-  uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
-  database: ${DB_NAME:rtp}
-activation.base-url: ${BASE_URL:http://localhost}
 
 service-provider:
   activation:
@@ -28,3 +37,9 @@ service-provider:
       max-attempts: ${EPC_SEND_RETRY_MAX_ATTEMPTS:3}
       backoff-min-duration: ${EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS:1000}
       backoff-jitter: ${EPC_SEND_RETRY_BACKOFF_JITTER:0.75}
+
+otel:
+  instrumentation:
+    mongo:
+      enabled: true
+
