@@ -84,7 +84,6 @@ public class SepaRequestToPayMapper {
                     .id(party38ChoiceEPC25922V30DS02Dto);
 
                 var dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto = new FinancialInstitutionIdentification18EPC25922V30DS02Dto();
-                // regex
                 if (rtp.serviceProviderDebtor().matches(BIC_REGEX)) {
                     dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setBICFI(rtp.serviceProviderDebtor());
                 } else {
