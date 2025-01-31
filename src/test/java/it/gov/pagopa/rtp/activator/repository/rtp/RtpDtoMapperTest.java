@@ -39,11 +39,12 @@ class RtpDtoMapperTest {
         .subject("subject")
         .resourceID(uuid)
         .savingDateTime(Instant.now())
-        .rtpSpId("rtpSpId")
+        .serviceProviderDebtor("serviceProviderDebtor")
         .iban("iban123")
         .payTrxRef("ABC/124")
         .flgConf("Y")
         .status(RtpStatus.CREATED.name())
+        .serviceProviderCreditor("PagoPA")
         .build();
 
     Rtp rtp = rtpMapper.toDomain(rtpEntity);
@@ -59,11 +60,12 @@ class RtpDtoMapperTest {
     assertEquals(rtpEntity.getPayeeId(), rtp.payeeId());
     assertEquals(rtpEntity.getResourceID(), rtp.resourceID().getId());
     assertEquals(LocalDateTime.ofInstant(rtpEntity.getSavingDateTime(), ZoneOffset.UTC), rtp.savingDateTime());
-    assertEquals(rtpEntity.getRtpSpId(), rtp.rtpSpId());
+    assertEquals(rtpEntity.getServiceProviderDebtor(), rtp.serviceProviderDebtor());
     assertEquals(rtpEntity.getIban(), rtp.iban());
     assertEquals(rtpEntity.getPayTrxRef(), rtp.payTrxRef());
     assertEquals(rtpEntity.getFlgConf(), rtp.flgConf());
     assertEquals(rtpEntity.getStatus(), rtp.status().name());
+    assertEquals(rtpEntity.getServiceProviderCreditor(), rtp.serviceProviderCreditor());
   }
 
   @Test
@@ -81,11 +83,12 @@ class RtpDtoMapperTest {
         .resourceID(new ResourceID(uuid))
         .subject("subject")
         .savingDateTime(LocalDateTime.now())
-        .rtpSpId("rtpSpId")
+        .serviceProviderDebtor("serviceProviderDebtor")
         .iban("iban123")
         .payTrxRef("ABC/124")
         .flgConf("Y")
         .status(RtpStatus.CREATED)
+        .serviceProviderCreditor("PagoPA")
         .build();
 
     RtpEntity rtpEntity = rtpMapper.toDbEntity(rtp);
@@ -101,10 +104,11 @@ class RtpDtoMapperTest {
     assertEquals(rtp.payeeId(), rtpEntity.getPayeeId());
     assertEquals(rtp.resourceID().getId(), rtpEntity.getResourceID());
     assertEquals(rtp.savingDateTime().toInstant(ZoneOffset.UTC), rtpEntity.getSavingDateTime());
-    assertEquals(rtp.rtpSpId(), rtpEntity.getRtpSpId());
+    assertEquals(rtp.serviceProviderDebtor(), rtpEntity.getServiceProviderDebtor());
     assertEquals(rtp.iban(), rtpEntity.getIban());
     assertEquals(rtp.payTrxRef(), rtpEntity.getPayTrxRef());
     assertEquals(rtp.flgConf(), rtpEntity.getFlgConf());
     assertEquals(rtp.status().name(), rtpEntity.getStatus());
+    assertEquals(rtp.serviceProviderCreditor(), rtpEntity.getServiceProviderCreditor());
   }
 }

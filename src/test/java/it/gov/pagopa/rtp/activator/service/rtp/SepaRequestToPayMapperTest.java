@@ -43,7 +43,7 @@ class SepaRequestToPayMapperTest {
         String subject = "subject";
 
         Rtp nRtp = Rtp.builder().resourceID(resourceId).payerId(payerId).payerName(payerName).payeeId(payeeId)
-                .payeeName(payeeName).rtpSpId(rtpSpId).iban(iban).amount(amount)
+                .payeeName(payeeName).serviceProviderDebtor(rtpSpId).iban(iban).amount(amount)
                 .savingDateTime(savingDateTime).expiryDate(expiryDate).description(description).subject(subject)
                 .noticeNumber(noticeNumber).payTrxRef(payTrxRef).flgConf(flgConf).build();
 

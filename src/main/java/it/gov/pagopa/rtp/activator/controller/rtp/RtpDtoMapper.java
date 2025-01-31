@@ -19,8 +19,22 @@ public class RtpDtoMapper {
         .savingDateTime(LocalDateTime.now())
         .payerName(createRtpDto.getPayer().getName())
         .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
-        .payeeId(createRtpDto.getPayee().getPayeeId()).rtpSpId("rtpSpId").iban("iban")
+        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban("iban")
         .subject(createRtpDto.getPaymentNotice().getSubject())
+        .payTrxRef(createRtpDto.getPayee().getPayTrxRef()).flgConf("flgConf").build();
+  }
+
+  public Rtp toRtpWithServiceProviderCreditor(CreateRtpDto createRtpDto, String tokenSub) {
+    return Rtp.builder().noticeNumber(createRtpDto.getPaymentNotice().getNoticeNumber())
+        .amount(createRtpDto.getPaymentNotice().getAmount()).resourceID(ResourceID.createNew())
+        .description(createRtpDto.getPaymentNotice().getDescription())
+        .expiryDate(createRtpDto.getPaymentNotice().getExpiryDate())
+        .savingDateTime(LocalDateTime.now())
+        .payerName(createRtpDto.getPayer().getName())
+        .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
+        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban("iban")
+        .subject(createRtpDto.getPaymentNotice().getSubject())
+        .serviceProviderCreditor(tokenSub)
         .payTrxRef(createRtpDto.getPayee().getPayTrxRef()).flgConf("flgConf").build();
   }
 

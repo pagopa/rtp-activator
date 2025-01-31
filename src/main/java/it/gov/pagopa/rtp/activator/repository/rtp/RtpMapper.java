@@ -23,12 +23,13 @@ public class RtpMapper {
         .payeeId(rtpEntity.getPayeeId())
         .resourceID(new ResourceID(rtpEntity.getResourceID()))
         .savingDateTime(LocalDateTime.ofInstant(rtpEntity.getSavingDateTime(), ZoneOffset.UTC))
-        .rtpSpId(rtpEntity.getRtpSpId())
+        .serviceProviderDebtor(rtpEntity.getServiceProviderDebtor())
         .iban(rtpEntity.getIban())
         .payTrxRef(rtpEntity.getPayTrxRef())
         .flgConf(rtpEntity.getFlgConf())
         .subject(rtpEntity.getSubject())
         .status(RtpStatus.valueOf(rtpEntity.getStatus()))
+        .serviceProviderCreditor(rtpEntity.getServiceProviderCreditor())
         .build();
   }
 
@@ -44,12 +45,13 @@ public class RtpMapper {
         .payeeId(rtp.payeeId())
         .resourceID(rtp.resourceID().getId())
         .savingDateTime(rtp.savingDateTime().toInstant(ZoneOffset.UTC))
-        .rtpSpId(rtp.rtpSpId())
+        .serviceProviderDebtor(rtp.serviceProviderDebtor())
         .iban(rtp.iban())
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
         .subject(rtp.subject())
         .status(rtp.status().name())
+        .serviceProviderCreditor(rtp.serviceProviderCreditor())
         .build();
   }
 }

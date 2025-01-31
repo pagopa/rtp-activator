@@ -49,11 +49,12 @@ class RtpDBRepositoryTest {
         .subject("subject")
         .resourceID(new ResourceID(UUID.randomUUID()))
         .savingDateTime(LocalDateTime.now())
-        .rtpSpId("rtpSpId")
+        .serviceProviderDebtor("serviceProviderDebtor")
         .iban("iban123")
         .payTrxRef("ABC/124")
         .flgConf("Y")
         .status(RtpStatus.CREATED)
+        .serviceProviderCreditor("PagoPA")
         .build();
 
     RtpEntity rtpEntity = RtpEntity.builder()
@@ -66,11 +67,12 @@ class RtpDBRepositoryTest {
         .payeeId(rtp.payeeId())
         .resourceID(rtp.resourceID().getId())
         .savingDateTime(rtp.savingDateTime().toInstant(ZoneOffset.UTC))
-        .rtpSpId(rtp.rtpSpId())
+        .serviceProviderDebtor(rtp.serviceProviderDebtor())
         .iban(rtp.iban())
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
         .status("CREATED")
+        .serviceProviderCreditor("PagoPA")
         .build();
 
     when(rtpDB.save(any())).thenReturn(Mono.just(rtpEntity));
@@ -89,11 +91,12 @@ class RtpDBRepositoryTest {
           assertEquals(rtp.payeeId(), savedRtp.payeeId());
           assertEquals(rtp.resourceID().getId(), savedRtp.resourceID().getId());
           assertEquals(rtp.savingDateTime(), savedRtp.savingDateTime());
-          assertEquals(rtp.rtpSpId(), savedRtp.rtpSpId());
+          assertEquals(rtp.serviceProviderDebtor(), savedRtp.serviceProviderDebtor());
           assertEquals(rtp.iban(), savedRtp.iban());
           assertEquals(rtp.payTrxRef(), savedRtp.payTrxRef());
           assertEquals(rtp.flgConf(), savedRtp.flgConf());
           assertEquals(rtp.status(), savedRtp.status());
+          assertEquals(rtp.serviceProviderCreditor(), rtpEntity.getServiceProviderCreditor());
         })
         .verifyComplete();
   }

@@ -29,9 +29,11 @@ public class RtpEntity {
   private String payeeId;
   private String subject;
   private Instant savingDateTime;
-  private String rtpSpId;
+  private String serviceProviderDebtor;
   private String iban;
   private String payTrxRef;
   private String flgConf;
   private String status;
+  private String serviceProviderCreditor;
+
 }

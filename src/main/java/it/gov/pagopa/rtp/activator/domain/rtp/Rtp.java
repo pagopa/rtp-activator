@@ -8,12 +8,12 @@ import lombok.Builder;
 @Builder
 public record Rtp(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate,
     String payerId, String payerName, String payeeName, String payeeId, ResourceID resourceID,
-    String subject, LocalDateTime savingDateTime, String rtpSpId, String iban,
-    String payTrxRef, String flgConf, RtpStatus status) {
+    String subject, LocalDateTime savingDateTime, String serviceProviderDebtor, String iban,
+    String payTrxRef, String flgConf, RtpStatus status, String serviceProviderCreditor) {
 
   public Rtp toRtpWithActivationInfo(String rtpSpId) {
     return Rtp.builder()
-        .rtpSpId(rtpSpId)
+        .serviceProviderDebtor(rtpSpId)
         .iban(this.iban())
         .payTrxRef(this.payTrxRef())
         .flgConf(this.flgConf())
@@ -27,6 +27,7 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
         .expiryDate(this.expiryDate())
         .resourceID(this.resourceID())
         .subject(this.subject())
+        .serviceProviderCreditor(this.serviceProviderCreditor())
         .savingDateTime(this.savingDateTime())
         .status(RtpStatus.CREATED)
         .build();
@@ -34,7 +35,7 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
 
   public Rtp toRtpSent(Rtp rtp) {
     return Rtp.builder()
-        .rtpSpId(rtp.rtpSpId())
+        .serviceProviderDebtor(rtp.serviceProviderDebtor())
         .iban(rtp.iban())
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
@@ -48,6 +49,7 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
         .expiryDate(rtp.expiryDate())
         .resourceID(rtp.resourceID())
         .subject(this.subject())
+        .serviceProviderCreditor(this.serviceProviderCreditor())
         .savingDateTime(rtp.savingDateTime())
         .status(RtpStatus.SENT)
         .build();

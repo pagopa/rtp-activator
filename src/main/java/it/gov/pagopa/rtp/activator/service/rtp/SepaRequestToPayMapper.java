@@ -82,7 +82,7 @@ public class SepaRequestToPayMapper {
                     .id(party38ChoiceEPC25922V30DS02Dto);
 
                 var dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto = new FinancialInstitutionIdentification18EPC25922V30DS02Dto();
-                dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setBICFI(rtp.rtpSpId());
+                dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setBICFI(rtp.serviceProviderDebtor());
 
                 var dbtBranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto = new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto()
                     .finInstnId(dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto);
