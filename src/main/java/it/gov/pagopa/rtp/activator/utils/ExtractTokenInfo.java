@@ -6,6 +6,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import reactor.core.publisher.Mono;
 
 public final class ExtractTokenInfo {
+
+    private ExtractTokenInfo(){};
     
     public static Mono<String> getTokenSubject() {
         return ReactiveSecurityContextHolder.getContext().map(ctx -> ctx.getAuthentication())

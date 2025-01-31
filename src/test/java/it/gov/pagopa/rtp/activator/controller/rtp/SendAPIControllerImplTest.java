@@ -20,7 +20,6 @@ import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayerDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PaymentNoticeDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
-import it.gov.pagopa.rtp.activator.utils.Users;
 import it.gov.pagopa.rtp.activator.utils.Users.RtpSenderWriter;
 
 import java.math.BigDecimal;
@@ -32,13 +31,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.aot.DisabledInAotMode;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
@@ -49,10 +48,10 @@ import reactor.core.publisher.Mono;
 @DisabledInAotMode
 class SendAPIControllerImplTest {
 
-  @MockBean
+  @MockitoBean
   private SendRTPService sendRTPService;
 
-  @MockBean
+  @MockitoBean 
   private RtpDtoMapper rtpDtoMapper;
 
   private WebTestClient webTestClient;
@@ -77,7 +76,7 @@ class SendAPIControllerImplTest {
     String payerName = "John Doe";
     String payTrxRef = "ABC/124";
     String subject = "subject";
-    String SpCreditor = "Pagopa";
+    String spCreditor = "Pagopa";
 
     expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
@@ -86,7 +85,7 @@ class SendAPIControllerImplTest {
         .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
         .payerName(payerName)
         .subject(subject)
-        .spCreditor(SpCreditor)
+        .spCreditor(spCreditor)
         .iban(iban).payTrxRef(payTrxRef)
         .flgConf(flgConf).build();
 
