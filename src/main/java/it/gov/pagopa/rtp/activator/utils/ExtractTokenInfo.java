@@ -7,12 +7,13 @@ import reactor.core.publisher.Mono;
 
 public final class ExtractTokenInfo {
 
-    private ExtractTokenInfo(){}
-    
-    public static Mono<String> getTokenSubject() {
-        return ReactiveSecurityContextHolder.getContext().map(ctx -> ctx.getAuthentication())
+  private ExtractTokenInfo() {
+  }
+
+  public static Mono<String> getTokenSubject() {
+    return ReactiveSecurityContextHolder.getContext().map(ctx -> ctx.getAuthentication())
         .map(auth -> auth.getPrincipal())
-        .cast(Jwt.class) 
+        .cast(Jwt.class)
         .flatMap(jwt -> Mono.just(jwt.getSubject()));
-    }
+  }
 }

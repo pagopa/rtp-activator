@@ -14,19 +14,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenTelemetryConfig {
 
-    /**
-     * Creates and configures the OpenTelemetry Tracer bean.
-     * This tracer is used throughout the application for creating
-     * and managing trace spans for MongoDB operations.
-     *
-     * @param openTelemetry The OpenTelemetry instance injected by Spring
-     * @return Configured Tracer instance for the RTP Activator application
-     */
-    @Bean
-    public Tracer tracer(OpenTelemetry openTelemetry) {
-        return openTelemetry.getTracer(
-                "rtp-activator", // Instrumentation name
-                "1.0.0"// Instrumentation version
-        );
-    }
+  /**
+   * Creates and configures the OpenTelemetry Tracer bean.
+   * This tracer is used throughout the application for creating
+   * and managing trace spans for MongoDB operations.
+   *
+   * @param openTelemetry The OpenTelemetry instance injected by Spring
+   * @return Configured Tracer instance for the RTP Activator application
+   */
+  @Bean
+  public Tracer tracer(OpenTelemetry openTelemetry) {
+    return openTelemetry.getTracer(
+        "rtp-activator", // Instrumentation name
+        "1.0.0"// Instrumentation version
+    );
+  }
 }
