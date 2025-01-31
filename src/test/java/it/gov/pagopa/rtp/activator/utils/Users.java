@@ -38,7 +38,10 @@ public class Users {
     @Retention(RetentionPolicy.RUNTIME)
     @WithSecurityContext(factory = RtpSenderWriterSecurityContextFactory.class)
     public @interface RtpSenderWriter {
+        String username() default SERVICE_PROVIDER_ID; // Added username parameter
+
         String subject() default SUBJECT;
+
         String[] roles() default { SENDER_WRITER_ROLE };
     }
 
@@ -57,9 +60,13 @@ public class Users {
             Jwt jwt = Jwt.withTokenValue("test-token")
                     .header("alg", "none")
                     .claims(c -> c.putAll(claims))
+                    .claim("username", annotation.username())
                     .build();
 
-            JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt, authorities);
+            JwtAuthenticationToken auth = new JwtAuthenticationToken(
+                    jwt,
+                    authorities,
+                    annotation.username());
             context.setAuthentication(auth);
 
             return context;
