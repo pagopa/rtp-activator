@@ -9,7 +9,7 @@ import lombok.Builder;
 public record Rtp(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate,
     String payerId, String payerName, String payeeName, String payeeId, ResourceID resourceID,
     String subject, LocalDateTime savingDateTime, String rtpSpId, String iban,
-    String payTrxRef, String flgConf, RtpStatus status) {
+    String payTrxRef, String flgConf, RtpStatus status, String SpCreditor) {
 
   public Rtp toRtpWithActivationInfo(String rtpSpId) {
     return Rtp.builder()
@@ -27,6 +27,7 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
         .expiryDate(this.expiryDate())
         .resourceID(this.resourceID())
         .subject(this.subject())
+        .SpCreditor(this.SpCreditor())
         .savingDateTime(this.savingDateTime())
         .status(RtpStatus.CREATED)
         .build();
@@ -48,6 +49,7 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
         .expiryDate(rtp.expiryDate())
         .resourceID(rtp.resourceID())
         .subject(this.subject())
+        .SpCreditor(this.SpCreditor())
         .savingDateTime(rtp.savingDateTime())
         .status(RtpStatus.SENT)
         .build();

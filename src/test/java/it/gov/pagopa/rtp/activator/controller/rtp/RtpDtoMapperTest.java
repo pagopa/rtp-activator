@@ -58,4 +58,47 @@ class RtpDtoMapperTest {
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
   }
+
+
+  @Test
+  void testTtoRtpWithSpCroRtp() {
+    CreateRtpDto createRtpDto = new CreateRtpDto();
+    PaymentNoticeDto paymentNoticeDto = new PaymentNoticeDto();
+    PayeeDto payeeDto = new PayeeDto();
+    PayerDto payerDto = new PayerDto();
+    String subject = "PagoPA";
+
+    paymentNoticeDto.setAmount(BigDecimal.valueOf(100));
+    paymentNoticeDto.setNoticeNumber("12345");
+    paymentNoticeDto.setDescription("Payment Description");
+    paymentNoticeDto.setExpiryDate(LocalDate.now());
+    paymentNoticeDto.setSubject("Subject");
+    createRtpDto.setPaymentNotice(paymentNoticeDto);
+    payerDto.setPayerId("payer123");
+    payerDto.setName("John Doe");
+    createRtpDto.setPayer(payerDto);
+    payeeDto.setPayeeId("payee123");
+    payeeDto.setName("Payee Name");
+    payeeDto.setPayTrxRef("ABC/124");
+    createRtpDto.setPayee(payeeDto);
+
+    Rtp rtp = rtpDtoMapper.toRtpWithSpCr(createRtpDto,subject);
+    assertThat(rtp).isNotNull();
+    assertThat(rtp.resourceID()).isNotNull();
+    assertThat(rtp.savingDateTime()).isNotNull();
+    assertThat(rtp.noticeNumber()).isEqualTo(createRtpDto.getPaymentNotice().getNoticeNumber());
+    assertThat(rtp.amount()).isEqualTo(createRtpDto.getPaymentNotice().getAmount());
+    assertThat(rtp.description()).isEqualTo(createRtpDto.getPaymentNotice().getDescription());
+    assertThat(rtp.expiryDate()).isEqualTo(createRtpDto.getPaymentNotice().getExpiryDate());
+    assertThat(rtp.payerName()).isEqualTo(createRtpDto.getPayer().getName());
+    assertThat(rtp.subject()).isEqualTo(createRtpDto.getPaymentNotice().getSubject());
+    assertThat(rtp.payerId()).isEqualTo(createRtpDto.getPayer().getPayerId());
+    assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
+    assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
+    assertThat(rtp.rtpSpId()).isEqualTo("rtpSpId");
+    assertThat(rtp.iban()).isEqualTo("iban");
+    assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
+    assertThat(rtp.flgConf()).isEqualTo("flgConf");
+    assertThat(rtp.SpCreditor()).isEqualTo(subject);
+  }
 }

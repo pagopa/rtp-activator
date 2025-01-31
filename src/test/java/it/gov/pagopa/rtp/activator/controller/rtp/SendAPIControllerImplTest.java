@@ -1,6 +1,8 @@
 package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,6 +21,8 @@ import it.gov.pagopa.rtp.activator.model.generated.send.PayerDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PaymentNoticeDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
 import it.gov.pagopa.rtp.activator.utils.Users;
+import it.gov.pagopa.rtp.activator.utils.Users.RtpSenderWriter;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,8 +44,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
-@WebFluxTest(controllers = {SendAPIControllerImpl.class})
-@Import({SecurityConfig.class})
+@WebFluxTest(controllers = { SendAPIControllerImpl.class })
+@Import({ SecurityConfig.class })
 @DisabledInAotMode
 class SendAPIControllerImplTest {
 
@@ -73,6 +77,7 @@ class SendAPIControllerImplTest {
     String payerName = "John Doe";
     String payTrxRef = "ABC/124";
     String subject = "subject";
+    String SpCreditor = "Pagopa";
 
     expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
@@ -81,6 +86,7 @@ class SendAPIControllerImplTest {
         .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
         .payerName(payerName)
         .subject(subject)
+        .SpCreditor(SpCreditor)
         .iban(iban).payTrxRef(payTrxRef)
         .flgConf(flgConf).build();
 
@@ -92,13 +98,14 @@ class SendAPIControllerImplTest {
   }
 
   @Test
-  @Users.RtpSenderWriter
+  @RtpSenderWriter()
   void testSendRtpSuccessful() {
 
-    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(rtpDtoMapper.toRtpWithSpCr(any(CreateRtpDto.class), eq("PagoPA"))).thenReturn(expectedRtp);
     when(sendRTPService.send(expectedRtp)).thenReturn(Mono.empty());
 
-    webTestClient.post()
+    webTestClient
+        .post()
         .uri("/rtps")
         .bodyValue(generateSendRequest())
         .exchange()
@@ -109,10 +116,10 @@ class SendAPIControllerImplTest {
   }
 
   @Test
-  @Users.RtpSenderWriter
+  @RtpSenderWriter
   void testSendRtpWithWrongBody() {
 
-    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(rtpDtoMapper.toRtpWithSpCr(any(CreateRtpDto.class), anyString())).thenReturn(expectedRtp);
     when(sendRTPService.send(any()))
         .thenReturn(Mono.empty());
 
@@ -125,10 +132,10 @@ class SendAPIControllerImplTest {
   }
 
   @Test
-  @Users.RtpSenderWriter
+  @RtpSenderWriter
   void testSendRtpWithWrongAmount() {
 
-    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(rtpDtoMapper.toRtpWithSpCr(any(CreateRtpDto.class), anyString())).thenReturn(expectedRtp);
     when(sendRTPService.send(any()))
         .thenReturn(Mono.empty());
 
@@ -155,10 +162,10 @@ class SendAPIControllerImplTest {
   }
 
   @Test
-  @Users.RtpSenderWriter
+  @RtpSenderWriter
   void givenUserNotActivatedWhenSendRTPThenReturnUnprocessableEntity() {
 
-    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(rtpDtoMapper.toRtpWithSpCr(any(CreateRtpDto.class), anyString())).thenReturn(expectedRtp);
     when(sendRTPService.send(any()))
         .thenReturn(Mono.error(new PayerNotActivatedException()));
 
@@ -170,14 +177,14 @@ class SendAPIControllerImplTest {
         .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
 
     verify(sendRTPService, times(1)).send(any());
-    verify(rtpDtoMapper, times(1)).toRtp(any());
+    verify(rtpDtoMapper, times(1)).toRtpWithSpCr(any(),(any()));
   }
 
   @Test
-  @Users.RtpSenderWriter
+  @RtpSenderWriter
   void givenMessageBadFormedWhenSendRTPThenReturnBadRequest() {
 
-    when(rtpDtoMapper.toRtp(any(CreateRtpDto.class))).thenReturn(expectedRtp);
+    when(rtpDtoMapper.toRtpWithSpCr(any(CreateRtpDto.class), anyString())).thenReturn(expectedRtp);
     when(sendRTPService.send(any()))
         .thenReturn(Mono.error(generateMessageBadFormed()));
 
@@ -189,11 +196,11 @@ class SendAPIControllerImplTest {
         .isEqualTo(HttpStatus.BAD_REQUEST);
 
     verify(sendRTPService, times(1)).send(any());
-    verify(rtpDtoMapper, times(1)).toRtp(any());
+    verify(rtpDtoMapper, times(1)).toRtpWithSpCr(any(),(any()));
   }
 
   @Test
-  @Users.RtpSenderWriter
+  @RtpSenderWriter
   void givenBadFiscalCodeWhenSendRTPThenReturnBadRequest() {
 
     webTestClient.post()
@@ -204,51 +211,50 @@ class SendAPIControllerImplTest {
         .isEqualTo(HttpStatus.BAD_REQUEST);
 
     verify(sendRTPService, times(0)).send(any());
-    verify(rtpDtoMapper, times(0)).toRtp(any());
+    verify(rtpDtoMapper, times(0)).toRtpWithSpCr(any(),(any()));
   }
 
-
   @Test
-  @Users.RtpSenderWriter
+  @RtpSenderWriter
   void givenBadExpiryDate_whenSendRTP_thenReturnBadRequest() {
 
     String invalidJson = """
-            {
-                "payee": {
-                    "name": "Comune di Smartino",
-                    "payeeId": "77777777777",
-                    "payTrxRef": "ABC/124"
-                },
-                "payer": {
-                    "name": "Pigrolo",
-                    "payerId": "NNAPRL01D01H501T"
-                },
-                "paymentNotice": {
-                    "noticeNumber": "311111111112222222",
-                    "description": "Paga questo avviso",
-                    "subject": "TARI 2025",
-                    "amount": 40000,
-                    "expiryDate": "UNPARSABLE"
-                }
+        {
+            "payee": {
+                "name": "Comune di Smartino",
+                "payeeId": "77777777777",
+                "payTrxRef": "ABC/124"
+            },
+            "payer": {
+                "name": "Pigrolo",
+                "payerId": "NNAPRL01D01H501T"
+            },
+            "paymentNotice": {
+                "noticeNumber": "311111111112222222",
+                "description": "Paga questo avviso",
+                "subject": "TARI 2025",
+                "amount": 40000,
+                "expiryDate": "UNPARSABLE"
             }
-            """;
+        }
+        """;
 
     // When: Sending a POST request with invalid type
     webTestClient.post()
-            .uri("/rtps")
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(invalidJson)
-            .exchange()
-            // Then: Verify the response
-            .expectStatus().isBadRequest()
-            .expectBody()
-            .jsonPath("$.error").isEqualTo("Malformed request")
-            .jsonPath("$.details").exists();
+        .uri("/rtps")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(invalidJson)
+        .exchange()
+        // Then: Verify the response
+        .expectStatus().isBadRequest()
+        .expectBody()
+        .jsonPath("$.error").isEqualTo("Malformed request")
+        .jsonPath("$.details").exists();
 
     verify(sendRTPService, times(0)).send(any());
-    verify(rtpDtoMapper, times(0)).toRtp(any());
-  }
+    verify(rtpDtoMapper, times(0)).toRtpWithSpCr(any(),(any()));
 
+  }
 
   private CreateRtpDto generateSendRequest() {
 
