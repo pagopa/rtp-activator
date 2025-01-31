@@ -57,28 +57,28 @@ paths:
           $ref: '#/components/responses/Error'
         "401":
           #description: Wrong credentials.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/UnauthorizedError'
         "403":
           #description: Forbidden
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/ForbiddenError'
         "406":
           #description: Not acceptable. Did you require application/json?
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/GenericError'
         "409":
           #description: Conflict.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/ConflictError'
         "415":
           #description: Unsupported media type. Did you provide application/json?
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/GenericError'
         "429":
           #description: Too many request.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/GenericError'
         "500":
           #description: Server error.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/GenericError'
         default:
           #description: Unexpected error.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/GenericError'
 
     get:
       operationId: getActivations
@@ -294,22 +294,22 @@ paths:
           $ref: '#/components/responses/Error'
         "401":
           #description: Access token is missing or invalid.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/UnauthorizedError'
         "403":
           #description: Forbidden.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/ForbiddenError'
         "406":
           #description: Not acceptable. Did you require application/json?
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/GenericError'
         "429":
           #description: Too many request.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/GenericError'
         "500":
           #description: Server error.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/GenericError'
         default:
           #description: Unexpected error.
-          $ref: '#/components/responses/Error'
+          $ref: '#/components/responses/GenericError'
 
 components:
   # ============================================================================
@@ -555,7 +555,57 @@ components:
         errors:
           - code: "01000000F"
             description: "Wrong party identifier"
-      
+
+    SyntheticError:
+      description: Synthetic error details.
+      type: object
+      additionalProperties: false
+      properties:
+        statusCode:
+          $ref: '#/components/schemas/ErrorCode'
+        message:
+          $ref: '#/components/schemas/ErrorDescription'
+      required:
+        - code
+        - description
+      example:
+        code: "401"
+        description: "Invalid JWT."
+
+    GenericError:
+      description: Generic error.
+      type: object
+      additionalProperties: false
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: The time the error occurred.
+        path:
+          type: string
+          description: The API path where the error occurred.
+        status:
+          type: integer
+          description: HTTP status code of the error.
+        statusCode:
+          type: integer
+          description: HTTP status code of the error.
+        error:
+          type: string
+          description: Description of the error.
+        message:
+          type: string
+          description: Description of the error.
+        requestId:
+          type: string
+          description: Unique identifier for the request.
+      example:
+        timestamp: "2024-12-31T09:54:01.763+00:00"
+        path: "/activations"
+        status: 415
+        error: "Unsupported Media Type"
+        requestId: "3fb00d0f-416"
+
     # ------------------------------------------------------
     # Domain specific complex types.
     # ------------------------------------------------------
@@ -767,8 +817,86 @@ components:
           schema:
             $ref: '#/components/schemas/ActivationLocation'
 
+    UnauthorizedError:
+      description: Response returned when the credentials of the user are missing or invalid.
+      headers:
+        Access-Control-Allow-Origin:
+          description: |
+            Indicates whether the response can be shared with requesting code
+            from the given origin.
+          required: false
+          schema:
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
+        RateLimit-Limit:
+          description: The number of allowed requests in the current period.
+          required: false
+          schema:
+            $ref: '#/components/schemas/RateLimitLimit'
+        RateLimit-Reset:
+          description: The number of seconds left in the current period
+          required: false
+          schema:
+            $ref: '#/components/schemas/RateLimitReset'
+        Retry-After:
+          description: |
+            The number of seconds to wait before allowing a follow-up request.
+          required: false
+          schema:
+            $ref: '#/components/schemas/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SyntheticError'
+        text/*:
+          schema:
+            type: string
+            pattern: "^[ -~]{0,65535}$"
+            maxLength: 65535
+
+    ForbiddenError:
+      description: Response returned when the user does not have the right permissions.
+      headers:
+        Access-Control-Allow-Origin:
+          description: |
+            Indicates whether the response can be shared with requesting code
+            from the given origin.
+          required: false
+          schema:
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
+        RateLimit-Limit:
+          description: The number of allowed requests in the current period.
+          required: false
+          schema:
+            $ref: '#/components/schemas/RateLimitLimit'
+        RateLimit-Reset:
+          description: The number of seconds left in the current period.
+          required: false
+          schema:
+            $ref: '#/components/schemas/RateLimitReset'
+
+    ConflictError:
+      description: Response returned when a RTP payer is already active.
+      headers:
+        Access-Control-Allow-Origin:
+          description: |
+            Indicates whether the response can be shared with requesting code
+            from the given origin.
+          required: false
+          schema:
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
+        RateLimit-Limit:
+          description: The number of allowed requests in the current period.
+          required: false
+          schema:
+            $ref: '#/components/schemas/RateLimitLimit'
+        RateLimit-Reset:
+          description: The number of seconds left in the current period.
+          required: false
+          schema:
+            $ref: '#/components/schemas/RateLimitReset'
+
     Error:
-      description: Error response.
+      description: Error response detailing constraint validations.
       headers:
         Access-Control-Allow-Origin:
           description: |
@@ -797,6 +925,42 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Errors'
+        text/*:
+          schema:
+            type: string
+            pattern: "^[ -~]{0,65535}$"
+            maxLength: 65535
+
+    GenericError:
+      description: Generic Error response.
+      headers:
+        Access-Control-Allow-Origin:
+          description: |
+            Indicates whether the response can be shared with requesting code
+            from the given origin.
+          required: false
+          schema:
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
+        RateLimit-Limit:
+          description: The number of allowed requests in the current period.
+          required: false
+          schema:
+            $ref: '#/components/schemas/RateLimitLimit'
+        RateLimit-Reset:
+          description: The number of seconds left in the current period
+          required: false
+          schema:
+            $ref: '#/components/schemas/RateLimitReset'
+        Retry-After:
+          description: |
+            The number of seconds to wait before allowing a follow-up request.
+          required: false
+          schema:
+            $ref: '#/components/schemas/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GenericError'
         text/*:
           schema:
             type: string
