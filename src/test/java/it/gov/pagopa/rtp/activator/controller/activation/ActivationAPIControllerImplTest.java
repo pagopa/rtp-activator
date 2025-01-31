@@ -3,8 +3,8 @@ package it.gov.pagopa.rtp.activator.controller.activation;
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
-import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
@@ -12,27 +12,24 @@ import it.gov.pagopa.rtp.activator.model.generated.activate.PayerDto;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 import it.gov.pagopa.rtp.activator.utils.Users;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import reactor.core.publisher.Mono;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.aot.DisabledInAotMode;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -40,7 +37,7 @@ import java.util.UUID;
 import static it.gov.pagopa.rtp.activator.utils.Users.SERVICE_PROVIDER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 @ExtendWith(SpringExtension.class)
@@ -105,6 +102,35 @@ class ActivationAPIControllerImplTest {
         .exchange()
         .expectStatus().isEqualTo(409);
   }
+
+
+  @Test
+  @Users.RtpWriter
+  void givenBadFiscalCode_whenActivatePayer_thenReturnBadRequest() {
+
+    String invalidJson = """
+            {
+                "payer": {
+                    "fiscalCode": "INVALID",
+                    "rtpSpId": "FAKESP00"
+                }
+            }
+            """;
+
+    // When: Sending a POST request with invalid type
+    webTestClient.post()
+            .uri("/activations")
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(invalidJson)
+            .exchange()
+            // Then: Verify the response
+            .expectStatus().isBadRequest()
+            .expectBody(ErrorsDto.class);
+
+    verify(activationPayerService, times(0)).activatePayer(any(String.class), any(String.class));
+    verify(activationDtoMapper, times(0)).toActivationDto(any());
+  }
+
 
   @Test
   @WithMockUser(value = "another", roles = Users.ACTIVATION_WRITE_ROLE)
