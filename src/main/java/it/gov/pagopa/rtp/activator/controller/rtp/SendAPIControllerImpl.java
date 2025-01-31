@@ -4,7 +4,7 @@ import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
-import it.gov.pagopa.rtp.activator.utils.ExtractTokenInfo;
+import it.gov.pagopa.rtp.activator.utils.TokenInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +34,8 @@ public class SendAPIControllerImpl implements RtpsApi {
       String version, ServerWebExchange exchange) {
     log.info("Received request to create RTP");
     return createRtpDto
-        .flatMap(rtpDto -> ExtractTokenInfo.getTokenSubject()
-            .switchIfEmpty(Mono.error(new IllegalStateException("Subject not found")))
-            .map(sub -> rtpDtoMapper.toRtpWithSpCr(rtpDto, sub)))
+        .flatMap(rtpDto -> TokenInfo.getTokenSubject()
+            .map(sub -> rtpDtoMapper.toRtpWithServiceProviderCreditor(rtpDto, sub)))
         .flatMap(sendRTPService::send)
         .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
         .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build())

@@ -18,7 +18,7 @@ class ActivationMapperTest {
     void testToDomain() {
         ActivationEntity activationEntity = new ActivationEntity();
         activationEntity.setId(UUID.randomUUID().toString());
-        activationEntity.setRtpSpId("RTP_SP_ID");
+        activationEntity.setRtpServiceProviderId("RTP_SP_ID");
         activationEntity.setFiscalCode("FISCAL_CODE");
         activationEntity.setEffectiveActivationDate(Instant.ofEpochSecond(1732517304));
 
@@ -26,7 +26,7 @@ class ActivationMapperTest {
 
         assertNotNull(payer);
         assertEquals(activationEntity.getId(), payer.activationID().getId().toString());
-        assertEquals(activationEntity.getRtpSpId(), payer.rtpSpId());
+        assertEquals(activationEntity.getRtpServiceProviderId(), payer.rtpServiceProviderId());
         assertEquals(activationEntity.getFiscalCode(), payer.fiscalCode());
         assertEquals(activationEntity.getEffectiveActivationDate(), payer.effectiveActivationDate());
     }
@@ -40,7 +40,7 @@ class ActivationMapperTest {
 
         assertNotNull(activationEntity);
         assertEquals(payer.activationID().getId().toString(), activationEntity.getId());
-        assertEquals(payer.rtpSpId(), activationEntity.getRtpSpId());
+        assertEquals(payer.rtpServiceProviderId(), activationEntity.getRtpServiceProviderId());
         assertEquals(payer.fiscalCode(), activationEntity.getFiscalCode());
         assertEquals(payer.effectiveActivationDate(), activationEntity.getEffectiveActivationDate());
     }

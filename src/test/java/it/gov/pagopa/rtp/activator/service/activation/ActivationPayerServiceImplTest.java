@@ -52,7 +52,7 @@ class ActivationPayerServiceImplTest {
 
         StepVerifier.create(activationPayerService.activatePayer(rtpSpId, fiscalCode)).expectNextMatches(pay    -> {
             // Verify payer details
-            assert pay.rtpSpId().equals(rtpSpId);
+            assert pay.rtpServiceProviderId().equals(rtpSpId);
             assert pay.fiscalCode().equals(fiscalCode);
             assert pay.activationID() != null;
             assert pay.effectiveActivationDate() != null;

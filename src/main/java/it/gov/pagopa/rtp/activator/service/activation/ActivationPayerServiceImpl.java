@@ -22,10 +22,10 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
     }
 
     @Override
-    public Mono<Payer> activatePayer(String rtpSpId, String fiscalCode) {
+    public Mono<Payer> activatePayer(String rtpServiceProviderId, String fiscalCode) {
 
         ActivationID activationID = ActivationID.createNew();
-        Payer payer = new Payer(activationID, rtpSpId, fiscalCode, Instant.now());
+        Payer payer = new Payer(activationID, rtpServiceProviderId, fiscalCode, Instant.now());
 
         return activationDBRepository.findByFiscalCode(fiscalCode)
             .flatMap(existingEntity -> Mono.<Payer>error(new PayerAlreadyExists()))

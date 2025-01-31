@@ -84,7 +84,7 @@ public class SendRTPServiceImpl implements SendRTPService {
                 .onErrorMap(Throwable::getCause)
                 .map(response -> rtpToSend)
                 .defaultIfEmpty(rtpToSend)
-                .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.rtpSpId(),
+                .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.rtpServiceProviderId(),
                     rtpSent.resourceID().getId()))
         )
         .map(rtp::toRtpSent)

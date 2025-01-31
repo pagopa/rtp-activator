@@ -14,7 +14,7 @@ public class ActivationDtoMapper {
 
     public ActivationDto toActivationDto(Payer payer) {
         return new ActivationDto().id(payer.activationID().getId())
-                .payer(new PayerDto().fiscalCode(payer.fiscalCode()).rtpSpId(payer.rtpSpId()))
+                .payer(new PayerDto().fiscalCode(payer.fiscalCode()).rtpSpId(payer.rtpServiceProviderId()))
                 .effectiveActivationDate(LocalDateTime.ofInstant(payer.effectiveActivationDate(), ZoneOffset.UTC));
     }
 }
