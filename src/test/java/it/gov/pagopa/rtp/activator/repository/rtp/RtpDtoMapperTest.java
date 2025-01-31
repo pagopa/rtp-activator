@@ -60,7 +60,7 @@ class RtpDtoMapperTest {
     assertEquals(rtpEntity.getPayeeId(), rtp.payeeId());
     assertEquals(rtpEntity.getResourceID(), rtp.resourceID().getId());
     assertEquals(LocalDateTime.ofInstant(rtpEntity.getSavingDateTime(), ZoneOffset.UTC), rtp.savingDateTime());
-    assertEquals(rtpEntity.getserviceProviderDebtor(), rtp.serviceProviderDebtor());
+    assertEquals(rtpEntity.getServiceProviderDebtor(), rtp.serviceProviderDebtor());
     assertEquals(rtpEntity.getIban(), rtp.iban());
     assertEquals(rtpEntity.getPayTrxRef(), rtp.payTrxRef());
     assertEquals(rtpEntity.getFlgConf(), rtp.flgConf());
@@ -104,7 +104,7 @@ class RtpDtoMapperTest {
     assertEquals(rtp.payeeId(), rtpEntity.getPayeeId());
     assertEquals(rtp.resourceID().getId(), rtpEntity.getResourceID());
     assertEquals(rtp.savingDateTime().toInstant(ZoneOffset.UTC), rtpEntity.getSavingDateTime());
-    assertEquals(rtp.serviceProviderDebtor(), rtpEntity.getserviceProviderDebtor());
+    assertEquals(rtp.serviceProviderDebtor(), rtpEntity.getServiceProviderDebtor());
     assertEquals(rtp.iban(), rtpEntity.getIban());
     assertEquals(rtp.payTrxRef(), rtpEntity.getPayTrxRef());
     assertEquals(rtp.flgConf(), rtpEntity.getFlgConf());
