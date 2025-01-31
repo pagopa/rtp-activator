@@ -99,6 +99,6 @@ class RtpDtoMapperTest {
     assertThat(rtp.iban()).isEqualTo("iban");
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
-    assertThat(rtp.SpCreditor()).isEqualTo(subject);
+    assertThat(rtp.spCreditor()).isEqualTo(subject);
   }
 }

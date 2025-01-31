@@ -54,6 +54,7 @@ class RtpDBRepositoryTest {
         .payTrxRef("ABC/124")
         .flgConf("Y")
         .status(RtpStatus.CREATED)
+        .spCreditor("PagoPA")
         .build();
 
     RtpEntity rtpEntity = RtpEntity.builder()
@@ -71,6 +72,7 @@ class RtpDBRepositoryTest {
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
         .status("CREATED")
+        .spCreditor("PagoPA")
         .build();
 
     when(rtpDB.save(any())).thenReturn(Mono.just(rtpEntity));
@@ -94,6 +96,7 @@ class RtpDBRepositoryTest {
           assertEquals(rtp.payTrxRef(), savedRtp.payTrxRef());
           assertEquals(rtp.flgConf(), savedRtp.flgConf());
           assertEquals(rtp.status(), savedRtp.status());
+          assertEquals(rtp.spCreditor(), rtpEntity.getSpCreditor());
         })
         .verifyComplete();
   }

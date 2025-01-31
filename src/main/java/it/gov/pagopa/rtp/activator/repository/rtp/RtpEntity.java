@@ -34,4 +34,6 @@ public class RtpEntity {
   private String payTrxRef;
   private String flgConf;
   private String status;
+  private String spCreditor;
+
 }

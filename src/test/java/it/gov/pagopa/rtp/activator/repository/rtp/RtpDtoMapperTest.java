@@ -44,6 +44,7 @@ class RtpDtoMapperTest {
         .payTrxRef("ABC/124")
         .flgConf("Y")
         .status(RtpStatus.CREATED.name())
+        .spCreditor("PagoPA")
         .build();
 
     Rtp rtp = rtpMapper.toDomain(rtpEntity);
@@ -64,6 +65,7 @@ class RtpDtoMapperTest {
     assertEquals(rtpEntity.getPayTrxRef(), rtp.payTrxRef());
     assertEquals(rtpEntity.getFlgConf(), rtp.flgConf());
     assertEquals(rtpEntity.getStatus(), rtp.status().name());
+    assertEquals(rtpEntity.getSpCreditor(), rtp.spCreditor());
   }
 
   @Test
@@ -86,6 +88,7 @@ class RtpDtoMapperTest {
         .payTrxRef("ABC/124")
         .flgConf("Y")
         .status(RtpStatus.CREATED)
+        .spCreditor("PagoPA")
         .build();
 
     RtpEntity rtpEntity = rtpMapper.toDbEntity(rtp);
@@ -106,5 +109,6 @@ class RtpDtoMapperTest {
     assertEquals(rtp.payTrxRef(), rtpEntity.getPayTrxRef());
     assertEquals(rtp.flgConf(), rtpEntity.getFlgConf());
     assertEquals(rtp.status().name(), rtpEntity.getStatus());
+    assertEquals(rtp.spCreditor(), rtpEntity.getSpCreditor());
   }
 }

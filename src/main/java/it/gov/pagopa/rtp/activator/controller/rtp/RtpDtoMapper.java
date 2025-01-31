@@ -34,7 +34,7 @@ public class RtpDtoMapper {
         .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
         .payeeId(createRtpDto.getPayee().getPayeeId()).rtpSpId("rtpSpId").iban("iban")
         .subject(createRtpDto.getPaymentNotice().getSubject())
-        .SpCreditor(subject)
+        .spCreditor(subject)
         .payTrxRef(createRtpDto.getPayee().getPayTrxRef()).flgConf("flgConf").build();
   }
 

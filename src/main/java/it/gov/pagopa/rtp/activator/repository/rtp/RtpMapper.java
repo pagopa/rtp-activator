@@ -29,6 +29,7 @@ public class RtpMapper {
         .flgConf(rtpEntity.getFlgConf())
         .subject(rtpEntity.getSubject())
         .status(RtpStatus.valueOf(rtpEntity.getStatus()))
+        .spCreditor(rtpEntity.getSpCreditor())
         .build();
   }
 
@@ -50,6 +51,7 @@ public class RtpMapper {
         .flgConf(rtp.flgConf())
         .subject(rtp.subject())
         .status(rtp.status().name())
+        .spCreditor(rtp.spCreditor())
         .build();
   }
 }

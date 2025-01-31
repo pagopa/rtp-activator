@@ -86,7 +86,7 @@ class SendAPIControllerImplTest {
         .savingDateTime(LocalDateTime.now()).rtpSpId(rtpSpId)
         .payerName(payerName)
         .subject(subject)
-        .SpCreditor(SpCreditor)
+        .spCreditor(SpCreditor)
         .iban(iban).payTrxRef(payTrxRef)
         .flgConf(flgConf).build();
 
