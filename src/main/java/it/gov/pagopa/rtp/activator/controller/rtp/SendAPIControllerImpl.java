@@ -19,28 +19,28 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class SendAPIControllerImpl implements RtpsApi {
 
-    private final SendRTPService sendRTPService;
+  private final SendRTPService sendRTPService;
 
-    private final RtpDtoMapper rtpDtoMapper;
+  private final RtpDtoMapper rtpDtoMapper;
 
-    public SendAPIControllerImpl(SendRTPService sendRTPService, RtpDtoMapper rtpDtoMapper) {
-        this.sendRTPService = sendRTPService;
-        this.rtpDtoMapper = rtpDtoMapper;
-    }
+  public SendAPIControllerImpl(SendRTPService sendRTPService, RtpDtoMapper rtpDtoMapper) {
+    this.sendRTPService = sendRTPService;
+    this.rtpDtoMapper = rtpDtoMapper;
+  }
 
-    @Override
-    @PreAuthorize("hasRole('write_rtp_send')")
-    public Mono<ResponseEntity<Void>> createRtp(Mono<CreateRtpDto> createRtpDto,
-            String version, ServerWebExchange exchange) {
-        log.info("Received request to create RTP");
-        return createRtpDto
-                .flatMap(rtpDto -> ExtractTokenInfo.getTokenSubject()
-                        .switchIfEmpty(Mono.error(new IllegalStateException("Subject not found")))
-                        .map(sub -> rtpDtoMapper.toRtpWithSpCr(rtpDto, sub)))
-                .flatMap(sendRTPService::send)
-                .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
-                .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build())
-                .doOnError(a -> log.error("Error creating RTP {}", a.getMessage()));
-    }
+  @Override
+  @PreAuthorize("hasRole('write_rtp_send')")
+  public Mono<ResponseEntity<Void>> createRtp(Mono<CreateRtpDto> createRtpDto,
+      String version, ServerWebExchange exchange) {
+    log.info("Received request to create RTP");
+    return createRtpDto
+        .flatMap(rtpDto -> ExtractTokenInfo.getTokenSubject()
+            .switchIfEmpty(Mono.error(new IllegalStateException("Subject not found")))
+            .map(sub -> rtpDtoMapper.toRtpWithSpCr(rtpDto, sub)))
+        .flatMap(sendRTPService::send)
+        .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
+        .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build())
+        .doOnError(a -> log.error("Error creating RTP {}", a.getMessage()));
+  }
 
 }
