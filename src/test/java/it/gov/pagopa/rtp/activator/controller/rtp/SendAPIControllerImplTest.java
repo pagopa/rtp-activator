@@ -70,7 +70,7 @@ class SendAPIControllerImplTest {
     String payerId = "payerId";
     String payeeName = "Payee Name";
     String payeeId = "payeeId";
-    String rtpSpId = "rtpServiceProviderId";
+    String rtpSpId = "serviceProviderDebtor";
     String iban = "IT60X0542811101000000123456";
     String flgConf = "flgConf";
     String payerName = "John Doe";
@@ -82,7 +82,7 @@ class SendAPIControllerImplTest {
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
         .resourceID(ResourceID.createNew())
-        .savingDateTime(LocalDateTime.now()).rtpServiceProviderId(rtpSpId)
+        .savingDateTime(LocalDateTime.now()).serviceProviderDebtor(rtpSpId)
         .payerName(payerName)
         .subject(subject)
         .serviceProviderCreditor(serviceProviderCreditor)

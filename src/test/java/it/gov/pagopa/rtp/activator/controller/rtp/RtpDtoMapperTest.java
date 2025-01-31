@@ -53,7 +53,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payerId()).isEqualTo(createRtpDto.getPayer().getPayerId());
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
-    assertThat(rtp.rtpServiceProviderId()).isEqualTo("rtpServiceProviderId");
+    assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
     assertThat(rtp.iban()).isEqualTo("iban");
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
@@ -95,7 +95,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payerId()).isEqualTo(createRtpDto.getPayer().getPayerId());
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
-    assertThat(rtp.rtpServiceProviderId()).isEqualTo("rtpServiceProviderId");
+    assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
     assertThat(rtp.iban()).isEqualTo("iban");
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");

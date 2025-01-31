@@ -137,7 +137,7 @@ class ActivationAPIControllerImplTest {
 
     Payer payer = new Payer(activationID, "testRtpSpId", "RSSMRA85T10A562S", Instant.now());
 
-    PayerDto payerDto = new PayerDto().fiscalCode(payer.fiscalCode()).rtpSpId(payer.rtpServiceProviderId());
+    PayerDto payerDto = new PayerDto().fiscalCode(payer.fiscalCode()).rtpSpId(payer.serviceProviderDebtor());
 
     ActivationDto activationDto = new ActivationDto();
     activationDto.setId(activationID.getId());

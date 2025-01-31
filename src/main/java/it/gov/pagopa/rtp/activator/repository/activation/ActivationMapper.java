@@ -14,14 +14,14 @@ public class ActivationMapper {
         ActivationID activationID = new ActivationID(
                 UUID.fromString(activationEntity.getId()));
         return new Payer(activationID,
-                activationEntity.getRtpServiceProviderId(), activationEntity.getFiscalCode(),
+                activationEntity.getServiceProviderDebtor(), activationEntity.getFiscalCode(),
                 activationEntity.getEffectiveActivationDate());
     }
 
     public ActivationEntity toDbEntity(Payer payer) {
         return ActivationEntity.builder().id(payer.activationID().getId().toString())
                 .fiscalCode(payer.fiscalCode())
-                .rtpServiceProviderId(payer.rtpServiceProviderId())
+                .serviceProviderDebtor(payer.serviceProviderDebtor())
                 .effectiveActivationDate(payer.effectiveActivationDate())
                 .build();
     }

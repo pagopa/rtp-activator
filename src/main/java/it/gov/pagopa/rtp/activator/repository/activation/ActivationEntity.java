@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class ActivationEntity {
     @Id
     private String id;
-    private String rtpServiceProviderId;
+    private String serviceProviderDebtor;
     private Instant effectiveActivationDate;
 
     private String fiscalCode;

@@ -8,12 +8,12 @@ import lombok.Builder;
 @Builder
 public record Rtp(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate,
     String payerId, String payerName, String payeeName, String payeeId, ResourceID resourceID,
-    String subject, LocalDateTime savingDateTime, String rtpServiceProviderId, String iban,
+    String subject, LocalDateTime savingDateTime, String serviceProviderDebtor, String iban,
     String payTrxRef, String flgConf, RtpStatus status, String serviceProviderCreditor) {
 
   public Rtp toRtpWithActivationInfo(String rtpSpId) {
     return Rtp.builder()
-        .rtpServiceProviderId(rtpSpId)
+        .serviceProviderDebtor(rtpSpId)
         .iban(this.iban())
         .payTrxRef(this.payTrxRef())
         .flgConf(this.flgConf())
@@ -35,7 +35,7 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
 
   public Rtp toRtpSent(Rtp rtp) {
     return Rtp.builder()
-        .rtpServiceProviderId(rtp.rtpServiceProviderId())
+        .serviceProviderDebtor(rtp.serviceProviderDebtor())
         .iban(rtp.iban())
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
