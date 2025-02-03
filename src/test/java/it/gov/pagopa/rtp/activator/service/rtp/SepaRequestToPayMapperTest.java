@@ -23,7 +23,6 @@ class SepaRequestToPayMapperTest {
         MockitoAnnotations.openMocks(this);
     }
 
-
     @Test
     void testToEpcRequestToPay() {
         ResourceID resourceId = ResourceID.createNew();
@@ -41,11 +40,13 @@ class SepaRequestToPayMapperTest {
         String flgConf = "flgConf123";
         String payerName = "John Doe";
         String subject = "subject";
+        String serviceProviderCreditor = "serviceProviderDebtor";
 
         Rtp nRtp = Rtp.builder().resourceID(resourceId).payerId(payerId).payerName(payerName).payeeId(payeeId)
                 .payeeName(payeeName).serviceProviderDebtor(rtpSpId).iban(iban).amount(amount)
                 .savingDateTime(savingDateTime).expiryDate(expiryDate).description(description).subject(subject)
-                .noticeNumber(noticeNumber).payTrxRef(payTrxRef).flgConf(flgConf).build();
+                .noticeNumber(noticeNumber).payTrxRef(payTrxRef).flgConf(flgConf)
+                .serviceProviderCreditor(serviceProviderCreditor).build();
 
         var result = sepaRequestToPayMapper.toEpcRequestToPay(nRtp);
 
@@ -56,26 +57,23 @@ class SepaRequestToPayMapperTest {
         assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0).getRmtInf()
                 .getUstrd().get(1).contains(description));
 
-
-     
         // Verify group header
         var grpHdr = result.getDocument().getCdtrPmtActvtnReq().getGrpHdr();
         assertEquals(nRtp.resourceID().getId().toString(), grpHdr.getMsgId());
         assertEquals(nRtp.savingDateTime().toString(), grpHdr.getCreDtTm());
 
-
         // Verify payment information
         var pmtInf = result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0);
         assertEquals(nRtp.noticeNumber(), pmtInf.getPmtInfId());
         assertTrue(pmtInf.getXpryDt().toString().contains(nRtp.expiryDate().toString()));
-        
+
         // Verify debtor information
         assertEquals(nRtp.payerName(), pmtInf.getDbtr().getNm());
-        
+
         // Verify credit transfer transaction
         var cdtTrfTx = pmtInf.getCdtTrfTx().get(0);
         assertEquals(nRtp.noticeNumber(), cdtTrfTx.getPmtId().getEndToEndId());
-        
+
         // Verify creditor information
         assertEquals(nRtp.payeeName(), cdtTrfTx.getCdtr().getNm());
         assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(nRtp.iban()));
@@ -85,16 +83,18 @@ class SepaRequestToPayMapperTest {
         assertTrue(rmtInf.getUstrd().get(0).contains(nRtp.subject()));
         assertTrue(rmtInf.getUstrd().get(0).contains(nRtp.noticeNumber()));
         assertTrue(rmtInf.getUstrd().get(1).contains(nRtp.description()));
-        
-         // Verify instruction for creditor agent
-         var instrForCdtrAgt = cdtTrfTx.getInstrForCdtrAgt();
-         assertEquals("ATR113/" + nRtp.payTrxRef(), instrForCdtrAgt.get(0).getInstrInf());
-         assertEquals(nRtp.flgConf(), instrForCdtrAgt.get(1).getInstrInf());
-         
-         // Verify callback URL
-         assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
-     
+
+        // Verify instruction for creditor agent
+        var instrForCdtrAgt = cdtTrfTx.getInstrForCdtrAgt();
+        assertEquals("ATR113/" + nRtp.payTrxRef(), instrForCdtrAgt.get(0).getInstrInf());
+        assertEquals(nRtp.flgConf(), instrForCdtrAgt.get(1).getInstrInf());
+
+        // Verify Service Provider Creditor
+        assertEquals(serviceProviderCreditor, cdtTrfTx.getCdtrAgt().getFinInstnId().getOthr().getId());
+        assertEquals("BOID", cdtTrfTx.getCdtrAgt().getFinInstnId().getOthr().getSchmeNm().getPrtry());
+
+        // Verify callback URL
+        assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
+
     }
 }
-
-
