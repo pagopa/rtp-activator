@@ -45,6 +45,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class SepaRequestToPayMapper {
 
+  private static final String BIC_REGEX = "^([A-Z0-9]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?)$";
+
   public SepaRequestToPayRequestResourceDto toEpcRequestToPay(Rtp rtp) {
 
     var sepaRequestToPayRequestResourceDto = new SepaRequestToPayRequestResourceDto();
@@ -82,7 +84,13 @@ public class SepaRequestToPayMapper {
         .id(party38ChoiceEPC25922V30DS02Dto);
 
     var dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto = new FinancialInstitutionIdentification18EPC25922V30DS02Dto();
-    dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setBICFI(rtp.serviceProviderDebtor());
+    if (rtp.serviceProviderDebtor().matches(BIC_REGEX)) {
+      dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setBICFI(rtp.serviceProviderDebtor());
+    } else {
+      var genericFinancialIdentification1Dto = new GenericFinancialIdentification1Dto();
+      genericFinancialIdentification1Dto.setId(rtp.serviceProviderDebtor());
+      dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setOthr(genericFinancialIdentification1Dto);
+    }
 
     var dbtBranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto = new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto()
         .finInstnId(dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto);
