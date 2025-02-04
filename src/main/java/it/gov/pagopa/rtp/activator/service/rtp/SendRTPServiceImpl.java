@@ -138,11 +138,11 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   private RetryBackoffSpec sendRetryPolicy() {
-    final var backoff = serviceProviderConfig.send().retry().maxAttempts();
-    final var durationInMillis = serviceProviderConfig.send().retry().backoffMinDuration();
+    final var maxAttempts = serviceProviderConfig.send().retry().maxAttempts();
+    final var minDurationMillis = serviceProviderConfig.send().retry().backoffMinDuration();
     final var jitter = serviceProviderConfig.send().retry().backoffJitter();
 
-    return Retry.backoff(backoff, Duration.ofMillis(durationInMillis))
+    return Retry.backoff(maxAttempts, Duration.ofMillis(minDurationMillis))
         .jitter(jitter)
         .doAfterRetry(signal -> log.info("Retry number {}", signal.totalRetries()));
   }
