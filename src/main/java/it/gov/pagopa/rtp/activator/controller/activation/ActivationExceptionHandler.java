@@ -74,7 +74,7 @@ public class ActivationExceptionHandler {
   @ExceptionHandler(WebExchangeBindException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @NonNull
-  public ResponseEntity<ErrorsDto> handleConstraintViolation(@NonNull final WebExchangeBindException ex) {
+  public ResponseEntity<ErrorsDto> handleWebExchangeBindException(@NonNull final WebExchangeBindException ex) {
     final var errors = Optional.of(ex)
             .map(WebExchangeBindException::getBindingResult)
             .map(Errors::getFieldErrors)

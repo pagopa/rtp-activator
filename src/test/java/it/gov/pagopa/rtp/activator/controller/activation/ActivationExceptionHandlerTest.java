@@ -42,7 +42,7 @@ class ActivationExceptionHandlerTest {
         when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError1, fieldError2));
 
         // Act
-        ResponseEntity<ErrorsDto> response = handler.handleConstraintViolation(exception);
+        ResponseEntity<ErrorsDto> response = handler.handleWebExchangeBindException(exception);
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -59,7 +59,7 @@ class ActivationExceptionHandlerTest {
         when(bindingResult.getFieldErrors()).thenReturn(List.of());
 
         // Act
-        ResponseEntity<ErrorsDto> response = handler.handleConstraintViolation(exception);
+        ResponseEntity<ErrorsDto> response = handler.handleWebExchangeBindException(exception);
 
         // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
