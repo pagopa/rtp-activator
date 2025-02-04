@@ -1,9 +1,7 @@
 package it.gov.pagopa.rtp.activator.service.rtp;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
@@ -27,11 +25,15 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -45,7 +47,7 @@ class SendRTPServiceTest {
     private ReadApi readApi;
     private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig(
         new Activation("http://localhost:8080"),
-        new Send("v1", new Retry(0, 0, 0)));
+        new Send("v1", new Retry(3, 1000, 0.75)));
     @Mock
     private RtpRepository rtpRepository;
     @Mock
@@ -66,6 +68,7 @@ class SendRTPServiceTest {
     final String payTrxRef = "ABC/124";
     final String flgConf = "flgConf";
     final String subject = "subject";
+    final String activationRtpSpId = "activationRtpSpId";
 
     Rtp inputRtp;
 
@@ -86,29 +89,10 @@ class SendRTPServiceTest {
 
     @Test
     void testSend() {
+        var fakeActivationDto = mockActivationDto();
 
-        var activationRtpSpId = "activationRtpSpId";
-        var activationFiscalCode = "activationFiscalCode";
+        var expectedRtp = mockRtp();
 
-        var fakeActivationDto = new ActivationDto();
-        fakeActivationDto.setId(UUID.randomUUID());
-        fakeActivationDto.setEffectiveActivationDate(LocalDateTime.now());
-        var payerDto = new PayerDto();
-        payerDto.setRtpSpId(activationRtpSpId);
-        payerDto.setFiscalCode(activationFiscalCode);
-        fakeActivationDto.setPayer(payerDto);
-
-        var expectedRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
-            .expiryDate(expiryDate)
-            .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
-            .payerName(payerName)
-            .resourceID(ResourceID.createNew())
-            .savingDateTime(LocalDateTime.now()).serviceProviderDebtor(activationRtpSpId)
-            .iban(iban).payTrxRef(payTrxRef)
-            .status(RtpStatus.CREATED)
-            .flgConf(flgConf)
-            .subject(subject)
-            .build();
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
             .callbackUrl(URI.create("http://callback.url"));
 
@@ -192,16 +176,8 @@ class SendRTPServiceTest {
 
     @Test
     void givenInternalErrorOnExternalSendWhenSendThenPropagateMonoError() {
-        var activationRtpSpId = "activationRtpSpId";
-        var activationFiscalCode = "activationFiscalCode";
-        var fakeActivationDto = new ActivationDto();
-        fakeActivationDto.setId(UUID.randomUUID());
-        fakeActivationDto.setEffectiveActivationDate(LocalDateTime.now());
-        var payerDto = new PayerDto();
-        payerDto.setRtpSpId(activationRtpSpId);
-        payerDto.setFiscalCode(activationFiscalCode);
-        fakeActivationDto.setPayer(payerDto);
-        var expectedRtp = Rtp.builder().resourceID(ResourceID.createNew()).build();
+        var fakeActivationDto = mockActivationDto();
+        var expectedRtp = mockRtp();
 
         when(readApi.findActivationByPayerId(any(), any(), any()))
             .thenReturn(Mono.just(fakeActivationDto));
@@ -221,4 +197,123 @@ class SendRTPServiceTest {
         verify(defaultApi, times(1)).postRequestToPayRequests(any(), any(), any());
         verify(rtpRepository, times(1)).save(any());
     }
+
+
+    @Test
+    void givenRtp_whenSavingFailsOnce_thenRetriesAndSucceeds() {
+        final var resourceId = ResourceID.createNew();
+        final var savingDateTime = LocalDateTime.now();
+
+        final var sourceRtp = mockRtp(RtpStatus.CREATED, resourceId, savingDateTime);
+        final var rtpSent = mockRtp(RtpStatus.SENT, resourceId, savingDateTime);
+
+        when(readApi.findActivationByPayerId(any(), any(), any()))
+                .thenReturn(Mono.just(mockActivationDto()));
+
+        /*
+         * Mocks the save method.
+         * The first then return is due to a prior invocation of the method that is not under retry test.
+         * Subsequent returns are actually testing retry logic.
+         */
+
+        final var saveAttempts = new AtomicInteger();
+        when(rtpRepository.save(any()))
+                .thenAnswer(invocation -> {
+                    if (saveAttempts.getAndIncrement() == 2) {
+                        return Mono.error(new RuntimeException("Simulated DB failure"));
+                    }
+                    return Mono.just(invocation.getArgument(0));
+                });
+
+
+        when(defaultApi.postRequestToPayRequests(any(), any(), any()))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(sendRTPService.send(sourceRtp))
+                .expectNext(rtpSent)
+                .verifyComplete();
+
+        verify(rtpRepository, times(2)).save(any());
+    }
+
+
+    @Test
+    void givenRtp_whenSavingFailsIndefinitely_thenThrows() {
+        final var sourceRtp = mockRtp();
+
+
+        when(readApi.findActivationByPayerId(any(), any(), any()))
+                .thenReturn(Mono.just(mockActivationDto()));
+
+
+        /*
+         * Mocks the save method.
+         * The first then return is due to a prior invocation of the method that is not under retry test.
+         * Subsequent returns are actually testing retry logic.
+         */
+
+        final var firstSaveAttempt = new AtomicBoolean(true);
+        when(rtpRepository.save(any()))
+                .thenAnswer(invocation -> {
+                    if (firstSaveAttempt.getAndSet(false)) {
+                        return Mono.just(invocation.getArgument(0));
+                    }
+                    return Mono.error(new RuntimeException("Simulated DB failure"));
+                });
+
+
+        when(defaultApi.postRequestToPayRequests(any(), any(), any()))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(sendRTPService.send(sourceRtp))
+                .expectError(RuntimeException.class)
+                .verify();
+
+        verify(rtpRepository, times(2)).save(any());
+    }
+
+
+    private Rtp mockRtp() {
+        return mockRtp(RtpStatus.CREATED, ResourceID.createNew(), LocalDateTime.now());
+    }
+
+
+    private Rtp mockRtp(@NonNull final RtpStatus status) {
+        return mockRtp(status, ResourceID.createNew(), LocalDateTime.now());
+    }
+
+
+    private Rtp mockRtp(
+            @NonNull final RtpStatus status,
+            @NonNull final ResourceID resourceId,
+            @NonNull final LocalDateTime savingDateTime
+    ) {
+        return Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
+                .expiryDate(expiryDate)
+                .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
+                .payerName(payerName)
+                .resourceID(resourceId)
+                .savingDateTime(savingDateTime).serviceProviderDebtor(activationRtpSpId)
+                .iban(iban).payTrxRef(payTrxRef)
+                .status(status)
+                .flgConf(flgConf)
+                .subject(subject)
+                .build();
+    }
+
+
+    private ActivationDto mockActivationDto() {
+        var activationRtpSpId = "activationRtpSpId";
+        var activationFiscalCode = "activationFiscalCode";
+        var fakeActivationDto = new ActivationDto();
+        fakeActivationDto.setId(UUID.randomUUID());
+        fakeActivationDto.setEffectiveActivationDate(LocalDateTime.now());
+        var payerDto = new PayerDto();
+        payerDto.setRtpSpId(activationRtpSpId);
+        payerDto.setFiscalCode(activationFiscalCode);
+        fakeActivationDto.setPayer(payerDto);
+
+        return fakeActivationDto;
+    }
+
 }
