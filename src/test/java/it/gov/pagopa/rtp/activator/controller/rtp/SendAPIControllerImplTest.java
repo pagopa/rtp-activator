@@ -330,7 +330,7 @@ class SendAPIControllerImplTest {
     var errors = new ErrorsDto();
     var newError = new ErrorDto();
     newError.setDescription("description");
-    newError.setStatusCode("code");
+    newError.setCode("code");
     errors.addErrorsItem(newError);
     return new MessageBadFormed(errors);
   }

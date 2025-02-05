@@ -25,7 +25,7 @@ public class RtpExceptionHandler {
       MessageBadFormed ex) {
     var error = ex.getErrorsDto().getErrors().getFirst();
     var responseBody = new MalformedRequestErrorResponseDto()
-        .error(error.getStatusCode())
+        .error(error.getCode())
         .details(error.getDescription());
     return ResponseEntity.badRequest().body(responseBody);
   }
