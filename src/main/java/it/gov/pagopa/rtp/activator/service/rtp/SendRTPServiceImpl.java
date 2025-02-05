@@ -75,27 +75,29 @@ public class SendRTPServiceImpl implements SendRTPService {
   public Mono<Rtp> send(@NonNull final Rtp rtp) {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
-    final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(),
-                    serviceProviderConfig.activation().apiVersion())
-            .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
+    final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
+            rtp.payerId(),
+            serviceProviderConfig.activation().apiVersion())
+        .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
-            .map(rtp::toRtpWithActivationInfo)
-            .flatMap(rtpRepository::save)
-            .flatMap(this::logRtpAsJson);
+        .map(rtp::toRtpWithActivationInfo)
+        .flatMap(rtpRepository::save)
+        .flatMap(this::logRtpAsJson);
 
     final var sentRtp = rtpToSend.flatMap(this::sendRtpToServiceProviderDebtor)
-            .map(rtp::toRtpSent)
-            .flatMap(
-                    rtpToSave -> rtpRepository.save(rtpToSave)
-                            .retryWhen(sendRetryPolicy())
-                            .doOnError(ex -> log.error("Failed after retries", ex))
+        .map(rtp::toRtpSent)
+        .flatMap(
+            rtpToSave -> rtpRepository.save(rtpToSave)
+                .retryWhen(sendRetryPolicy())
+                .doOnError(ex -> log.error("Failed after retries", ex))
 
-            );
+        );
 
-    return sentRtp.doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
-            .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
-            .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
+    return sentRtp.doOnSuccess(
+            rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+        .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
+        .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
 
 
@@ -104,13 +106,14 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
 
     return sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
-                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
-            .retryWhen(sendRetryPolicy())
-            .onErrorMap(Throwable::getCause)
-            .map(response -> rtpToSend)
-            .defaultIfEmpty(rtpToSend)
-            .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.serviceProviderDebtor(),
-                    rtpSent.resourceID().getId()));
+            sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
+        .retryWhen(sendRetryPolicy())
+        .onErrorMap(Throwable::getCause)
+        .map(response -> rtpToSend)
+        .defaultIfEmpty(rtpToSend)
+        .doOnSuccess(
+            rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.serviceProviderDebtor(),
+                rtpSent.resourceID().getId()));
   }
 
 
