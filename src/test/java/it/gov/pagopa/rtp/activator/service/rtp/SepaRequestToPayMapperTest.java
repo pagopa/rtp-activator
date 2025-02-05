@@ -147,6 +147,7 @@ class SepaRequestToPayMapperTest {
     // Verify debtor information
     assertEquals(nRtp.payerName(), pmtInf.getDbtr().getNm());
     assertEquals(nRtp.serviceProviderDebtor(), pmtInf.getDbtrAgt().getFinInstnId().getOthr().getId());
+    assertEquals("BOID", pmtInf.getDbtrAgt().getFinInstnId().getOthr().getSchmeNm().getCd());
 
     // Verify credit transfer transaction
     var cdtTrfTx = pmtInf.getCdtTrfTx().get(0);
