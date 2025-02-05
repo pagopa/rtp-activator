@@ -533,7 +533,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        code:
+        statusCode:
           $ref: '#/components/schemas/ErrorCode'
         description:
           $ref: '#/components/schemas/ErrorDescription'
@@ -541,7 +541,7 @@ components:
         - code
         - description
       example:
-        code: "01000000F"
+        statusCode: "01000000F"
         description: "Wrong party identifier"
 
     Errors:
@@ -559,7 +559,7 @@ components:
         - errors
       example:
         errors:
-          - code: "01000000F"
+          - statusCode: "01000000F"
             description: "Wrong party identifier"
 
     SyntheticError:
@@ -567,7 +567,7 @@ components:
       type: object
       additionalProperties: false
       properties:
-        code:
+        statusCode:
           $ref: '#/components/schemas/ErrorCode'
         description:
           $ref: '#/components/schemas/ErrorDescription'
@@ -575,7 +575,7 @@ components:
         - code
         - description
       example:
-        code: "01000000F"
+        statusCode: "01000000F"
         description: "Invalid JWT."
 
     GenericError:
@@ -608,7 +608,7 @@ components:
       example:
         timestamp: "2024-12-31T09:54:01.763+00:00"
         path: "/activations"
-        statusCode: 415
+        status: 415
         error: "Unsupported Media Type"
         requestId: "3fb00d0f-416"
 

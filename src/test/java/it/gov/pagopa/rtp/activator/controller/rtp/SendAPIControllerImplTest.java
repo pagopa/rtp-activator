@@ -328,7 +328,10 @@ class SendAPIControllerImplTest {
 
   private MessageBadFormed generateMessageBadFormed() {
     var errors = new ErrorsDto();
-    errors.setErrors(Collections.singletonList(new ErrorDto("code", "description")));
+    var newError = new ErrorDto();
+    newError.setDescription("description");
+    newError.setStatusCode("code");
+    errors.addErrorsItem(newError);
     return new MessageBadFormed(errors);
   }
 }

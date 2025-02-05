@@ -52,7 +52,7 @@ public class ActivationExceptionHandler {
   public ResponseEntity<ErrorsDto> handleConstraintViolation(ConstraintViolationException ex) {
     var errors = ex.getConstraintViolations().stream()
             .map(cv -> new ErrorDto()
-                    .code(cv.getMessageTemplate())
+                    .statusCode(cv.getMessageTemplate())
                     .description(cv.getInvalidValue() + " " + cv.getMessage()))
             .toList();
 
@@ -81,7 +81,7 @@ public class ActivationExceptionHandler {
             .stream()
             .flatMap(List::stream)
             .map(error -> new ErrorDto()
-                    .code(error.getCode())
+                    .statusCode(error.getCode())
                     .description(error.getRejectedValue() + " " + error.getDefaultMessage()))
             .toList();
 
