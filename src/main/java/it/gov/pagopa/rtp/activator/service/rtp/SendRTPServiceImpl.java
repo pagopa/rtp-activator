@@ -84,7 +84,7 @@ public class SendRTPServiceImpl implements SendRTPService {
             .flatMap(rtpRepository::save)
             .flatMap(this::logRtpAsJson);
 
-    final var sentRtp = rtpToSend.flatMap(this::sendRtpInner)
+    final var sentRtp = rtpToSend.flatMap(this::sendRtpToServiceProviderDebtor)
             .map(rtp::toRtpSent)
             .flatMap(
                     rtpToSave -> rtpRepository.save(rtpToSave)
@@ -100,7 +100,7 @@ public class SendRTPServiceImpl implements SendRTPService {
 
 
   @NonNull
-  private Mono<Rtp> sendRtpInner(@NonNull final Rtp rtpToSend) {
+  private Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
 
     return sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
