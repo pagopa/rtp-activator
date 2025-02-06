@@ -328,6 +328,14 @@ components:
       minLength: 1
       maxLength: 2048
 
+
+    WWWAuthenticate:
+      description: |
+        Indicates the authentication scheme(s) and parameters required to access a protected resource.
+      type: string
+      pattern: "^[ -~]{1,2048}$"
+      minLength: 1
+      maxLength: 2048
     # --------------------------------------------------------------------------
     # Basic types for rate limit handling.
     # --------------------------------------------------------------------------
@@ -561,22 +569,6 @@ components:
         errors:
           - code: "01000000F"
             description: "Wrong party identifier"
-
-    SyntheticError:
-      description: Synthetic error details.
-      type: object
-      additionalProperties: false
-      properties:
-        code:
-          $ref: '#/components/schemas/ErrorCode'
-        description:
-          $ref: '#/components/schemas/ErrorDescription'
-      required:
-        - code
-        - description
-      example:
-        code: "01000000F"
-        description: "Invalid JWT."
 
     GenericError:
       description: Generic error.
@@ -826,33 +818,13 @@ components:
     UnauthorizedError:
       description: Response returned when the credentials of the user are missing or invalid.
       headers:
-        Access-Control-Allow-Origin:
+        WWW-Authenticate: 
           description: |
-            Indicates whether the response can be shared with requesting code
-            from the given origin.
+            Indicates the authentication scheme(s) and parameters required to access a protected resource.
           required: false
           schema:
-            $ref: '#/components/schemas/AccessControlAllowOrigin'
-        RateLimit-Limit:
-          description: The number of allowed requests in the current period.
-          required: false
-          schema:
-            $ref: '#/components/schemas/RateLimitLimit'
-        RateLimit-Reset:
-          description: The number of seconds left in the current period
-          required: false
-          schema:
-            $ref: '#/components/schemas/RateLimitReset'
-        Retry-After:
-          description: |
-            The number of seconds to wait before allowing a follow-up request.
-          required: false
-          schema:
-            $ref: '#/components/schemas/RetryAfter'
+            $ref: '#/components/schemas/WWWAuthenticate'
       content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/SyntheticError'
         text/*:
           schema:
             type: string
