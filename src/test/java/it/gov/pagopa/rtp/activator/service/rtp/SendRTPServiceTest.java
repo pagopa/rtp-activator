@@ -47,7 +47,7 @@ class SendRTPServiceTest {
     private ReadApi readApi;
     private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig(
         new Activation("http://localhost:8080"),
-        new Send("v1", new Retry(3, 1000, 0.75)));
+        new Send("v1", new Retry(3, 100, 0.75)));
     @Mock
     private RtpRepository rtpRepository;
     @Mock
@@ -278,11 +278,6 @@ class SendRTPServiceTest {
     }
 
 
-    private Rtp mockRtp(@NonNull final RtpStatus status) {
-        return mockRtp(status, ResourceID.createNew(), LocalDateTime.now());
-    }
-
-
     private Rtp mockRtp(
             @NonNull final RtpStatus status,
             @NonNull final ResourceID resourceId,
@@ -303,14 +298,16 @@ class SendRTPServiceTest {
 
 
     private ActivationDto mockActivationDto() {
-        var activationRtpSpId = "activationRtpSpId";
-        var activationFiscalCode = "activationFiscalCode";
+        var spId = "activationRtpSpId";
+        var fiscalCode = "activationFiscalCode";
+
+        var payerDto = new PayerDto();
+        payerDto.setRtpSpId(spId);
+        payerDto.setFiscalCode(fiscalCode);
+
         var fakeActivationDto = new ActivationDto();
         fakeActivationDto.setId(UUID.randomUUID());
         fakeActivationDto.setEffectiveActivationDate(LocalDateTime.now());
-        var payerDto = new PayerDto();
-        payerDto.setRtpSpId(activationRtpSpId);
-        payerDto.setFiscalCode(activationFiscalCode);
         fakeActivationDto.setPayer(payerDto);
 
         return fakeActivationDto;
