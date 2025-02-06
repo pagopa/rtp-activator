@@ -79,7 +79,6 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
   @PreAuthorize("hasRole('read_rtp_activations')")
   public Mono<ResponseEntity<ActivationDto>> getActivation(UUID requestId, UUID activationId,
       String version, ServerWebExchange exchange) {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'getActivation'");
   }
 
@@ -88,7 +87,6 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
   public Mono<ResponseEntity<PageOfActivationsDto>> getActivations(UUID requestId,
       Integer page, Integer size,
       String version, ServerWebExchange exchange) {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
   }
 
