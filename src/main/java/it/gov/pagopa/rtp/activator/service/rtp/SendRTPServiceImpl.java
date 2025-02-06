@@ -25,7 +25,10 @@ import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29E
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import java.time.Duration;
+import java.util.Objects;
 import java.util.UUID;
+
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.stereotype.Service;
@@ -66,33 +69,53 @@ public class SendRTPServiceImpl implements SendRTPService {
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
   }
 
-  @Override
-  public Mono<Rtp> send(Rtp rtp) {
 
-    return activationApi.findActivationByPayerId(UUID.randomUUID(), rtp.payerId(),
+  @NonNull
+  @Override
+  public Mono<Rtp> send(@NonNull final Rtp rtp) {
+    Objects.requireNonNull(rtp, "Rtp cannot be null");
+
+    final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
+            rtp.payerId(),
             serviceProviderConfig.activation().apiVersion())
-        .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException)
-        .map(act -> act.getPayer().getRtpSpId())
+        .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
+
+    final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
         .flatMap(rtpRepository::save)
-        .flatMap(this::logRtpAsJson)
-        .flatMap(rtpToSend ->
-            // response is ignored atm
-            sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
-                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
-                .retryWhen(sendRetryPolicy())
-                .onErrorMap(Throwable::getCause)
-                .map(response -> rtpToSend)
-                .defaultIfEmpty(rtpToSend)
-                .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.serviceProviderDebtor(),
-                    rtpSent.resourceID().getId()))
-        )
+        .flatMap(this::logRtpAsJson);
+
+    final var sentRtp = rtpToSend.flatMap(this::sendRtpToServiceProviderDebtor)
         .map(rtp::toRtpSent)
-        .flatMap(rtpRepository::save)
-        .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+        .flatMap(
+            rtpToSave -> rtpRepository.save(rtpToSave)
+                .retryWhen(sendRetryPolicy())
+                .doOnError(ex -> log.error("Failed after retries", ex))
+
+        );
+
+    return sentRtp.doOnSuccess(
+            rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
+
+
+  @NonNull
+  private Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
+    Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
+
+    return sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
+            sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
+        .retryWhen(sendRetryPolicy())
+        .onErrorMap(Throwable::getCause)
+        .map(response -> rtpToSend)
+        .defaultIfEmpty(rtpToSend)
+        .doOnSuccess(
+            rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.serviceProviderDebtor(),
+                rtpSent.resourceID().getId()));
+  }
+
 
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
@@ -118,9 +141,12 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   private RetryBackoffSpec sendRetryPolicy() {
-    return Retry.backoff(serviceProviderConfig.send().retry().maxAttempts(),
-            Duration.ofMillis(serviceProviderConfig.send().retry().backoffMinDuration()))
-        .jitter(serviceProviderConfig.send().retry().backoffJitter())
+    final var maxAttempts = serviceProviderConfig.send().retry().maxAttempts();
+    final var minDurationMillis = serviceProviderConfig.send().retry().backoffMinDuration();
+    final var jitter = serviceProviderConfig.send().retry().backoffJitter();
+
+    return Retry.backoff(maxAttempts, Duration.ofMillis(minDurationMillis))
+        .jitter(jitter)
         .doAfterRetry(signal -> log.info("Retry number {}", signal.totalRetries()));
   }
 
