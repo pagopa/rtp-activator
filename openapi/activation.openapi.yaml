@@ -33,59 +33,59 @@ paths:
         The operation is used by Payer's RTP Service Provider to enable the
         Payee's RTP Service Provider to send RTP messages to the Payer's RTP
         Service Provider.
-
+        
         When the operation is used by not-admin subject, the system verifies
         that the Payer's RTP Service Provider ID matches the subject claim of
         the access token. `403 Forbidden` is returned on mismatch.
-
+        
         `409 Conflict` is returned if an activation with the same Payer's ID
         already exists.
       tags: [create]
       security:
         - oAuth2: [admin_rtp_activations, write_rtp_activations]
       parameters:
-        - $ref: "#/components/parameters/RequestId"
-        - $ref: "#/components/parameters/Version"
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/Version'
       requestBody:
-        $ref: "#/components/requestBodies/CreateOrUpdateActivation"
+        $ref: '#/components/requestBodies/CreateOrUpdateActivation'
       responses:
         "201":
           #description: Created.
-          $ref: "#/components/responses/CreateActivation"
+          $ref: '#/components/responses/CreateActivation'
         "400":
           #description: Bad request.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "401":
           #description: Wrong credentials.
-          $ref: "#/components/responses/UnauthorizedError"
+          $ref: '#/components/responses/UnauthorizedError'
         "403":
           #description: Forbidden
-          $ref: "#/components/responses/ForbiddenError"
+          $ref: '#/components/responses/ForbiddenError'
         "406":
           #description: Not acceptable. Did you require application/json?
-          $ref: "#/components/responses/GenericError"
+          $ref: '#/components/responses/GenericError'
         "409":
           #description: Conflict.
-          $ref: "#/components/responses/ConflictError"
+          $ref: '#/components/responses/ConflictError'
         "415":
           #description: Unsupported media type. Did you provide application/json?
-          $ref: "#/components/responses/GenericError"
+          $ref: '#/components/responses/GenericError'
         "429":
           #description: Too many request.
-          $ref: "#/components/responses/GenericError"
+          $ref: '#/components/responses/GenericError'
         "500":
           #description: Server error.
-          $ref: "#/components/responses/GenericError"
+          $ref: '#/components/responses/GenericError'
         default:
           #description: Unexpected error.
-          $ref: "#/components/responses/GenericError"
+          $ref: '#/components/responses/GenericError'
 
     get:
       operationId: getActivations
       summary: Returns RTP activations.
       description: |
         The operation returns all the RTP activations stored by the system.
-
+        
         When the operation is used by not-admin subject, the system returns
         the RTP activations which have the Payer's RTP Service Provider ID that
         matches the subject claim of the access token.
@@ -93,35 +93,35 @@ paths:
       security:
         - oAuth2: [admin_rtp_activations, read_rtp_activations]
       parameters:
-        - $ref: "#/components/parameters/RequestId"
-        - $ref: "#/components/parameters/Version"
-        - $ref: "#/components/parameters/PageNumber"
-        - $ref: "#/components/parameters/PageSize"
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/Version'
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
       responses:
         "200":
           #description: Ok.
-          $ref: "#/components/responses/PageOfActivations"
+          $ref: '#/components/responses/PageOfActivations'
         "400":
           #description: Bad request.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "401":
           #description: Access token is missing or invalid.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "403":
           #description: Forbidden.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "406":
           #description: Not acceptable. Did you require application/json?
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "429":
           #description: Too many request.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "500":
           #description: Server error.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         default:
           #description: Unexpected error.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
 
   /activations/{activationId}:
     get:
@@ -129,7 +129,7 @@ paths:
       summary: Returns a RTP activation.
       description: |
         The operation finds a RTP activation by its ID.
-
+        
         When the operation is used by not-admin subject, the system returns
         the RTP activation only if its Payer's RTP Service Provider ID matches
         the subject claim of the access token, otherwise `404 Not Found` is
@@ -138,44 +138,44 @@ paths:
       security:
         - oAuth2: [admin_rtp_activations, read_rtp_activations]
       parameters:
-        - $ref: "#/components/parameters/RequestId"
-        - $ref: "#/components/parameters/Version"
-        - $ref: "#/components/parameters/ActivationId"
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/Version'
+        - $ref: '#/components/parameters/ActivationId'
       responses:
         "200":
           #description: Found.
-          $ref: "#/components/responses/Activation"
+          $ref: '#/components/responses/Activation'
         "400":
           #description: Bad request.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "401":
           #description: Access token is missing or invalid.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "403":
           #description: Forbidden.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "404":
           #description: Not found.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "406":
           #description: Not acceptable. Did you require application/json?
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "429":
           #description: Too many request.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "500":
           #description: Server error.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         default:
           #description: Unexpected error.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
 
     put:
       operationId: updateActivation
       summary: Updates a RTP activation.
       description: |
         The operation updates a RTP activation searching it by its ID.
-
+        
         When the operation is used by not-admin subject:
           - the system returns `404 Not Found` if the Payer's RTP Service
             Provider ID of the activation doesn't match the subject claim of
@@ -186,49 +186,49 @@ paths:
       security:
         - oAuth2: [admin_rtp_activations, write_rtp_activations]
       parameters:
-        - $ref: "#/components/parameters/RequestId"
-        - $ref: "#/components/parameters/Version"
-        - $ref: "#/components/parameters/ActivationId"
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/Version'
+        - $ref: '#/components/parameters/ActivationId'
       requestBody:
-        $ref: "#/components/requestBodies/CreateOrUpdateActivation"
+        $ref: '#/components/requestBodies/CreateOrUpdateActivation'
       responses:
         "204":
           #description: No content
-          $ref: "#/components/responses/NoContent"
+          $ref: '#/components/responses/NoContent'
         "400":
           #description: Bad request
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "401":
           #description: Wrong credentials
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "403":
           #description: Forbidden
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "404":
           #description: Not found
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "406":
           #description: Not acceptable. Did you require application/json?
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "415":
           #description: Unsupported media type. Did you provide application/json?
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "429":
           #description: Too many request
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "500":
           #description: Server error
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         default:
           #description: Unexpected error
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
 
     delete:
       operationId: deleteActivation
       summary: Deletes a RTP activation.
       description: |
         The operation deletes a RTP activation searching it by its ID.
-
+        
         When the operation is used by not-admin subject, the system returns
         `404 Not Found` if the Payer's RTP Service Provider ID of the activation
         doesn't match the subject claim of the access token.
@@ -236,37 +236,37 @@ paths:
       security:
         - oAuth2: [admin_rtp_activations, write_rtp_activations]
       parameters:
-        - $ref: "#/components/parameters/RequestId"
-        - $ref: "#/components/parameters/Version"
-        - $ref: "#/components/parameters/ActivationId"
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/Version'
+        - $ref: '#/components/parameters/ActivationId'
       responses:
         "204":
           #description: No content
-          $ref: "#/components/responses/NoContent"
+          $ref: '#/components/responses/NoContent'
         "400":
           #description: Bad request
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "401":
           #description: Access token is missing or invalid
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "403":
           #description: Forbidden
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "404":
           #description: Not found
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "406":
           #description: Not acceptable. Did you require application/json?
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "429":
           #description: Too many request
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "500":
           #description: Server error
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         default:
           #description: Unexpected error
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
 
   /activations/payer:
     get:
@@ -274,7 +274,7 @@ paths:
       summary: Finds a RTP activation by Payer ID.
       description: |
         The operation finds RTP activation by Payer ID.
-
+        
         When the operation is used by not-admin subject, the system returns
         the RTP activation with the Payer's RTP Service Provider ID that
         matches the subject claim of the access token.
@@ -282,34 +282,34 @@ paths:
       security:
         - oAuth2: [admin_rtp_activations, read_rtp_activations]
       parameters:
-        - $ref: "#/components/parameters/RequestId"
-        - $ref: "#/components/parameters/Version"
-        - $ref: "#/components/parameters/PayerId"
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/Version'
+        - $ref: '#/components/parameters/PayerId'
       responses:
         "200":
           #description: Ok.
-          $ref: "#/components/responses/Activation"
+          $ref: '#/components/responses/Activation'
         "400":
           #description: Bad request.
-          $ref: "#/components/responses/Error"
+          $ref: '#/components/responses/Error'
         "401":
           #description: Access token is missing or invalid.
-          $ref: "#/components/responses/UnauthorizedError"
+          $ref: '#/components/responses/UnauthorizedError'
         "403":
           #description: Forbidden.
-          $ref: "#/components/responses/ForbiddenError"
+          $ref: '#/components/responses/ForbiddenError'
         "406":
           #description: Not acceptable. Did you require application/json?
-          $ref: "#/components/responses/GenericError"
+          $ref: '#/components/responses/GenericError'
         "429":
           #description: Too many request.
-          $ref: "#/components/responses/GenericError"
+          $ref: '#/components/responses/GenericError'
         "500":
           #description: Server error.
-          $ref: "#/components/responses/GenericError"
+          $ref: '#/components/responses/GenericError'
         default:
           #description: Unexpected error.
-          $ref: "#/components/responses/GenericError"
+          $ref: '#/components/responses/GenericError'
 
 components:
   # ============================================================================
@@ -328,6 +328,14 @@ components:
       minLength: 1
       maxLength: 2048
 
+
+    WWWAuthenticate:
+      description: |
+        Indicates the authentication scheme(s) and parameters required to access a protected resource.
+      type: string
+      pattern: "^[ -~]{1,2048}$"
+      minLength: 1
+      maxLength: 2048
     # --------------------------------------------------------------------------
     # Basic types for rate limit handling.
     # --------------------------------------------------------------------------
@@ -455,7 +463,7 @@ components:
       minLength: 8
       maxLength: 11
       example: "UNCRITMM"
-
+        
     EffectiveActivationDate:
       description: |
         Effective activation date (B035).
@@ -468,7 +476,7 @@ components:
     FiscalCode:
       description: |
         Fiscal code.
-
+        
         It is used as identifier of the Payer (P009) and of the Payee (E005).
       type: string
       pattern: "^(([A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z])|(\\d{11}))$"
@@ -507,13 +515,13 @@ components:
       additionalProperties: false
       properties:
         totalElements:
-          $ref: "#/components/schemas/TotalElements"
+          $ref: '#/components/schemas/TotalElements'
         totalPages:
-          $ref: "#/components/schemas/TotalPages"
+          $ref: '#/components/schemas/TotalPages'
         page:
-          $ref: "#/components/schemas/PageNumber"
+          $ref: '#/components/schemas/PageNumber'
         size:
-          $ref: "#/components/schemas/PageSize"
+          $ref: '#/components/schemas/PageSize'
       required:
         - totalElements
         - totalPages
@@ -534,9 +542,9 @@ components:
       additionalProperties: false
       properties:
         code:
-          $ref: "#/components/schemas/ErrorCode"
+          $ref: '#/components/schemas/ErrorCode'
         description:
-          $ref: "#/components/schemas/ErrorDescription"
+          $ref: '#/components/schemas/ErrorDescription'
       required:
         - code
         - description
@@ -554,29 +562,13 @@ components:
           minItems: 1
           maxItems: 32
           items:
-            $ref: "#/components/schemas/Error"
+            $ref: '#/components/schemas/Error'
       required:
         - errors
       example:
         errors:
           - code: "01000000F"
             description: "Wrong party identifier"
-
-    SyntheticError:
-      description: Synthetic error details.
-      type: object
-      additionalProperties: false
-      properties:
-        statusCode:
-          $ref: "#/components/schemas/ErrorCode"
-        message:
-          $ref: "#/components/schemas/ErrorDescription"
-      required:
-        - code
-        - description
-      example:
-        code: "401"
-        description: "Invalid JWT."
 
     GenericError:
       description: Generic error.
@@ -620,13 +612,13 @@ components:
         - type: object
           properties:
             id:
-              $ref: "#/components/schemas/ActivationId"
+              $ref: '#/components/schemas/ActivationId'
             effectiveActivationDate:
-              $ref: "#/components/schemas/EffectiveActivationDate"
+              $ref: '#/components/schemas/EffectiveActivationDate'
           required:
             - id
             - effectiveActivationDate
-        - $ref: "#/components/schemas/ActivationReq"
+        - $ref: '#/components/schemas/ActivationReq'
       example:
         id: "d0d654e6-97da-4848-b568-99fedccb642b"
         effectiveActivationDate: "2024-10-30T16:39:34+01:00"
@@ -640,7 +632,7 @@ components:
       minItems: 0
       maxItems: 128
       items:
-        $ref: "#/components/schemas/Activation"
+        $ref: '#/components/schemas/Activation'
       example:
         - id: "d0d654e6-97da-4848-b568-99fedccb642b"
           effectiveActivationDate: "2024-10-30T16:39:34+01:00"
@@ -655,23 +647,23 @@ components:
       additionalProperties: true # It's extended by another object.
       properties:
         payer:
-          $ref: "#/components/schemas/Payer"
+          $ref: '#/components/schemas/Payer'
       required:
         - payer
       example:
         payer:
           fiscalCode: "RSSMRA85T10A562S"
           rtpSpId: "12345678911"
-
+  
     PageOfActivations:
       description: Page of RTP activations.
       type: object
       additionalProperties: false
       properties:
         activations:
-          $ref: "#/components/schemas/Activations"
+          $ref: '#/components/schemas/Activations'
         page:
-          $ref: "#/components/schemas/PageMetadata"
+          $ref: '#/components/schemas/PageMetadata'
       required:
         - activations
         - page
@@ -695,9 +687,9 @@ components:
       additionalProperties: false
       properties:
         fiscalCode:
-          $ref: "#/components/schemas/FiscalCode"
+          $ref: '#/components/schemas/FiscalCode'
         rtpSpId:
-          $ref: "#/components/schemas/PartyId"
+          $ref: '#/components/schemas/PartyId'
       required:
         - fiscalCode
         - rtpSpId
@@ -714,7 +706,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ActivationReq"
+            $ref: '#/components/schemas/ActivationReq'
 
   # ============================================================================
   # Parameters.
@@ -726,7 +718,7 @@ components:
       description: Identifier of the RTP activation resource.
       required: true
       schema:
-        $ref: "#/components/schemas/ActivationId"
+        $ref: '#/components/schemas/ActivationId'
 
     PageNumber:
       name: page
@@ -734,7 +726,7 @@ components:
       description: Number of the requested page of data.
       required: true
       schema:
-        $ref: "#/components/schemas/PageNumber"
+        $ref: '#/components/schemas/PageNumber'
 
     PageSize:
       name: size
@@ -742,7 +734,7 @@ components:
       description: Size of the requested page of data.
       required: true
       schema:
-        $ref: "#/components/schemas/PageSize"
+        $ref: '#/components/schemas/PageSize'
 
     PayerId:
       name: PayerId
@@ -750,7 +742,7 @@ components:
       description: Identifier of the Payer.
       required: true
       schema:
-        $ref: "#/components/schemas/FiscalCode"
+        $ref: '#/components/schemas/FiscalCode'
 
     RequestId:
       name: RequestId
@@ -758,7 +750,7 @@ components:
       description: Identifier of the request.
       required: true
       schema:
-        $ref: "#/components/schemas/RequestId"
+        $ref: '#/components/schemas/RequestId'
 
     Version:
       name: Version
@@ -766,7 +758,7 @@ components:
       description: Version of the required API.
       required: false
       schema:
-        $ref: "#/components/schemas/Version"
+        $ref: '#/components/schemas/Version'
 
   # ============================================================================
   # Responses
@@ -781,21 +773,21 @@ components:
             from the given origin.
           required: false
           schema:
-            $ref: "#/components/schemas/AccessControlAllowOrigin"
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
         RateLimit-Limit:
           description: The number of allowed requests in the current period
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitLimit"
+            $ref: '#/components/schemas/RateLimitLimit'
         RateLimit-Reset:
           description: The number of seconds left in the current period
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitReset"
+            $ref: '#/components/schemas/RateLimitReset'
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Activation"
+            $ref: '#/components/schemas/Activation'
 
     CreateActivation:
       description: Response returned when a RTP activation is requested.
@@ -806,53 +798,33 @@ components:
             from the given origin.
           required: false
           schema:
-            $ref: "#/components/schemas/AccessControlAllowOrigin"
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
         RateLimit-Limit:
           description: The number of allowed requests in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitLimit"
+            $ref: '#/components/schemas/RateLimitLimit'
         RateLimit-Reset:
           description: The number of seconds left in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitReset"
+            $ref: '#/components/schemas/RateLimitReset'
         Location:
           description: URL of the activation resource.
           required: true
           schema:
-            $ref: "#/components/schemas/ActivationLocation"
+            $ref: '#/components/schemas/ActivationLocation'
 
     UnauthorizedError:
       description: Response returned when the credentials of the user are missing or invalid.
       headers:
-        Access-Control-Allow-Origin:
+        WWW-Authenticate: 
           description: |
-            Indicates whether the response can be shared with requesting code
-            from the given origin.
+            Indicates the authentication scheme(s) and parameters required to access a protected resource.
           required: false
           schema:
-            $ref: "#/components/schemas/AccessControlAllowOrigin"
-        RateLimit-Limit:
-          description: The number of allowed requests in the current period.
-          required: false
-          schema:
-            $ref: "#/components/schemas/RateLimitLimit"
-        RateLimit-Reset:
-          description: The number of seconds left in the current period
-          required: false
-          schema:
-            $ref: "#/components/schemas/RateLimitReset"
-        Retry-After:
-          description: |
-            The number of seconds to wait before allowing a follow-up request.
-          required: false
-          schema:
-            $ref: "#/components/schemas/RetryAfter"
+            $ref: '#/components/schemas/WWWAuthenticate'
       content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/SyntheticError"
         text/*:
           schema:
             type: string
@@ -868,17 +840,17 @@ components:
             from the given origin.
           required: false
           schema:
-            $ref: "#/components/schemas/AccessControlAllowOrigin"
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
         RateLimit-Limit:
           description: The number of allowed requests in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitLimit"
+            $ref: '#/components/schemas/RateLimitLimit'
         RateLimit-Reset:
           description: The number of seconds left in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitReset"
+            $ref: '#/components/schemas/RateLimitReset'
 
     ConflictError:
       description: Response returned when a RTP payer is already active.
@@ -889,17 +861,17 @@ components:
             from the given origin.
           required: false
           schema:
-            $ref: "#/components/schemas/AccessControlAllowOrigin"
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
         RateLimit-Limit:
           description: The number of allowed requests in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitLimit"
+            $ref: '#/components/schemas/RateLimitLimit'
         RateLimit-Reset:
           description: The number of seconds left in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitReset"
+            $ref: '#/components/schemas/RateLimitReset'
 
     Error:
       description: Error response detailing constraint validations.
@@ -910,27 +882,27 @@ components:
             from the given origin.
           required: false
           schema:
-            $ref: "#/components/schemas/AccessControlAllowOrigin"
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
         RateLimit-Limit:
           description: The number of allowed requests in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitLimit"
+            $ref: '#/components/schemas/RateLimitLimit'
         RateLimit-Reset:
           description: The number of seconds left in the current period
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitReset"
+            $ref: '#/components/schemas/RateLimitReset'
         Retry-After:
           description: |
             The number of seconds to wait before allowing a follow-up request.
           required: false
           schema:
-            $ref: "#/components/schemas/RetryAfter"
+            $ref: '#/components/schemas/RetryAfter'
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Errors"
+            $ref: '#/components/schemas/Errors'
         text/*:
           schema:
             type: string
@@ -946,27 +918,27 @@ components:
             from the given origin.
           required: false
           schema:
-            $ref: "#/components/schemas/AccessControlAllowOrigin"
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
         RateLimit-Limit:
           description: The number of allowed requests in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitLimit"
+            $ref: '#/components/schemas/RateLimitLimit'
         RateLimit-Reset:
           description: The number of seconds left in the current period
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitReset"
+            $ref: '#/components/schemas/RateLimitReset'
         Retry-After:
           description: |
             The number of seconds to wait before allowing a follow-up request.
           required: false
           schema:
-            $ref: "#/components/schemas/RetryAfter"
+            $ref: '#/components/schemas/RetryAfter'
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/GenericError"
+            $ref: '#/components/schemas/GenericError'
         text/*:
           schema:
             type: string
@@ -982,17 +954,17 @@ components:
             from the given origin.
           required: false
           schema:
-            $ref: "#/components/schemas/AccessControlAllowOrigin"
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
         RateLimit-Limit:
           description: The number of allowed requests in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitLimit"
+            $ref: '#/components/schemas/RateLimitLimit'
         RateLimit-Reset:
           description: The number of seconds left in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitReset"
+            $ref: '#/components/schemas/RateLimitReset'
 
     PageOfActivations:
       description: Response to the request to get RTP activations.
@@ -1003,21 +975,21 @@ components:
             from the given origin.
           required: false
           schema:
-            $ref: "#/components/schemas/AccessControlAllowOrigin"
+            $ref: '#/components/schemas/AccessControlAllowOrigin'
         RateLimit-Limit:
           description: The number of allowed requests in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitLimit"
+            $ref: '#/components/schemas/RateLimitLimit'
         RateLimit-Reset:
           description: The number of seconds left in the current period.
           required: false
           schema:
-            $ref: "#/components/schemas/RateLimitReset"
+            $ref: '#/components/schemas/RateLimitReset'
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/PageOfActivations"
+            $ref: '#/components/schemas/PageOfActivations'
 
   # ============================================================================
   # Security schemes.

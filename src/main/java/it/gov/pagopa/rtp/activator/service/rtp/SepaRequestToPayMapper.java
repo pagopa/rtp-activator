@@ -117,8 +117,8 @@ public class SepaRequestToPayMapper {
         .instdAmt(rtp.amount().movePointLeft(2));
 
     var financialIdentificationSchemeName1ChoiceDto = new FinancialIdentificationSchemeName1ChoiceDto()
-        .prtry("BOID"); // FIXED
-
+      .cd("BOID");// FIXED
+      
     var genericFinancialIdentification1Dto = new GenericFinancialIdentification1Dto()
         .id(rtp.serviceProviderCreditor())
         .schmeNm(financialIdentificationSchemeName1ChoiceDto);

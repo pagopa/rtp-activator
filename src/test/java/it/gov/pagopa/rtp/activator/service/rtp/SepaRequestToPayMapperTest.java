@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -90,8 +92,11 @@ class SepaRequestToPayMapperTest {
     assertEquals("ATR113/" + nRtp.payTrxRef(), instrForCdtrAgt.get(0).getInstrInf());
     assertEquals(nRtp.flgConf(), instrForCdtrAgt.get(1).getInstrInf());
 
+    assertEquals(ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto.BOID,
+        cdtTrfTx.getCdtr().getId().getOrgId().getOthr().get(0).getSchmeNm().getCd());
+
     // Verify Service Provider Creditor
-    assertEquals("BOID", cdtTrfTx.getCdtrAgt().getFinInstnId().getOthr().getSchmeNm().getPrtry());
+    assertEquals("BOID", cdtTrfTx.getCdtrAgt().getFinInstnId().getOthr().getSchmeNm().getCd());
 
     // Verify callback URL
     assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
@@ -168,9 +173,14 @@ class SepaRequestToPayMapperTest {
     assertEquals("ATR113/" + nRtp.payTrxRef(), instrForCdtrAgt.get(0).getInstrInf());
     assertEquals(nRtp.flgConf(), instrForCdtrAgt.get(1).getInstrInf());
 
-    // Verify Service Provider Creditor
-    assertEquals("BOID", cdtTrfTx.getCdtrAgt().getFinInstnId().getOthr().getSchmeNm().getPrtry());
 
+    assertEquals(ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto.BOID,
+        cdtTrfTx.getCdtr().getId().getOrgId().getOthr().get(0).getSchmeNm().getCd());
+
+    // Verify Service Provider Creditor
+    assertEquals("BOID", cdtTrfTx.getCdtrAgt().getFinInstnId().getOthr().getSchmeNm().getCd());
+
+    
     // Verify callback URL
     assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
   }
