@@ -87,8 +87,12 @@ public class SepaRequestToPayMapper {
     if (rtp.serviceProviderDebtor().matches(BIC_REGEX)) {
       dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setBICFI(rtp.serviceProviderDebtor());
     } else {
+      var financialIdentificationSchemeName1ChoiceDto = new FinancialIdentificationSchemeName1ChoiceDto();
+      financialIdentificationSchemeName1ChoiceDto.setCd("BOID");
+
       var genericFinancialIdentification1Dto = new GenericFinancialIdentification1Dto();
       genericFinancialIdentification1Dto.setId(rtp.serviceProviderDebtor());
+      genericFinancialIdentification1Dto.setSchmeNm(financialIdentificationSchemeName1ChoiceDto);
       dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setOthr(genericFinancialIdentification1Dto);
     }
 
