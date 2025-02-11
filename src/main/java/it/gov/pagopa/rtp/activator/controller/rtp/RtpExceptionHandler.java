@@ -2,10 +2,12 @@ package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.model.generated.send.MalformedRequestErrorResponseDto;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.core.codec.DecodingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,9 +37,19 @@ public class RtpExceptionHandler {
   public ResponseEntity<MalformedRequestErrorResponseDto> handleConstraintViolation(
       WebExchangeBindException ex) {
     return ex.getBindingResult().getFieldErrors().stream()
-        .map(error -> new MalformedRequestErrorResponseDto()
-            .error(error.getCode())
-            .details(error.getRejectedValue() + " " + error.getDefaultMessage()))
+        .map(error -> {
+          final var errorCode = Optional.of(error)
+              .map(FieldError::getCodes)
+              .filter(ArrayUtils::isNotEmpty)
+              .map(codes -> codes[0])
+              .orElse("");
+
+          final var description = error.getField() + " " + error.getDefaultMessage();
+
+          return new MalformedRequestErrorResponseDto()
+              .error(errorCode)
+              .details(description);
+        })
         .findFirst()
         .map(error -> ResponseEntity.badRequest().body(error))
         .orElse(ResponseEntity.badRequest().build());
