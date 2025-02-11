@@ -2,11 +2,13 @@ package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.model.generated.send.MalformedRequestErrorResponseDto;
+import java.util.Collection;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.core.codec.DecodingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -34,9 +36,14 @@ public class RtpExceptionHandler {
 
   @ExceptionHandler(WebExchangeBindException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<MalformedRequestErrorResponseDto> handleConstraintViolation(
+  public ResponseEntity<MalformedRequestErrorResponseDto> handleWebExchangeBindException(
       WebExchangeBindException ex) {
-    return ex.getBindingResult().getFieldErrors().stream()
+
+    return Optional.of(ex)
+        .map(WebExchangeBindException::getBindingResult)
+        .map(Errors::getFieldErrors)
+        .stream()
+        .flatMap(Collection::stream)
         .map(error -> {
           final var errorCode = Optional.of(error)
               .map(FieldError::getCodes)
