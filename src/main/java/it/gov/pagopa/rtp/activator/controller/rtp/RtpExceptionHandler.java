@@ -59,9 +59,9 @@ public class RtpExceptionHandler {
   /**
    * Handles {@link DecodingException} exceptions thrown during the processing of requests.
    * <p>
-   * This method captures the exception, extracts the most specific cause of the decoding error,
-   * and constructs an appropriate response containing error details. If the cause of the
-   * exception is null, a fallback message ("Malformed request") is used.
+   * This method captures the exception, extracts the most specific cause of the decoding error, and
+   * constructs an appropriate response containing error details. If the cause of the exception is
+   * null, a fallback message ("Malformed request") is used.
    * </p>
    *
    * <p><strong>Behavior:</strong></p>
@@ -75,22 +75,23 @@ public class RtpExceptionHandler {
    *   <li>Returns a {@link ResponseEntity} containing the {@link MalformedRequestErrorResponseDto} as the response body.</li>
    * </ul>
    *
-   * @param ex the {@link DecodingException} thrown during request decoding, typically due to malformed input.
-   *           Must not be {@code null}.
-   * @return a {@link ResponseEntity} with status {@code 400 Bad Request}, containing a {@link MalformedRequestErrorResponseDto}
-   *         object that details the error.
+   * @param ex the {@link DecodingException} thrown during request decoding, typically due to
+   *           malformed input. Must not be {@code null}.
+   * @return a {@link ResponseEntity} with status {@code 400 Bad Request}, containing a
+   * {@link MalformedRequestErrorResponseDto} object that details the error.
    */
   @ExceptionHandler(DecodingException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<MalformedRequestErrorResponseDto> handleDecodingException(@NonNull final DecodingException ex) {
+  public ResponseEntity<MalformedRequestErrorResponseDto> handleDecodingException(
+      @NonNull final DecodingException ex) {
     final var description = Optional.of(ex)
-            .map(DecodingException::getMostSpecificCause)
-            .map(Throwable::getLocalizedMessage)
-            .orElse(MALFORMED_REQUEST_ERROR_CODE);
+        .map(DecodingException::getMostSpecificCause)
+        .map(Throwable::getLocalizedMessage)
+        .orElse(MALFORMED_REQUEST_ERROR_CODE);
 
     final var errorsDto = new MalformedRequestErrorResponseDto()
-            .error(MALFORMED_REQUEST_ERROR_CODE)
-            .details(description);
+        .error(MALFORMED_REQUEST_ERROR_CODE)
+        .details(description);
 
     return ResponseEntity.badRequest().body(errorsDto);
   }
