@@ -3,10 +3,12 @@ package it.gov.pagopa.rtp.activator.controller.activation;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import jakarta.validation.ConstraintViolationException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -80,9 +82,19 @@ public class ActivationExceptionHandler {
             .map(Errors::getFieldErrors)
             .stream()
             .flatMap(List::stream)
-            .map(error -> new ErrorDto()
-                    .code(error.getCode())
-                    .description(error.getRejectedValue() + " " + error.getDefaultMessage()))
+            .map(error -> {
+              final var errorCode = Optional.of(error)
+                  .map(FieldError::getCodes)
+                  .filter(ArrayUtils::isNotEmpty)
+                  .map(codes -> codes[0])
+                  .orElse("");
+
+              final var description = error.getField() + " " + error.getDefaultMessage();
+
+              return new ErrorDto()
+                  .code(errorCode)
+                  .description(description);
+            })
             .toList();
 
     return handleBadRequest(errors);
