@@ -1,12 +1,13 @@
 package it.gov.pagopa.rtp.activator.controller.rtp;
 
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
 import it.gov.pagopa.rtp.activator.utils.TokenInfo;
+import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -22,10 +23,13 @@ public class SendAPIControllerImpl implements RtpsApi {
   private final SendRTPService sendRTPService;
 
   private final RtpDtoMapper rtpDtoMapper;
+  private final ServiceProviderConfig serviceProviderConfig;
 
-  public SendAPIControllerImpl(SendRTPService sendRTPService, RtpDtoMapper rtpDtoMapper) {
+  public SendAPIControllerImpl(SendRTPService sendRTPService, RtpDtoMapper rtpDtoMapper,
+      ServiceProviderConfig serviceProviderConfig) {
     this.sendRTPService = sendRTPService;
     this.rtpDtoMapper = rtpDtoMapper;
+    this.serviceProviderConfig = serviceProviderConfig;
   }
 
   @Override
@@ -37,8 +41,11 @@ public class SendAPIControllerImpl implements RtpsApi {
         .flatMap(rtpDto -> TokenInfo.getTokenSubject()
             .map(sub -> rtpDtoMapper.toRtpWithServiceProviderCreditor(rtpDto, sub)))
         .flatMap(sendRTPService::send)
-        .thenReturn(new ResponseEntity<Void>(HttpStatus.CREATED))
-        .onErrorReturn(PayerNotActivatedException.class, ResponseEntity.unprocessableEntity().build())
+        .<ResponseEntity<Void>>map(rtp -> ResponseEntity
+            .created(URI.create(serviceProviderConfig.baseUrl() + "/" + rtp.resourceID().getId()))
+            .build())
+        .onErrorReturn(PayerNotActivatedException.class,
+            ResponseEntity.unprocessableEntity().build())
         .doOnError(a -> log.error("Error creating RTP {}", a.getMessage()));
   }
 

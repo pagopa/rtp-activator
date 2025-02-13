@@ -29,6 +29,7 @@ management:
   health.mongo.enabled: false
 
 service-provider:
+  base-url: ${SP_BASE_URL:http://localhost}
   activation:
     api-version: v1
   send:
