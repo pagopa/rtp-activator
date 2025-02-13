@@ -105,7 +105,7 @@ class SendAPIControllerImplTest {
     when(rtpDtoMapper.toRtpWithServiceProviderCreditor(any(CreateRtpDto.class),
         eq("PagoPA"))).thenReturn(expectedRtp);
     when(sendRTPService.send(expectedRtp)).thenReturn(Mono.just(expectedRtp));
-    when(serviceProviderConfig.baseUrl()).thenReturn("http://localhost:8080/rtp/rtps");
+    when(serviceProviderConfig.baseUrl()).thenReturn("http://localhost:8080/rtp/rtps/");
 
     webTestClient
         .post()

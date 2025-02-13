@@ -42,7 +42,7 @@ public class SendAPIControllerImpl implements RtpsApi {
             .map(sub -> rtpDtoMapper.toRtpWithServiceProviderCreditor(rtpDto, sub)))
         .flatMap(sendRTPService::send)
         .<ResponseEntity<Void>>map(rtp -> ResponseEntity
-            .created(URI.create(serviceProviderConfig.baseUrl() + "/" + rtp.resourceID().getId()))
+            .created(URI.create(serviceProviderConfig.baseUrl() + rtp.resourceID().getId()))
             .build())
         .onErrorReturn(PayerNotActivatedException.class,
             ResponseEntity.unprocessableEntity().build())
