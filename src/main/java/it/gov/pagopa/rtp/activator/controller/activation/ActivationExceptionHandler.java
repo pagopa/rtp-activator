@@ -3,10 +3,12 @@ package it.gov.pagopa.rtp.activator.controller.activation;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import jakarta.validation.ConstraintViolationException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -20,8 +22,8 @@ import java.util.Optional;
 /**
  * Global exception handler for request validation errors in the activation controller.
  * <p>
- * This class provides centralized handling for validation-related exceptions occurring
- * in controllers under the package {@code it.gov.pagopa.rtp.activator.controller.activation}.
+ * This class provides centralized handling for validation-related exceptions occurring in
+ * controllers under the package {@code it.gov.pagopa.rtp.activator.controller.activation}.
  * </p>
  *
  * <p><strong>Handled Exceptions:</strong></p>
@@ -37,24 +39,25 @@ import java.util.Optional;
 public class ActivationExceptionHandler {
 
   /**
-   * Handles {@link ConstraintViolationException}, which occurs when method-level validation constraints fail.
+   * Handles {@link ConstraintViolationException}, which occurs when method-level validation
+   * constraints fail.
    * <p>
-   * This method extracts constraint violations, converts them into a list of {@link ErrorDto} objects,
-   * and returns an {@link ErrorsDto} with HTTP status {@code 400 Bad Request}.
+   * This method extracts constraint violations, converts them into a list of {@link ErrorDto}
+   * objects, and returns an {@link ErrorsDto} with HTTP status {@code 400 Bad Request}.
    * </p>
    *
    * @param ex the {@link ConstraintViolationException} containing the validation errors.
    * @return a {@link ResponseEntity} with {@code 400 Bad Request} status and an {@link ErrorsDto}
-   *         listing the validation errors.
+   * listing the validation errors.
    */
   @ExceptionHandler(ConstraintViolationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<ErrorsDto> handleConstraintViolation(ConstraintViolationException ex) {
     var errors = ex.getConstraintViolations().stream()
-            .map(cv -> new ErrorDto()
-                    .code(cv.getMessageTemplate())
-                    .description(cv.getInvalidValue() + " " + cv.getMessage()))
-            .toList();
+        .map(cv -> new ErrorDto()
+            .code(cv.getMessageTemplate())
+            .description(cv.getInvalidValue() + " " + cv.getMessage()))
+        .toList();
 
     return handleBadRequest(errors);
   }
@@ -63,27 +66,38 @@ public class ActivationExceptionHandler {
   /**
    * Handles {@link WebExchangeBindException}, which occurs when request body validation fails.
    * <p>
-   * This method extracts field errors from the binding result, converts them into {@link ErrorDto} objects,
-   * and returns an {@link ErrorsDto} with HTTP status {@code 400 Bad Request}.
+   * This method extracts field errors from the binding result, converts them into {@link ErrorDto}
+   * objects, and returns an {@link ErrorsDto} with HTTP status {@code 400 Bad Request}.
    * </p>
    *
    * @param ex the {@link WebExchangeBindException} containing the validation errors.
    * @return a {@link ResponseEntity} with {@code 400 Bad Request} status and an {@link ErrorsDto}
-   *         listing the validation errors.
+   * listing the validation errors.
    */
   @ExceptionHandler(WebExchangeBindException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @NonNull
-  public ResponseEntity<ErrorsDto> handleWebExchangeBindException(@NonNull final WebExchangeBindException ex) {
+  public ResponseEntity<ErrorsDto> handleWebExchangeBindException(
+      @NonNull final WebExchangeBindException ex) {
     final var errors = Optional.of(ex)
-            .map(WebExchangeBindException::getBindingResult)
-            .map(Errors::getFieldErrors)
-            .stream()
-            .flatMap(List::stream)
-            .map(error -> new ErrorDto()
-                    .code(error.getCode())
-                    .description(error.getRejectedValue() + " " + error.getDefaultMessage()))
-            .toList();
+        .map(WebExchangeBindException::getBindingResult)
+        .map(Errors::getFieldErrors)
+        .stream()
+        .flatMap(List::stream)
+        .map(error -> {
+          final var errorCode = Optional.of(error)
+              .map(FieldError::getCodes)
+              .filter(ArrayUtils::isNotEmpty)
+              .map(codes -> codes[0])
+              .orElse("");
+
+          final var description = error.getField() + " " + error.getDefaultMessage();
+
+          return new ErrorDto()
+              .code(errorCode)
+              .description(description);
+        })
+        .toList();
 
     return handleBadRequest(errors);
   }
@@ -92,13 +106,13 @@ public class ActivationExceptionHandler {
   /**
    * Constructs a standardized {@link ErrorsDto} response for bad requests.
    * <p>
-   * This utility method is used to generate a consistent error response format
-   * for validation exceptions.
+   * This utility method is used to generate a consistent error response format for validation
+   * exceptions.
    * </p>
    *
    * @param errorsList the list of {@link ErrorDto} objects representing validation errors.
    * @return a {@link ResponseEntity} with {@code 400 Bad Request} status and an {@link ErrorsDto}
-   *         containing the provided validation errors.
+   * containing the provided validation errors.
    */
   @NonNull
   private ResponseEntity<ErrorsDto> handleBadRequest(@NonNull final List<ErrorDto> errorsList) {
