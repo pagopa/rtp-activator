@@ -24,6 +24,8 @@ import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.integration.blobstorage.BlobStorageClientAzure;
+
 import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
@@ -39,7 +41,7 @@ import reactor.util.retry.RetryBackoffSpec;
 
 @Service
 @Slf4j
-@RegisterReflectionForBinding({SepaRequestToPayRequestResourceDto.class,
+@RegisterReflectionForBinding({ SepaRequestToPayRequestResourceDto.class,
     PersonIdentification13EPC25922V30DS02WrapperDto.class, ISODateWrapperDto.class,
     ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class,
     ExternalServiceLevel1CodeWrapperDto.class,
@@ -52,16 +54,19 @@ import reactor.util.retry.RetryBackoffSpec;
 public class SendRTPServiceImpl implements SendRTPService {
 
   private final SepaRequestToPayMapper sepaRequestToPayMapper;
+  private final BlobStorageClientAzure blobStorageClientAzure;
   private final ReadApi activationApi;
   private final ObjectMapper objectMapper;
   private final ServiceProviderConfig serviceProviderConfig;
   private final RtpRepository rtpRepository;
   private final DefaultApi sendApi;
 
-  public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
+  public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper,
+      BlobStorageClientAzure blobStorageClientAzure, ReadApi activationApi,
       ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
       DefaultApi sendApi) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
+    this.blobStorageClientAzure = blobStorageClientAzure;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
     this.rtpRepository = rtpRepository;
@@ -69,15 +74,14 @@ public class SendRTPServiceImpl implements SendRTPService {
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
   }
 
-
   @NonNull
   @Override
   public Mono<Rtp> send(@NonNull final Rtp rtp) {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
-            rtp.payerId(),
-            serviceProviderConfig.activation().apiVersion())
+        rtp.payerId(),
+        serviceProviderConfig.activation().apiVersion())
         .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
@@ -95,18 +99,17 @@ public class SendRTPServiceImpl implements SendRTPService {
         );
 
     return sentRtp.doOnSuccess(
-            rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+        rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
-
 
   @NonNull
   private Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
 
     return sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
-            sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
+        sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
         .retryWhen(sendRetryPolicy())
         .onErrorMap(Throwable::getCause)
         .map(response -> rtpToSend)
@@ -115,7 +118,6 @@ public class SendRTPServiceImpl implements SendRTPService {
             rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.serviceProviderDebtor(),
                 rtpSent.resourceID().getId()));
   }
-
 
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
@@ -126,6 +128,8 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   private Mono<Rtp> logRtpAsJson(Rtp rtp) {
+    // test get data. To be removed
+    blobStorageClientAzure.getServiceProviderData();
     log.info(rtpToJson(rtp));
     return Mono.just(rtp);
   }
