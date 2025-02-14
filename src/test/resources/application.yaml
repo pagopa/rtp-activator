@@ -7,6 +7,7 @@ azure.cosmos:
   database: rtp
 
 service-provider:
+  base-url: ${SP_BASE_URL:http://localhost:8080/rtp/rtps/}
   activation:
     api-version: v1
   send:
