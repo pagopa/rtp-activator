@@ -56,4 +56,7 @@ rtp_environment_configs = {
   EPC_SEND_RETRY_MAX_ATTEMPTS: 1
   EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS: 1000
   EPC_SEND_RETRY_BACKOFF_JITTER: 0.75
+  AZURE_STORAGE_ACCOUNT_NAME: "https://cstardweurtpblobstorage.blob.core.windows.net/"
+  AZURE_STORAGE_CONTAINER_NAME: "rtp-debtor-service-provider"
+  AZURE_BLOB_NAME: "testname"
 }

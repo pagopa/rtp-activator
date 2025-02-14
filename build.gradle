@@ -52,6 +52,13 @@ dependencies {
 
 	implementation("com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6")
 
+
+	// Azure blob storage and manage identity
+	implementation 'com.azure:azure-identity:1.15.1'
+	implementation 'com.azure:azure-storage-common:12.29.0-beta.1'
+	implementation 'com.azure:azure-storage-blob:12.30.0-beta.1'
+
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'io.projectreactor:reactor-test'

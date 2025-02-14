@@ -43,3 +43,7 @@ otel:
     mongo:
       enabled: true
 
+blob-storage-config:
+  storage-account-name: ${AZURE_STORAGE_ACCOUNT_NAME:}
+  container-name: ${AZURE_STORAGE_CONTAINER_NAME:}
+  blob-name: ${AZURE_BLOB_NAME:}
