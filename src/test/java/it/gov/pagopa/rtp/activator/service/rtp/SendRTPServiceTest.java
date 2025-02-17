@@ -19,6 +19,8 @@ import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
+import it.gov.pagopa.rtp.activator.integration.blobstorage.BlobStorageClientAzure;
+
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -52,6 +54,8 @@ class SendRTPServiceTest {
     private RtpRepository rtpRepository;
     @Mock
     private DefaultApi defaultApi;
+    @Mock
+    private BlobStorageClientAzure blobStorageClientAzure;
 
     private SendRTPServiceImpl sendRTPService;
 
@@ -74,7 +78,7 @@ class SendRTPServiceTest {
 
     @BeforeEach
     void setUp() {
-        sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
+        sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, blobStorageClientAzure, readApi,
                 serviceProviderConfig, rtpRepository, defaultApi);
         inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
             .expiryDate(expiryDate)
