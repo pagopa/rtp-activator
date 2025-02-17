@@ -1,13 +1,11 @@
 package it.gov.pagopa.rtp.activator.integration.blobstorage;
 
 import org.springframework.stereotype.Component;
-
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
-
 import it.gov.pagopa.rtp.activator.configuration.BlobStorageConfig;
 import reactor.core.publisher.Mono;
 
@@ -19,15 +17,20 @@ import reactor.core.publisher.Mono;
 public class BlobStorageClientAzure implements BlobStorageClient {
 
   private final BlobStorageConfig blobStorageConfig;
+  private final BlobServiceClientBuilder blobServiceClientBuilder;
 
-  public BlobStorageClientAzure(BlobStorageConfig blobStorageConfig){
+  public BlobStorageClientAzure(BlobStorageConfig blobStorageConfig,
+      BlobServiceClientBuilder blobServiceClientBuilder) {
     this.blobStorageConfig = blobStorageConfig;
+    this.blobServiceClientBuilder = blobServiceClientBuilder;
   }
 
   @Override
   public Mono<ServiceProviderDataResponse> getServiceProviderData() {
-    BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-        .endpoint(blobStorageConfig.storageAccountName())
+    String endpoint = String.format("https://%s.blob.core.windows.net", blobStorageConfig.storageAccountName());
+
+    BlobServiceClient blobServiceClient = blobServiceClientBuilder
+        .endpoint(endpoint)
         .credential(new DefaultAzureCredentialBuilder().build())
         .buildClient();
 
@@ -39,5 +42,4 @@ public class BlobStorageClientAzure implements BlobStorageClient {
 
     return Mono.just(blobClient.downloadContent().toObject(ServiceProviderDataResponse.class));
   }
-
 }

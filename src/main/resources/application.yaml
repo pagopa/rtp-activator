@@ -45,6 +45,6 @@ otel:
       enabled: true
 
 blob-storage-config:
-  storage-account-name: ${AZURE_STORAGE_ACCOUNT_NAME:https://cstardweurtpblobstorage.blob.core.windows.net/}
+  storage-account-name: ${AZURE_STORAGE_ACCOUNT_NAME:cstardweurtpblobstorage}
   container-name: ${AZURE_STORAGE_CONTAINER_NAME:rtp-debtor-service-provider}
-  blob-name: ${AZURE_BLOB_NAME:testname}
+  blob-name: ${AZURE_BLOB_NAME:testname.json}
