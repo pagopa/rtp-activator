@@ -51,6 +51,8 @@ dependencies {
     // implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.30")
 
 	implementation("com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6")
+	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+	implementation 'org.apache.commons:commons-lang3:3.0'
 
 
 	// Azure blob storage and manage identity

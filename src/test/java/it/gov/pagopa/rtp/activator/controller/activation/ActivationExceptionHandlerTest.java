@@ -33,10 +33,12 @@ class ActivationExceptionHandlerTest {
 
 
     @Test
-    void givenValidationErrors_whenHandleConstraintViolation_thenReturnBadRequestResponse() {
+    void givenValidationErrors_whenHandleWebExchangeBindException_thenReturnBadRequestResponse() {
         // Arrange
-        FieldError fieldError1 = new FieldError("objectName", "field1", "invalidValue1", false, null, null, "must not be null");
-        FieldError fieldError2 = new FieldError("objectName", "field2", "invalidValue2", false, null, null, "must be a valid email");
+        FieldError fieldError1 = new FieldError("objectName", "field1", "invalidValue1", false,
+            new String[]{"NotNull.field1", "NotNull"}, null, "must not be null");
+        FieldError fieldError2 = new FieldError("objectName", "field2", "invalidValue2", false,
+            new String[]{"Invalid.field2", "Invalid"}, null, "must be a valid email");
 
         when(exception.getBindingResult()).thenReturn(bindingResult);
         when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError1, fieldError2));
@@ -48,12 +50,16 @@ class ActivationExceptionHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(2, response.getBody().getErrors().size());
-        assertEquals("invalidValue1 must not be null", response.getBody().getErrors().get(0).getDescription());
-        assertEquals("invalidValue2 must be a valid email", response.getBody().getErrors().get(1).getDescription());
+
+        assertEquals("NotNull.field1", response.getBody().getErrors().get(0).getCode());
+        assertEquals("field1 must not be null", response.getBody().getErrors().get(0).getDescription());
+
+        assertEquals("Invalid.field2", response.getBody().getErrors().get(1).getCode());
+        assertEquals("field2 must be a valid email", response.getBody().getErrors().get(1).getDescription());
     }
 
     @Test
-    void givenNoValidationErrors_whenHandleConstraintViolation_thenReturnEmptyErrorList() {
+    void givenNoValidationErrors_whenHandleWebExchangeBindException_thenReturnEmptyErrorList() {
         // Arrange
         when(exception.getBindingResult()).thenReturn(bindingResult);
         when(bindingResult.getFieldErrors()).thenReturn(List.of());

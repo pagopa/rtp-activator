@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "service-provider")
 public record ServiceProviderConfig(
+    String baseUrl,
     Activation activation,
     Send send
 ) {

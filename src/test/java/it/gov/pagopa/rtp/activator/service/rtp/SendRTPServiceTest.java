@@ -48,6 +48,7 @@ class SendRTPServiceTest {
     @Mock
     private ReadApi readApi;
     private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig(
+        "http://localhost:8080",
         new Activation("http://localhost:8080"),
         new Send("v1", new Retry(3, 100, 0.75)));
     @Mock
