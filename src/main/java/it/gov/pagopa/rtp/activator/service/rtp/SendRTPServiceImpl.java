@@ -130,11 +130,12 @@ public class SendRTPServiceImpl implements SendRTPService {
 
   private Mono<Rtp> logRtpAsJson(Rtp rtp) {
 
+    log.info(rtpToJson(rtp));
+
     // Code for testing.
     blobStorageClientAzure.getServiceProviderData().doOnSuccess(
       s -> log.info("Test file was read: name {} and serverUrl {}", s.name(),
           s.serverUrl()));
-    log.info(rtpToJson(rtp));
     return Mono.just(rtp);
   }
 
