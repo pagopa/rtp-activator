@@ -80,11 +80,6 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
 
-    // Code for testing.
-    blobStorageClientAzure.getServiceProviderData().doOnSuccess(
-      s -> log.info("Test file was read: name {} and serverUrl {}", s.name(),
-          s.serverUrl()));
-
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
         rtp.payerId(),
         serviceProviderConfig.activation().apiVersion())
@@ -134,6 +129,11 @@ public class SendRTPServiceImpl implements SendRTPService {
   }
 
   private Mono<Rtp> logRtpAsJson(Rtp rtp) {
+
+    // Code for testing.
+    blobStorageClientAzure.getServiceProviderData().doOnSuccess(
+      s -> log.info("Test file was read: name {} and serverUrl {}", s.name(),
+          s.serverUrl()));
     log.info(rtpToJson(rtp));
     return Mono.just(rtp);
   }

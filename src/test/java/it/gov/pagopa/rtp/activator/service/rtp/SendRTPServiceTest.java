@@ -20,6 +20,7 @@ import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import it.gov.pagopa.rtp.activator.integration.blobstorage.BlobStorageClientAzure;
+import it.gov.pagopa.rtp.activator.integration.blobstorage.ServiceProviderDataResponse;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -48,9 +49,9 @@ class SendRTPServiceTest {
     @Mock
     private ReadApi readApi;
     private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig(
-        "http://localhost:8080",
-        new Activation("http://localhost:8080"),
-        new Send("v1", new Retry(3, 100, 0.75)));
+            "http://localhost:8080",
+            new Activation("http://localhost:8080"),
+            new Send("v1", new Retry(3, 100, 0.75)));
     @Mock
     private RtpRepository rtpRepository;
     @Mock
@@ -82,14 +83,14 @@ class SendRTPServiceTest {
         sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, blobStorageClientAzure, readApi,
                 serviceProviderConfig, rtpRepository, defaultApi);
         inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
-            .expiryDate(expiryDate)
-            .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
-            .resourceID(ResourceID.createNew())
-            .savingDateTime(LocalDateTime.now()).serviceProviderDebtor(rtpSpId)
-            .iban(iban).payTrxRef(payTrxRef)
-            .flgConf(flgConf)
-            .payerName(payerName)
-            .subject(subject).build();
+                .expiryDate(expiryDate)
+                .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
+                .resourceID(ResourceID.createNew())
+                .savingDateTime(LocalDateTime.now()).serviceProviderDebtor(rtpSpId)
+                .iban(iban).payTrxRef(payTrxRef)
+                .flgConf(flgConf)
+                .payerName(payerName)
+                .subject(subject).build();
     }
 
     @Test
@@ -99,7 +100,7 @@ class SendRTPServiceTest {
         var expectedRtp = mockRtp();
 
         SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
-            .callbackUrl(URI.create("http://callback.url"));
+                .callbackUrl(URI.create("http://callback.url"));
 
         when(sepaRequestToPayMapper.toEpcRequestToPay(any()))
                 .thenReturn(mockSepaRequestToPayRequestResource);
@@ -108,7 +109,10 @@ class SendRTPServiceTest {
         when(rtpRepository.save(any()))
                 .thenReturn(Mono.just(expectedRtp));
         when(defaultApi.postRequestToPayRequests(any(), any(), any()))
-            .thenReturn(Mono.just(new SynchronousSepaRequestToPayCreationResponseDto()));
+                .thenReturn(Mono.just(new SynchronousSepaRequestToPayCreationResponseDto()));
+
+        ServiceProviderDataResponse s = new ServiceProviderDataResponse("test", "testuri");
+        when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(s));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
         StepVerifier.create(result)
@@ -136,13 +140,13 @@ class SendRTPServiceTest {
     @Test
     void givenPayerIdNotActivatedWhenSendThenMonoError() {
         when(readApi.findActivationByPayerId(any(), any(), any()))
-            .thenReturn(Mono.error(new WebClientResponseException(404, "Not Found", null, null, null)));
+                .thenReturn(Mono.error(new WebClientResponseException(404, "Not Found", null, null, null)));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
 
         StepVerifier.create(result)
-            .expectError(PayerNotActivatedException.class)
-            .verify();
+                .expectError(PayerNotActivatedException.class)
+                .verify();
 
         verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
@@ -151,14 +155,14 @@ class SendRTPServiceTest {
     @Test
     void givenPayerIdBadFormedWhenSendThenMonoError() {
         when(readApi.findActivationByPayerId(any(), any(), any()))
-            .thenReturn(Mono.error(new WebClientResponseException(400, "Bad Request", null,
-                "{}".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8)));
+                .thenReturn(Mono.error(new WebClientResponseException(400, "Bad Request", null,
+                        "{}".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8)));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
 
         StepVerifier.create(result)
-            .expectError(MessageBadFormed.class)
-            .verify();
+                .expectError(MessageBadFormed.class)
+                .verify();
 
         verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
@@ -167,13 +171,13 @@ class SendRTPServiceTest {
     @Test
     void givenInternalErrorWhenSendThenMonoError() {
         when(readApi.findActivationByPayerId(any(), any(), any()))
-            .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+                .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
 
         StepVerifier.create(result)
-            .expectError(RuntimeException.class)
-            .verify();
+                .expectError(RuntimeException.class)
+                .verify();
 
         verify(sepaRequestToPayMapper, times(0)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
@@ -184,25 +188,27 @@ class SendRTPServiceTest {
         var fakeActivationDto = mockActivationDto();
         var expectedRtp = mockRtp();
 
+        ServiceProviderDataResponse s = new ServiceProviderDataResponse("test", "testuri");
+        when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(s));
+
         when(readApi.findActivationByPayerId(any(), any(), any()))
-            .thenReturn(Mono.just(fakeActivationDto));
+                .thenReturn(Mono.just(fakeActivationDto));
         when(defaultApi.postRequestToPayRequests(any(), any(), any()))
-            .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+                .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
         when(rtpRepository.save(any()))
-            .thenReturn(Mono.just(expectedRtp));
+                .thenReturn(Mono.just(expectedRtp));
 
         Mono<Rtp> result = sendRTPService.send(inputRtp);
 
         StepVerifier.create(result)
-            .expectError(UnsupportedOperationException.class)
-            .verify();
+                .expectError(UnsupportedOperationException.class)
+                .verify();
 
         verify(sepaRequestToPayMapper, times(2)).toEpcRequestToPay(any(Rtp.class));
         verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
         verify(defaultApi, times(1)).postRequestToPayRequests(any(), any(), any());
         verify(rtpRepository, times(1)).save(any());
     }
-
 
     @Test
     void givenRtp_whenSavingFailsOnce_thenRetriesAndSucceeds() {
@@ -215,9 +221,13 @@ class SendRTPServiceTest {
         when(readApi.findActivationByPayerId(any(), any(), any()))
                 .thenReturn(Mono.just(mockActivationDto()));
 
+        ServiceProviderDataResponse s = new ServiceProviderDataResponse("test", "testuri");
+        when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(s));
+
         /*
          * Mocks the save method.
-         * The first then return is due to a prior invocation of the method that is not under retry test.
+         * The first then return is due to a prior invocation of the method that is not
+         * under retry test.
          * Subsequent returns are actually testing retry logic.
          */
 
@@ -230,7 +240,6 @@ class SendRTPServiceTest {
                     return Mono.just(invocation.getArgument(0));
                 });
 
-
         when(defaultApi.postRequestToPayRequests(any(), any(), any()))
                 .thenReturn(Mono.empty());
 
@@ -241,19 +250,20 @@ class SendRTPServiceTest {
         verify(rtpRepository, times(2)).save(any());
     }
 
-
     @Test
     void givenRtp_whenSavingFailsIndefinitely_thenThrows() {
         final var sourceRtp = mockRtp();
 
-
         when(readApi.findActivationByPayerId(any(), any(), any()))
                 .thenReturn(Mono.just(mockActivationDto()));
 
+        ServiceProviderDataResponse s = new ServiceProviderDataResponse("test", "testuri");
+        when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(s));
 
         /*
          * Mocks the save method.
-         * The first then return is due to a prior invocation of the method that is not under retry test.
+         * The first then return is due to a prior invocation of the method that is not
+         * under retry test.
          * Subsequent returns are actually testing retry logic.
          */
 
@@ -266,7 +276,6 @@ class SendRTPServiceTest {
                     return Mono.error(new RuntimeException("Simulated DB failure"));
                 });
 
-
         when(defaultApi.postRequestToPayRequests(any(), any(), any()))
                 .thenReturn(Mono.empty());
 
@@ -277,17 +286,14 @@ class SendRTPServiceTest {
         verify(rtpRepository, times(2)).save(any());
     }
 
-
     private Rtp mockRtp() {
         return mockRtp(RtpStatus.CREATED, ResourceID.createNew(), LocalDateTime.now());
     }
 
-
     private Rtp mockRtp(
             @NonNull final RtpStatus status,
             @NonNull final ResourceID resourceId,
-            @NonNull final LocalDateTime savingDateTime
-    ) {
+            @NonNull final LocalDateTime savingDateTime) {
         return Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
                 .expiryDate(expiryDate)
                 .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -300,7 +306,6 @@ class SendRTPServiceTest {
                 .subject(subject)
                 .build();
     }
-
 
     private ActivationDto mockActivationDto() {
         var spId = "activationRtpSpId";
