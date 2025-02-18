@@ -4,7 +4,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,54 +24,53 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class BlobStorageClientAzureTest {
 
-    @Mock
-    private BlobStorageConfig blobStorageConfig;
+  @Mock
+  private BlobStorageConfig blobStorageConfig;
 
-    @Mock
-    private BlobServiceClient blobServiceClient;
+  @Mock
+  private BlobServiceClient blobServiceClient;
 
-    @Mock
-    private BlobContainerClient blobContainerClient;
+  @Mock
+  private BlobContainerClient blobContainerClient;
 
-    @Mock
-    private BlobServiceClientBuilder blobServiceClientBuilder;
+  @Mock
+  private BlobServiceClientBuilder blobServiceClientBuilder;
 
-    @Mock
-    private BlobClient blobClient;
+  @Mock
+  private BlobClient blobClient;
 
-    @InjectMocks
-    private BlobStorageClientAzure blobStorageClient;
+  @InjectMocks
+  private BlobStorageClientAzure blobStorageClient;
 
-    @BeforeEach
-    void setup() {
-        blobStorageClient = new BlobStorageClientAzure(blobStorageConfig, blobServiceClientBuilder);
-    }
+  @BeforeEach
+  void setup() {
+    blobStorageClient = new BlobStorageClientAzure(blobStorageConfig, blobServiceClientBuilder);
+  }
 
-    @Test
-    void testGetServiceProviderData() {
-        when(blobStorageConfig.storageAccountName()).thenReturn("mystorage");
-        when(blobStorageConfig.containerName()).thenReturn("mycontainer");
-        when(blobStorageConfig.blobName()).thenReturn("myblob.json");
-            
+  @Test
+  void testGetServiceProviderData() {
+    when(blobStorageConfig.storageAccountName()).thenReturn("mystorage");
+    when(blobStorageConfig.containerName()).thenReturn("mycontainer");
+    when(blobStorageConfig.blobName()).thenReturn("myblob.json");
 
-        when(blobServiceClientBuilder.endpoint(any(String.class)))
-                .thenReturn(blobServiceClientBuilder);
-        when(blobServiceClientBuilder.credential(any(DefaultAzureCredential.class)))
-                .thenReturn(blobServiceClientBuilder);
-        when(blobServiceClientBuilder.buildClient())
-                .thenReturn(blobServiceClient);
+    when(blobServiceClientBuilder.endpoint(any(String.class)))
+        .thenReturn(blobServiceClientBuilder);
+    when(blobServiceClientBuilder.credential(any(DefaultAzureCredential.class)))
+        .thenReturn(blobServiceClientBuilder);
+    when(blobServiceClientBuilder.buildClient())
+        .thenReturn(blobServiceClient);
 
-        when(blobServiceClient.getBlobContainerClient(anyString()))
-                .thenReturn(blobContainerClient);
-        when(blobContainerClient.getBlobClient(anyString()))
-                .thenReturn(blobClient);
+    when(blobServiceClient.getBlobContainerClient(anyString()))
+        .thenReturn(blobContainerClient);
+    when(blobContainerClient.getBlobClient(anyString()))
+        .thenReturn(blobClient);
 
-        ServiceProviderDataResponse mockResponse = new ServiceProviderDataResponse("test", "testuri");
-        when(blobClient.downloadContent())
-                .thenReturn(BinaryData.fromObject(mockResponse));
+    BinaryData res = BinaryData.fromString("test");
+    when(blobClient.downloadContent())
+        .thenReturn(res);
 
-        StepVerifier.create(blobStorageClient.getServiceProviderData())
-            .expectNext(mockResponse)
-            .verifyComplete();
-    }
+    StepVerifier.create(blobStorageClient.getServiceProviderData())
+        .expectNext(res)
+        .verifyComplete();
+  }
 }

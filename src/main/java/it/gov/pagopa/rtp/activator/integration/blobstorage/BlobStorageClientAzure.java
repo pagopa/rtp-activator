@@ -1,6 +1,8 @@
 package it.gov.pagopa.rtp.activator.integration.blobstorage;
 
 import org.springframework.stereotype.Component;
+
+import com.azure.core.util.BinaryData;
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
@@ -28,7 +30,7 @@ public class BlobStorageClientAzure implements BlobStorageClient {
   }
 
   @Override
-  public Mono<ServiceProviderDataResponse> getServiceProviderData() {
+  public Mono<BinaryData> getServiceProviderData() {
     log.info("Starting getServiceProviderData");
     String endpoint = String.format("https://%s.blob.core.windows.net", blobStorageConfig.storageAccountName());
 
@@ -48,7 +50,7 @@ public class BlobStorageClientAzure implements BlobStorageClient {
         .getBlobClient(blobStorageConfig.blobName());
 
     log.info("Before download content");
-    return Mono.just(blobClient.downloadContent().toObject(ServiceProviderDataResponse.class));
+    return Mono.just(blobClient.downloadContent());
 
   }
 }

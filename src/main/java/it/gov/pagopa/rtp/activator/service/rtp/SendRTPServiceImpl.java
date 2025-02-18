@@ -81,8 +81,7 @@ public class SendRTPServiceImpl implements SendRTPService {
 
     // Code for testing.
     blobStorageClientAzure.getServiceProviderData().doOnSuccess(
-      s -> log.info("Test file was read: name {} and serverUrl {}", s.name(),
-          s.serverUrl()));
+      s -> log.info("Test file was downloaded, this is the binary data: {}", s.toString()));
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
         rtp.payerId(),
