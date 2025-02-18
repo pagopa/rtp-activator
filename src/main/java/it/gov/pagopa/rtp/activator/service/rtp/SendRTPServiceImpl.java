@@ -3,6 +3,7 @@ package it.gov.pagopa.rtp.activator.service.rtp;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -80,8 +81,13 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
     // Code for testing.
-    blobStorageClientAzure.getServiceProviderData().doOnSuccess(
-      s -> log.info("Test file was downloaded, this is the binary data: {}", s.toString()));
+    blobStorageClientAzure.getServiceProviderData()
+        .map(BinaryData::toString) 
+        .doOnSuccess(content -> 
+            log.info("Test file was read: {}", content)
+        )
+        .doOnError(error -> log.error("Error reading blob storage: ", error))
+        .subscribe(); 
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
         rtp.payerId(),
