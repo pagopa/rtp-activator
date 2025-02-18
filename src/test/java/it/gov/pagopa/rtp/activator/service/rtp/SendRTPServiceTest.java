@@ -139,6 +139,10 @@ class SendRTPServiceTest {
 
     @Test
     void givenPayerIdNotActivatedWhenSendThenMonoError() {
+
+        ServiceProviderDataResponse s = new ServiceProviderDataResponse("test", "testuri");
+        when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(s));
+
         when(readApi.findActivationByPayerId(any(), any(), any()))
                 .thenReturn(Mono.error(new WebClientResponseException(404, "Not Found", null, null, null)));
 
@@ -154,6 +158,10 @@ class SendRTPServiceTest {
 
     @Test
     void givenPayerIdBadFormedWhenSendThenMonoError() {
+
+        ServiceProviderDataResponse s = new ServiceProviderDataResponse("test", "testuri");
+        when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(s));
+
         when(readApi.findActivationByPayerId(any(), any(), any()))
                 .thenReturn(Mono.error(new WebClientResponseException(400, "Bad Request", null,
                         "{}".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8)));
@@ -170,6 +178,10 @@ class SendRTPServiceTest {
 
     @Test
     void givenInternalErrorWhenSendThenMonoError() {
+
+        ServiceProviderDataResponse s = new ServiceProviderDataResponse("test", "testuri");
+        when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(s));
+
         when(readApi.findActivationByPayerId(any(), any(), any()))
                 .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
 
