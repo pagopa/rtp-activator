@@ -1,5 +1,8 @@
 package it.gov.pagopa.rtp.activator.integration.blobstorage;
 
+import java.security.Provider.Service;
+
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.stereotype.Component;
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.azure.storage.blob.BlobClient;
@@ -19,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Component
 @Slf4j
+@RegisterReflectionForBinding({ServiceProviderDataResponse.class})
 public class BlobStorageClientAzure implements BlobStorageClient {
 
   private final BlobStorageConfig blobStorageConfig;

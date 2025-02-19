@@ -50,7 +50,7 @@ import reactor.util.retry.RetryBackoffSpec;
     OrganisationIdentification29EPC25922V30DS022WrapperDto.class,
     ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto.class,
     IBAN2007IdentifierWrapperDto.class,
-    ActivationDto.class
+    ActivationDto.class,
 })
 public class SendRTPServiceImpl implements SendRTPService {
 
