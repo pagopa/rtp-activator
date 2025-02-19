@@ -8,7 +8,7 @@ import java.time.Duration;
 @Component("caffeineCacheFactory")
 public class CaffeineCacheFactory {
 
-  public Caffeine<Object, Object> createCache(int maxSize, Duration expireAfterWrite) {
+  public Caffeine<Object, Object> createCache(long maxSize, Duration expireAfterWrite) {
     return Caffeine.newBuilder()
         .maximumSize(maxSize)
         .expireAfterWrite(expireAfterWrite);
