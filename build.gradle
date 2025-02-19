@@ -54,6 +54,12 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 	implementation 'org.apache.commons:commons-lang3:3.0'
 
+	// spring cache + caffeine
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-cache
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	// https://mvnrepository.com/artifact/com.github.ben-manes.caffeine/caffeine
+	implementation 'com.github.ben-manes.caffeine:caffeine:3.2.0'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'io.projectreactor:reactor-test'
