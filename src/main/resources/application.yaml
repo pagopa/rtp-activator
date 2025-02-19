@@ -44,3 +44,8 @@ otel:
     mongo:
       enabled: true
 
+
+cache:
+  - name: registry-data
+    maximumSize: 1
+    expireAfterWrite: P1D
