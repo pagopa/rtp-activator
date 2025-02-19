@@ -3,7 +3,7 @@ package it.gov.pagopa.rtp.activator.integration.blobstorage;
 import org.springframework.stereotype.Component;
 
 import com.azure.core.util.BinaryData;
-import com.azure.identity.DefaultAzureCredentialBuilder;
+import com.azure.identity.ManagedIdentityCredentialBuilder;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
@@ -34,7 +34,7 @@ public class BlobStorageClientAzure implements BlobStorageClient {
 
     this.blobServiceClient = this.blobServiceClientBuilder
         .endpoint(endpoint)
-        .credential(new DefaultAzureCredentialBuilder().build())
+        .credential(new ManagedIdentityCredentialBuilder().build())
         .buildClient();
   }
 

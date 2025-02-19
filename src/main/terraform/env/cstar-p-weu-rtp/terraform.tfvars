@@ -57,5 +57,5 @@ rtp_environment_configs = {
   EPC_SEND_RETRY_BACKOFF_JITTER: 0.75
   AZURE_STORAGE_ACCOUNT_NAME:  "cstarpweurtpblobstorage"
   AZURE_STORAGE_CONTAINER_NAME: "rtp-debtor-service-provider"
-  AZURE_BLOB_NAME: "testname"
+  AZURE_BLOB_NAME: "testname.json"
 }
