@@ -17,7 +17,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "cache")
 public class CachesConfigProperties {
 
-  private final List<CacheConfigProperties> caches;
+  private final List<CacheConfigProperties> params;
 
   @With
   public record CacheConfigProperties(@NotBlank String name, @Positive Integer maximumSize, Duration expireAfterWrite) {}

@@ -2,7 +2,6 @@ package it.gov.pagopa.rtp.activator.configuration;
 
 import it.gov.pagopa.rtp.activator.configuration.CachesConfigProperties.CacheConfigProperties;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -38,9 +37,9 @@ public class CacheConfig {
   public CacheManager cacheManager() {
     final var cacheManager = new CaffeineCacheManager();
 
-    if (!CollectionUtils.isEmpty(cacheProperties.getCaches())) {
+    if (!CollectionUtils.isEmpty(cacheProperties.getParams())) {
 
-      final var cacheMap = cacheProperties.getCaches()
+      final var cacheMap = cacheProperties.getParams()
           .stream()
           .map(cacheConfigProperties -> cacheConfigProperties.withName(
               cacheConfigProperties.name().trim()))
@@ -52,12 +51,13 @@ public class CacheConfig {
               )
           ));
 
-      cacheManager.setCacheLoader(
-          cacheName -> Optional.of(cacheMap)
-              .map(map -> map.get(cacheName.toString()))
-              .orElseThrow(() -> new IllegalArgumentException("Cache not found: " + cacheName))
-      );
+      cacheMap.forEach((key, value) -> cacheManager.registerCustomCache(
+          key,
+          value.buildAsync()
+      ));
     }
+
+    cacheManager.setAsyncCacheMode(true);
 
     return cacheManager;
   }

@@ -46,6 +46,7 @@ otel:
 
 
 cache:
-  - name: registry-data
-    maximumSize: 1
-    expireAfterWrite: P1D
+  params:
+    - name: registry-data
+      maximum-size: 1
+      expire-after-write: 30s
