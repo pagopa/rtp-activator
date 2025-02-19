@@ -81,7 +81,7 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
     final var activationData = blobStorageClientAzure.getServiceProviderData()
-        .doOnNext(data -> log.info("Test file was read")) // Log success
+        .doOnNext(data -> log.info("Test file was read name: {} serverUrl: {}", data.name(), data.serverUrl())) // Log success
         .doOnError(error -> log.error("Error reading blob storage", error)) // Log errors
         .then(activationApi.findActivationByPayerId(UUID.randomUUID(),
             rtp.payerId(),

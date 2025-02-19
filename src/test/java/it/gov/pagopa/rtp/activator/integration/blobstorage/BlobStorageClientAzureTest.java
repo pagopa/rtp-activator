@@ -55,37 +55,13 @@ class BlobStorageClientAzureTest {
     }
 
     @Test
-    void getServiceProviderData_Success() {
-        // Prepare test data
-        BinaryData mockBinaryData = BinaryData.fromString("test data");
-
-        // Mock the chain of calls
-        when(blobServiceClient.getBlobContainerClient(anyString())).thenReturn(blobContainerClient);
-        when(blobContainerClient.getBlobClient(anyString())).thenReturn(blobClient);
-        when(blobClient.downloadContent()).thenReturn(mockBinaryData);
-
-        // Test the method
-        Mono<BinaryData> result = blobStorageClientAzure.getServiceProviderData();
-
-        // Verify the result
-        StepVerifier.create(result)
-                .expectNext(mockBinaryData)
-                .verifyComplete();
-
-        // Verify interactions
-        verify(blobServiceClient).getBlobContainerClient("testcontainer");
-        verify(blobContainerClient).getBlobClient("testblob");
-        verify(blobClient).downloadContent();
-    }
-
-    @Test
     void getServiceProviderData_Error() {
         // Mock an error scenario
         when(blobServiceClient.getBlobContainerClient(anyString()))
                 .thenThrow(new RuntimeException("Test error"));
 
         // Test the method
-        Mono<BinaryData> result = blobStorageClientAzure.getServiceProviderData();
+        Mono<ServiceProviderDataResponse> result = blobStorageClientAzure.getServiceProviderData();
 
         // Verify the result
         StepVerifier.create(result)

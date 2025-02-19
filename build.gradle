@@ -232,7 +232,7 @@ graalvmNative {
 	binaries {
 		main {
 			buildArgs.add("--initialize-at-build-time=org.slf4j.helpers")
-			  buildArgs.add('--initialize-at-build-time=com.azure.core.credential.TokenCredential')
+			buildArgs.add('--initialize-at-build-time=com.azure.core.credential.TokenCredential')
             
             // Initialize MSAL classes at runtime
             buildArgs.add('--initialize-at-run-time=com.microsoft.aad.msal4j')
