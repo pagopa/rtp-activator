@@ -42,6 +42,8 @@ public class CacheConfig {
 
       final var cacheMap = cacheProperties.getCaches()
           .stream()
+          .map(cacheConfigProperties -> cacheConfigProperties.withName(
+              cacheConfigProperties.name().trim()))
           .collect(Collectors.toConcurrentMap(
               CacheConfigProperties::name,
               cache -> cacheFactory.createCache(

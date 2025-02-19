@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.List;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.With;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -18,6 +19,7 @@ public class CachesConfigProperties {
 
   private final List<CacheConfigProperties> caches;
 
+  @With
   public record CacheConfigProperties(@NotBlank String name, @Positive Integer maximumSize, Duration expireAfterWrite) {}
 }
 
