@@ -1,0 +1,15 @@
+{
+    "resources": {
+      "includes": [
+        {
+          "pattern": "\\QMETA-INF/services/com.azure.core.credential.TokenCredential\\E"
+        },
+        {
+          "pattern": "\\QMETA-INF/services/com.azure.identity.implementation.IdentityClient\\E"
+        },
+        {
+          "pattern": "\\QMETA-INF/services/com.microsoft.aad.msal4j.IManagedIdentityApplication\\E"
+        }
+      ]
+    }
+  }
