@@ -112,9 +112,6 @@ class SendRTPServiceTest {
     when(defaultApi.postRequestToPayRequests(any(), any(), any()))
         .thenReturn(Mono.just(new SynchronousSepaRequestToPayCreationResponseDto()));
 
-    ServiceProviderDataResponse mockServiceProviderDataResponse = new ServiceProviderDataResponse("test", "testname");
-    when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(mockServiceProviderDataResponse));
-
     Mono<Rtp> result = sendRTPService.send(inputRtp);
     StepVerifier.create(result)
         .expectNextMatches(rtp -> rtp.noticeNumber().equals(expectedRtp.noticeNumber())
@@ -141,9 +138,6 @@ class SendRTPServiceTest {
   @Test
   void givenPayerIdNotActivatedWhenSendThenMonoError() {
 
-    ServiceProviderDataResponse mockServiceProviderDataResponse = new ServiceProviderDataResponse("test", "testname");
-    when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(mockServiceProviderDataResponse));
-
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.error(new WebClientResponseException(404, "Not Found", null, null, null)));
 
@@ -159,10 +153,6 @@ class SendRTPServiceTest {
 
   @Test
   void givenPayerIdBadFormedWhenSendThenMonoError() {
-
-    ServiceProviderDataResponse mockServiceProviderDataResponse = new ServiceProviderDataResponse("test", "testname");
-    when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(mockServiceProviderDataResponse));
-
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.error(new WebClientResponseException(400, "Bad Request", null,
             "{}".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8)));
@@ -179,9 +169,6 @@ class SendRTPServiceTest {
 
   @Test
   void givenInternalErrorWhenSendThenMonoError() {
-
-    ServiceProviderDataResponse mockServiceProviderDataResponse = new ServiceProviderDataResponse("test", "testname");
-    when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(mockServiceProviderDataResponse));
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
@@ -200,9 +187,6 @@ class SendRTPServiceTest {
   void givenInternalErrorOnExternalSendWhenSendThenPropagateMonoError() {
     var fakeActivationDto = mockActivationDto();
     var expectedRtp = mockRtp();
-
-    ServiceProviderDataResponse mockServiceProviderDataResponse = new ServiceProviderDataResponse("test", "testname");
-    when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(mockServiceProviderDataResponse));
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(fakeActivationDto));
@@ -233,9 +217,6 @@ class SendRTPServiceTest {
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
-
-    ServiceProviderDataResponse mockServiceProviderDataResponse = new ServiceProviderDataResponse("test", "testname");
-    when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(mockServiceProviderDataResponse));
 
     /*
      * Mocks the save method.
@@ -269,9 +250,6 @@ class SendRTPServiceTest {
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
-
-    ServiceProviderDataResponse mockServiceProviderDataResponse = new ServiceProviderDataResponse("test", "testname");
-    when(blobStorageClientAzure.getServiceProviderData()).thenReturn(Mono.just(mockServiceProviderDataResponse));
 
     /*
      * Mocks the save method.

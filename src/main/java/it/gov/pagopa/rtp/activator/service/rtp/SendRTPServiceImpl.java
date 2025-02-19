@@ -80,13 +80,10 @@ public class SendRTPServiceImpl implements SendRTPService {
   public Mono<Rtp> send(@NonNull final Rtp rtp) {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
-    final var activationData = blobStorageClientAzure.getServiceProviderData()
-        .doOnNext(data -> log.info("Test file was read name: {} serverUrl: {}", data.name(), data.serverUrl())) // Log success
-        .doOnError(error -> log.error("Error reading blob storage", error)) // Log errors
-        .then(activationApi.findActivationByPayerId(UUID.randomUUID(),
+    final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
             rtp.payerId(),
             serviceProviderConfig.activation().apiVersion())
-            .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException));
+            .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
