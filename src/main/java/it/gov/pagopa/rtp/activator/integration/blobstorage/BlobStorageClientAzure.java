@@ -34,7 +34,7 @@ public class BlobStorageClientAzure implements BlobStorageClient {
 
     this.blobServiceClient = this.blobServiceClientBuilder
         .endpoint(endpoint)
-        .credential(new DefaultAzureCredentialBuilder().managedIdentityClientId(blobStorageConfig.managedIdentity()).build())
+        .credential(new DefaultAzureCredentialBuilder().build())
         .buildClient();
   }
 
