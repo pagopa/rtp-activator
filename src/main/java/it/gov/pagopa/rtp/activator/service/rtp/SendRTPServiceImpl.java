@@ -76,9 +76,9 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
-            rtp.payerId(),
-            serviceProviderConfig.activation().apiVersion())
-            .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
+        rtp.payerId(),
+        serviceProviderConfig.activation().apiVersion())
+        .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
