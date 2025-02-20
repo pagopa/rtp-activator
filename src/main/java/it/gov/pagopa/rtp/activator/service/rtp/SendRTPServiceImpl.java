@@ -25,6 +25,7 @@ import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29E
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -104,6 +105,11 @@ public class SendRTPServiceImpl implements SendRTPService {
   @NonNull
   private Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
+    
+    // the placeholderhashmap will be change with the cache call
+    HashMap<String,String> placeHolderHashMap = new HashMap<String, String>();
+    placeHolderHashMap.put("UNCRITMM", "https://cbiglobeopenbankingapigateway.nexi.it/srtp/sp/sepa-request-to-pay-requests");
+    sendApi.getApiClient().setBasePath(placeHolderHashMap.get(rtpToSend.serviceProviderCreditor()));
 
     return sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
             sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))

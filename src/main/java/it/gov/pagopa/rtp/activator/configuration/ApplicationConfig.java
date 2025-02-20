@@ -31,4 +31,5 @@ public class ApplicationConfig {
     httpClient.getApiClient().setBasePath(serviceProviderConfig.send().epcMockUrl());
     return httpClient;
   }
+
 }
