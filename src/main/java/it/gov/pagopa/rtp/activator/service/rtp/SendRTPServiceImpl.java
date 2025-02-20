@@ -24,7 +24,6 @@ import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
-
 import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
@@ -69,6 +68,7 @@ public class SendRTPServiceImpl implements SendRTPService {
     this.sendApi = sendApi;
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
   }
+
 
   @NonNull
   @Override
