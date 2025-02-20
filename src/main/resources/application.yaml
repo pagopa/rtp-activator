@@ -49,4 +49,4 @@ cache:
   params:
     - name: registry-data
       maximum-size: 1
-      expire-after-write: 30s
+      expire-after-write: 1d
