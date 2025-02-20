@@ -40,7 +40,7 @@ import reactor.util.retry.RetryBackoffSpec;
 
 @Service
 @Slf4j
-@RegisterReflectionForBinding({ SepaRequestToPayRequestResourceDto.class,
+@RegisterReflectionForBinding({SepaRequestToPayRequestResourceDto.class,
     PersonIdentification13EPC25922V30DS02WrapperDto.class, ISODateWrapperDto.class,
     ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class,
     ExternalServiceLevel1CodeWrapperDto.class,
@@ -48,7 +48,7 @@ import reactor.util.retry.RetryBackoffSpec;
     OrganisationIdentification29EPC25922V30DS022WrapperDto.class,
     ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto.class,
     IBAN2007IdentifierWrapperDto.class,
-    ActivationDto.class,
+    ActivationDto.class
 })
 public class SendRTPServiceImpl implements SendRTPService {
 
@@ -76,8 +76,8 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
-        rtp.payerId(),
-        serviceProviderConfig.activation().apiVersion())
+            rtp.payerId(),
+            serviceProviderConfig.activation().apiVersion())
         .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
@@ -95,17 +95,18 @@ public class SendRTPServiceImpl implements SendRTPService {
         );
 
     return sentRtp.doOnSuccess(
-        rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+            rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
+
 
   @NonNull
   private Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
 
     return sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
-        sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
+            sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
         .retryWhen(sendRetryPolicy())
         .onErrorMap(Throwable::getCause)
         .map(response -> rtpToSend)
@@ -115,6 +116,7 @@ public class SendRTPServiceImpl implements SendRTPService {
                 rtpSent.resourceID().getId()));
   }
 
+  
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
       case NOT_FOUND -> new PayerNotActivatedException();
