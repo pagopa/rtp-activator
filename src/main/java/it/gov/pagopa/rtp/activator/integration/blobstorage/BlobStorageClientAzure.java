@@ -1,7 +1,5 @@
 package it.gov.pagopa.rtp.activator.integration.blobstorage;
 
-import java.security.Provider.Service;
-
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.stereotype.Component;
 import com.azure.identity.DefaultAzureCredentialBuilder;
@@ -51,13 +49,10 @@ public class BlobStorageClientAzure implements BlobStorageClient {
 
       BlobContainerClient containerClient = blobServiceClient
           .getBlobContainerClient(blobStorageConfig.containerName());
-      log.info("Before container client");
 
       BlobClient blobClient = containerClient
           .getBlobClient(blobStorageConfig.blobName());
-      log.info("Before blob client");
 
-      log.info("Before download content");
       return blobClient.downloadContent().toObject(ServiceProviderDataResponse.class);
     })
         .subscribeOn(Schedulers.boundedElastic())

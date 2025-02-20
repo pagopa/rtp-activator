@@ -20,7 +20,6 @@ import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import it.gov.pagopa.rtp.activator.integration.blobstorage.BlobStorageClientAzure;
-import it.gov.pagopa.rtp.activator.integration.blobstorage.ServiceProviderDataResponse;
 
 import java.math.BigDecimal;
 import java.net.URI;
