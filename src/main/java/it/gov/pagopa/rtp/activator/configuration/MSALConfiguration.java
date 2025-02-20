@@ -11,6 +11,8 @@ import org.springframework.context.annotation.ImportRuntimeHints;
 @ImportRuntimeHints(MSALConfiguration.MSALRuntimeHints.class)
 public class MSALConfiguration {
 
+    private MSALConfiguration() {
+    }
     static class MSALRuntimeHints implements RuntimeHintsRegistrar {
         @Override
         public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
