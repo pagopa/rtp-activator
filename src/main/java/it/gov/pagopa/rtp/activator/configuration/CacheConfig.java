@@ -3,7 +3,6 @@ package it.gov.pagopa.rtp.activator.configuration;
 import it.gov.pagopa.rtp.activator.configuration.CachesConfigProperties.CacheConfigProperties;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -21,7 +20,6 @@ public class CacheConfig {
   private final CaffeineCacheFactory cacheFactory;
 
 
-  @Autowired
   public CacheConfig(
       @NonNull final CachesConfigProperties cacheProperties,
       @NonNull final CaffeineCacheFactory cacheFactory) {
