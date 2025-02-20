@@ -54,6 +54,13 @@ dependencies {
 	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 	implementation 'org.apache.commons:commons-lang3:3.0'
 
+
+	// Azure blob storage and manage identity
+	implementation 'com.azure:azure-identity:1.15.1'
+	implementation 'com.azure:azure-storage-common:12.29.0-beta.1'
+	implementation 'com.azure:azure-storage-blob:12.30.0-beta.1'
+	implementation 'com.microsoft.azure:msal4j:1.19.0'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'io.projectreactor:reactor-test'
@@ -225,6 +232,17 @@ graalvmNative {
 	binaries {
 		main {
 			buildArgs.add("--initialize-at-build-time=org.slf4j.helpers")
+			buildArgs.add('--initialize-at-build-time=com.azure.core.credential.TokenCredential')
+            
+            // Initialize MSAL classes at runtime
+            buildArgs.add('--initialize-at-run-time=com.microsoft.aad.msal4j')
+            buildArgs.add('--initialize-at-run-time=com.azure.identity')
+            buildArgs.add('--initialize-at-run-time=com.azure.core.credential.AccessToken')
+            
+            buildArgs.add('--enable-all-security-services')
+            buildArgs.add('--enable-url-protocols=https')
+            buildArgs.add('--no-fallback')
+            
 			jvmArgs.add("-Djava.security.properties=${file("${projectDir}/src/main/resources/custom.security").absolutePath}")
 		}
 	}

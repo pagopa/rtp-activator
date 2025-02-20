@@ -116,7 +116,7 @@ public class SendRTPServiceImpl implements SendRTPService {
                 rtpSent.resourceID().getId()));
   }
 
-
+  
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
       case NOT_FOUND -> new PayerNotActivatedException();
