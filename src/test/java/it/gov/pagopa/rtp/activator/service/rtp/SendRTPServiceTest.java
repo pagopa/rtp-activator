@@ -80,7 +80,7 @@ class SendRTPServiceTest {
 
   @BeforeEach
   void setUp() {
-    sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, blobStorageClientAzure, readApi,
+    sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
         serviceProviderConfig, rtpRepository, defaultApi);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)

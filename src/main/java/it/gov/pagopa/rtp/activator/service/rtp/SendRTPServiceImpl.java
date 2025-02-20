@@ -3,7 +3,6 @@ package it.gov.pagopa.rtp.activator.service.rtp;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import com.azure.core.util.BinaryData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -25,7 +24,6 @@ import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
-import it.gov.pagopa.rtp.activator.integration.blobstorage.BlobStorageClientAzure;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -55,19 +53,16 @@ import reactor.util.retry.RetryBackoffSpec;
 public class SendRTPServiceImpl implements SendRTPService {
 
   private final SepaRequestToPayMapper sepaRequestToPayMapper;
-  private final BlobStorageClientAzure blobStorageClientAzure;
   private final ReadApi activationApi;
   private final ObjectMapper objectMapper;
   private final ServiceProviderConfig serviceProviderConfig;
   private final RtpRepository rtpRepository;
   private final DefaultApi sendApi;
 
-  public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper,
-      BlobStorageClientAzure blobStorageClientAzure, ReadApi activationApi,
+  public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
       ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
       DefaultApi sendApi) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
-    this.blobStorageClientAzure = blobStorageClientAzure;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
     this.rtpRepository = rtpRepository;
