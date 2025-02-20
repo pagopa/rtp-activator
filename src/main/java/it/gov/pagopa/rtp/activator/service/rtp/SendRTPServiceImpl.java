@@ -24,6 +24,7 @@ import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.integration.blobstorage.BlobStorageClient;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
@@ -57,16 +58,18 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final ServiceProviderConfig serviceProviderConfig;
   private final RtpRepository rtpRepository;
   private final DefaultApi sendApi;
+  private final BlobStorageClient blobStorageClient;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
       ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
-      DefaultApi sendApi) {
+      DefaultApi sendApi, BlobStorageClient blobStorageClient) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
     this.rtpRepository = rtpRepository;
     this.sendApi = sendApi;
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    this.blobStorageClient = blobStorageClient;
   }
 
 
@@ -74,6 +77,13 @@ public class SendRTPServiceImpl implements SendRTPService {
   @Override
   public Mono<Rtp> send(@NonNull final Rtp rtp) {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
+
+    final var test = blobStorageClient.getServiceProviderData()
+        .doOnNext(data -> log.info("BLOB Storage data: {}", data))
+        .doOnError(error -> log.error("Error downloading blob: {}", error.getMessage()))
+        .subscribe();
+
+    log.info("BLOB data: {}", test);
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
             rtp.payerId(),
@@ -105,18 +115,20 @@ public class SendRTPServiceImpl implements SendRTPService {
   private Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
 
-    return sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
+    return sendApi.postRequestToPayRequests(
+            UUID.randomUUID(),
+            UUID.randomUUID().toString(),
             sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
         .retryWhen(sendRetryPolicy())
         .onErrorMap(Throwable::getCause)
         .map(response -> rtpToSend)
         .defaultIfEmpty(rtpToSend)
-        .doOnSuccess(
-            rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.serviceProviderDebtor(),
-                rtpSent.resourceID().getId()));
+        .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
+            rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
   }
 
-  
+
+
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
       case NOT_FOUND -> new PayerNotActivatedException();

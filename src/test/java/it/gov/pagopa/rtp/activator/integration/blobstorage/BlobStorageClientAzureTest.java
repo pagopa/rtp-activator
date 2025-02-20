@@ -7,6 +7,9 @@ import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import it.gov.pagopa.rtp.activator.configuration.BlobStorageConfig;
+import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProvider;
+import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,7 +64,16 @@ class BlobStorageClientAzureTest {
     @Test
     void getServiceProviderData_Success() {
         // Prepare test data
-        ServiceProviderDataResponse expectedResponse = new ServiceProviderDataResponse("https://test.com", "TestProvider");
+        ServiceProviderDataResponse expectedResponse = new ServiceProviderDataResponse(
+            List.of(
+                new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null),
+                new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null)
+            ),
+            List.of(
+                new ServiceProvider("UNCRITMM", "UniCredit S.p.A.", "08992631005"),
+                new ServiceProvider("BPPIITRRXXX", "Poste Italiane S.p.A.", "BPPIITRRXXX")
+            )
+        );
         
         // Mock the blob storage chain
         when(blobServiceClient.getBlobContainerClient(anyString())).thenReturn(blobContainerClient);

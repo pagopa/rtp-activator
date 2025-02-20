@@ -1,5 +1,8 @@
 package it.gov.pagopa.rtp.activator.integration.blobstorage;
 
+import it.gov.pagopa.rtp.activator.domain.registryfile.OAuth2;
+import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProvider;
+import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.stereotype.Component;
 import com.azure.identity.DefaultAzureCredentialBuilder;
@@ -20,21 +23,24 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Component
 @Slf4j
-@RegisterReflectionForBinding({ServiceProviderDataResponse.class})
+@RegisterReflectionForBinding({
+    ServiceProviderDataResponse.class,
+    TechnicalServiceProvider.class,
+    OAuth2.class,
+    ServiceProvider.class,
+})
 public class BlobStorageClientAzure implements BlobStorageClient {
 
   private final BlobStorageConfig blobStorageConfig;
-  private final BlobServiceClientBuilder blobServiceClientBuilder;
   private final BlobServiceClient blobServiceClient;
 
   public BlobStorageClientAzure(BlobStorageConfig blobStorageConfig,
       BlobServiceClientBuilder blobServiceClientBuilder) {
     this.blobStorageConfig = blobStorageConfig;
-    this.blobServiceClientBuilder = blobServiceClientBuilder;
     String endpoint = String.format("https://%s.blob.core.windows.net",
         blobStorageConfig.storageAccountName());
 
-    this.blobServiceClient = this.blobServiceClientBuilder
+    this.blobServiceClient = blobServiceClientBuilder
         .endpoint(endpoint)
         .credential(new DefaultAzureCredentialBuilder().build())
         .buildClient();
