@@ -16,9 +16,15 @@ service-provider:
       max-attempts: ${EPC_SEND_RETRY_MAX_ATTEMPTS:3}
       backoff-min-duration: ${EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS:1000}
       backoff-jitter: ${EPC_SEND_RETRY_BACKOFF_JITTER:0.75}
+cache:
+  params: [
+
+
+  ]
 
 blob-storage:
   storage-account-name: test
   container-name: test-container
   blob-name: testname.json
   managed-identity: fake
+
