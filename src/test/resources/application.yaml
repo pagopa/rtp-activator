@@ -19,4 +19,12 @@ service-provider:
 cache:
   params: [
 
+
   ]
+
+blob-storage:
+  storage-account-name: test
+  container-name: test-container
+  blob-name: testname.json
+  managed-identity: fake
+
