@@ -19,7 +19,6 @@ import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
-import it.gov.pagopa.rtp.activator.integration.blobstorage.BlobStorageClientAzure;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -56,8 +55,6 @@ class SendRTPServiceTest {
   private RtpRepository rtpRepository;
   @Mock
   private DefaultApi defaultApi;
-  @Mock
-  private BlobStorageClientAzure blobStorageClientAzure;
 
   private SendRTPServiceImpl sendRTPService;
 

@@ -105,18 +105,19 @@ public class SendRTPServiceImpl implements SendRTPService {
   private Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
 
-    return sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
+    return sendApi.postRequestToPayRequests(
+            UUID.randomUUID(),
+            UUID.randomUUID().toString(),
             sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
         .retryWhen(sendRetryPolicy())
         .onErrorMap(Throwable::getCause)
         .map(response -> rtpToSend)
         .defaultIfEmpty(rtpToSend)
-        .doOnSuccess(
-            rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.serviceProviderDebtor(),
-                rtpSent.resourceID().getId()));
+        .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
+            rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
   }
 
-  
+
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
       case NOT_FOUND -> new PayerNotActivatedException();
