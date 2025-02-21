@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
@@ -24,8 +25,9 @@ import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
+
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -40,7 +42,7 @@ import reactor.util.retry.RetryBackoffSpec;
 
 @Service
 @Slf4j
-@RegisterReflectionForBinding({SepaRequestToPayRequestResourceDto.class,
+@RegisterReflectionForBinding({ SepaRequestToPayRequestResourceDto.class,
     PersonIdentification13EPC25922V30DS02WrapperDto.class, ISODateWrapperDto.class,
     ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class,
     ExternalServiceLevel1CodeWrapperDto.class,
@@ -58,18 +60,19 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final ServiceProviderConfig serviceProviderConfig;
   private final RtpRepository rtpRepository;
   private final DefaultApi sendApi;
+  private final RegistryDataService registryDataService;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
       ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
-      DefaultApi sendApi) {
+      DefaultApi sendApi, RegistryDataService registryDataService) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
     this.rtpRepository = rtpRepository;
     this.sendApi = sendApi;
+    this.registryDataService = registryDataService;
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
   }
-
 
   @NonNull
   @Override
@@ -77,8 +80,8 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
-            rtp.payerId(),
-            serviceProviderConfig.activation().apiVersion())
+        rtp.payerId(),
+        serviceProviderConfig.activation().apiVersion())
         .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
@@ -96,25 +99,27 @@ public class SendRTPServiceImpl implements SendRTPService {
         );
 
     return sentRtp.doOnSuccess(
-            rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+        rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
 
-
   @NonNull
   private Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
-    
-    // the placeholderhashmap will be change with the cache call
-    HashMap<String,String> placeHolderHashMap = new HashMap<String, String>();
-    placeHolderHashMap.put("UNCRITMM", "https://cbiglobeopenbankingapigateway.nexi.it/srtp/sp/sepa-request-to-pay-requests");
-    sendApi.getApiClient().setBasePath(placeHolderHashMap.get(rtpToSend.serviceProviderCreditor()));
 
-    return sendApi.postRequestToPayRequests(
-            UUID.randomUUID(),
-            UUID.randomUUID().toString(),
-            sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
+    return registryDataService.getRegistryData()
+        .map(data -> data.get(rtpToSend.serviceProviderCreditor()))
+        .switchIfEmpty(Mono.error(new IllegalStateException(
+            "No service provider found for creditor: " + rtpToSend.serviceProviderCreditor())))
+        .map(provider -> provider.tsp().serviceEndpoint())
+        .flatMap(basePath -> {
+          sendApi.setApiClient(sendApi.getApiClient().setBasePath(basePath));
+          return sendApi.postRequestToPayRequests(
+              UUID.randomUUID(),
+              UUID.randomUUID().toString(),
+              sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
+        })
         .retryWhen(sendRetryPolicy())
         .onErrorMap(Throwable::getCause)
         .map(response -> rtpToSend)
@@ -122,7 +127,6 @@ public class SendRTPServiceImpl implements SendRTPService {
         .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
             rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
   }
-
 
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
