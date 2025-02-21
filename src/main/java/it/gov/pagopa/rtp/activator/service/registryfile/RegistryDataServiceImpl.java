@@ -5,6 +5,7 @@ import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
 import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.integration.blobstorage.BlobStorageClient;
 import it.gov.pagopa.rtp.activator.integration.blobstorage.ServiceProviderDataResponse;
+import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
 import java.util.Map;
 import java.util.Objects;
 import lombok.NonNull;
@@ -35,12 +36,15 @@ public class RegistryDataServiceImpl implements RegistryDataService {
   @NonNull
   @Cacheable("registry-data")
   public Mono<Map<String, ServiceProviderFullData>> getRegistryData() {
-    return blobStorageClient.getServiceProviderData()
+    final var registryRawData = blobStorageClient.getServiceProviderData()
         .doFirst(() -> log.info("Starting getServiceProviderData"))
-        .doOnNext(__ -> log.debug("Successfully retrieved blob data"))
-        .flatMap(this::transformRegistryFileData)
-        .onErrorMap(Throwable::getCause)
-        .doOnSuccess(__ -> log.info("Successfully retrieved registry data"))
+        .onErrorMap(ExceptionUtils::gracefullyHandleError)
+        .doOnNext(rawData -> log.debug("Successfully retrieved registry raw data"))
+        .doOnError(error -> log.error("Error retrieving registry data: {}", error.getMessage()));
+
+    return registryRawData.flatMap(this::transformRegistryFileData)
+        .onErrorMap(ExceptionUtils::gracefullyHandleError)
+        .doOnSuccess(data -> log.info("Successfully transformed registry data"))
         .doOnError(error -> log.error("Error retrieving registry data: {}", error.getMessage(), error));
   }
 
@@ -50,7 +54,7 @@ public class RegistryDataServiceImpl implements RegistryDataService {
       @NonNull final ServiceProviderDataResponse serviceProviderDataResponse) {
 
     return Mono.just(serviceProviderDataResponse)
-        .doOnNext(__ -> log.debug("Transforming registry data"))
+        .doOnNext(rawData -> log.debug("Transforming registry data"))
         .flatMap(data -> {
           final var technicalServiceProviderMap = Flux.fromIterable(data.tsps())
               .collectMap(TechnicalServiceProvider::id);
