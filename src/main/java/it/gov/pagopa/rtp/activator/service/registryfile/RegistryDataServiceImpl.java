@@ -67,7 +67,6 @@ public class RegistryDataServiceImpl implements RegistryDataService {
                           sp -> new ServiceProviderFullData(
                               sp.id(),
                               sp.name(),
-                              sp.tspId(),
                               tspMap.get(sp.tspId())
                           )
                       ));
