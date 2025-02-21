@@ -12,8 +12,6 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
-import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProvider;
-import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
@@ -21,15 +19,12 @@ import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
-import it.gov.pagopa.rtp.activator.integration.blobstorage.BlobStorageClientAzure;
 
-import it.gov.pagopa.rtp.activator.integration.blobstorage.ServiceProviderDataResponse;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,8 +55,6 @@ class SendRTPServiceTest {
   private RtpRepository rtpRepository;
   @Mock
   private DefaultApi defaultApi;
-  @Mock
-  private BlobStorageClientAzure blobStorageClientAzure;
 
   private SendRTPServiceImpl sendRTPService;
 
@@ -85,7 +78,7 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, defaultApi, blobStorageClientAzure);
+        serviceProviderConfig, rtpRepository, defaultApi);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -114,20 +107,6 @@ class SendRTPServiceTest {
         .thenReturn(Mono.just(expectedRtp));
     when(defaultApi.postRequestToPayRequests(any(), any(), any()))
         .thenReturn(Mono.just(new SynchronousSepaRequestToPayCreationResponseDto()));
-
-    final var expectedServiceProviderData = new ServiceProviderDataResponse(
-        List.of(
-            new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null),
-            new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null)
-        ),
-        List.of(
-            new ServiceProvider("UNCRITMM", "UniCredit S.p.A.", "08992631005"),
-            new ServiceProvider("BPPIITRRXXX", "Poste Italiane S.p.A.", "BPPIITRRXXX")
-        )
-    );
-
-    when(blobStorageClientAzure.getServiceProviderData())
-        .thenReturn(Mono.just(expectedServiceProviderData));
 
     Mono<Rtp> result = sendRTPService.send(inputRtp);
     StepVerifier.create(result)
@@ -158,20 +137,6 @@ class SendRTPServiceTest {
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.error(new WebClientResponseException(404, "Not Found", null, null, null)));
 
-    final var expectedServiceProviderData = new ServiceProviderDataResponse(
-        List.of(
-            new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null),
-            new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null)
-        ),
-        List.of(
-            new ServiceProvider("UNCRITMM", "UniCredit S.p.A.", "08992631005"),
-            new ServiceProvider("BPPIITRRXXX", "Poste Italiane S.p.A.", "BPPIITRRXXX")
-        )
-    );
-
-    when(blobStorageClientAzure.getServiceProviderData())
-        .thenReturn(Mono.just(expectedServiceProviderData));
-
     Mono<Rtp> result = sendRTPService.send(inputRtp);
 
     StepVerifier.create(result)
@@ -188,20 +153,6 @@ class SendRTPServiceTest {
         .thenReturn(Mono.error(new WebClientResponseException(400, "Bad Request", null,
             "{}".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8)));
 
-    final var expectedServiceProviderData = new ServiceProviderDataResponse(
-        List.of(
-            new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null),
-            new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null)
-        ),
-        List.of(
-            new ServiceProvider("UNCRITMM", "UniCredit S.p.A.", "08992631005"),
-            new ServiceProvider("BPPIITRRXXX", "Poste Italiane S.p.A.", "BPPIITRRXXX")
-        )
-    );
-
-    when(blobStorageClientAzure.getServiceProviderData())
-        .thenReturn(Mono.just(expectedServiceProviderData));
-
     Mono<Rtp> result = sendRTPService.send(inputRtp);
 
     StepVerifier.create(result)
@@ -217,20 +168,6 @@ class SendRTPServiceTest {
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
-
-    final var expectedServiceProviderData = new ServiceProviderDataResponse(
-        List.of(
-            new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null),
-            new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null)
-        ),
-        List.of(
-            new ServiceProvider("UNCRITMM", "UniCredit S.p.A.", "08992631005"),
-            new ServiceProvider("BPPIITRRXXX", "Poste Italiane S.p.A.", "BPPIITRRXXX")
-        )
-    );
-
-    when(blobStorageClientAzure.getServiceProviderData())
-        .thenReturn(Mono.just(expectedServiceProviderData));
 
     Mono<Rtp> result = sendRTPService.send(inputRtp);
 
@@ -254,20 +191,6 @@ class SendRTPServiceTest {
     when(rtpRepository.save(any()))
         .thenReturn(Mono.just(expectedRtp));
 
-    final var expectedServiceProviderData = new ServiceProviderDataResponse(
-        List.of(
-            new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null),
-            new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null)
-        ),
-        List.of(
-            new ServiceProvider("UNCRITMM", "UniCredit S.p.A.", "08992631005"),
-            new ServiceProvider("BPPIITRRXXX", "Poste Italiane S.p.A.", "BPPIITRRXXX")
-        )
-    );
-
-    when(blobStorageClientAzure.getServiceProviderData())
-        .thenReturn(Mono.just(expectedServiceProviderData));
-
     Mono<Rtp> result = sendRTPService.send(inputRtp);
 
     StepVerifier.create(result)
@@ -290,20 +213,6 @@ class SendRTPServiceTest {
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
-
-    final var expectedServiceProviderData = new ServiceProviderDataResponse(
-        List.of(
-            new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null),
-            new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null)
-        ),
-        List.of(
-            new ServiceProvider("UNCRITMM", "UniCredit S.p.A.", "08992631005"),
-            new ServiceProvider("BPPIITRRXXX", "Poste Italiane S.p.A.", "BPPIITRRXXX")
-        )
-    );
-
-    when(blobStorageClientAzure.getServiceProviderData())
-        .thenReturn(Mono.just(expectedServiceProviderData));
 
     /*
      * Mocks the save method.
@@ -337,20 +246,6 @@ class SendRTPServiceTest {
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
-
-    final var expectedServiceProviderData = new ServiceProviderDataResponse(
-        List.of(
-            new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null),
-            new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null)
-        ),
-        List.of(
-            new ServiceProvider("UNCRITMM", "UniCredit S.p.A.", "08992631005"),
-            new ServiceProvider("BPPIITRRXXX", "Poste Italiane S.p.A.", "BPPIITRRXXX")
-        )
-    );
-
-    when(blobStorageClientAzure.getServiceProviderData())
-        .thenReturn(Mono.just(expectedServiceProviderData));
 
     /*
      * Mocks the save method.
