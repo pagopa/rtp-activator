@@ -12,6 +12,8 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
+import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
+import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
@@ -19,12 +21,15 @@ import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
+import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,6 +61,9 @@ class SendRTPServiceTest {
   @Mock
   private DefaultApi defaultApi;
 
+  @Mock
+  private RegistryDataService registryDataService;
+
   private SendRTPServiceImpl sendRTPService;
 
   final String noticeNumber = "12345";
@@ -78,7 +86,7 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, defaultApi);
+        serviceProviderConfig, rtpRepository, defaultApi, registryDataService);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -98,6 +106,12 @@ class SendRTPServiceTest {
 
     SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
         .callbackUrl(URI.create("http://callback.url"));
+
+    TechnicalServiceProvider mockTechnicalServiceProvider = new TechnicalServiceProvider("rtpSpId", "name", "endpoint", "certificateSerialNumber", null);
+    ServiceProviderFullData mockedServiceProviderFullData = new ServiceProviderFullData("testId", "testname", mockTechnicalServiceProvider);
+    Map<String,ServiceProviderFullData> mockedData = new HashMap<String, ServiceProviderFullData>();
+    mockedData.put("rtpSpId", mockedServiceProviderFullData);
+    when(registryDataService.getRegistryData()).thenReturn(Mono.just(mockedData));
 
     when(sepaRequestToPayMapper.toEpcRequestToPay(any()))
         .thenReturn(mockSepaRequestToPayRequestResource);
@@ -184,6 +198,11 @@ class SendRTPServiceTest {
     var fakeActivationDto = mockActivationDto();
     var expectedRtp = mockRtp();
 
+    TechnicalServiceProvider mockTechnicalServiceProvider = new TechnicalServiceProvider("rtpSpId", "name", "endpoint", "certificateSerialNumber", null);
+    ServiceProviderFullData mockedServiceProviderFullData = new ServiceProviderFullData("testId", "testname", mockTechnicalServiceProvider);
+    Map<String,ServiceProviderFullData> mockedData = new HashMap<String, ServiceProviderFullData>();
+    mockedData.put("rtpSpId", mockedServiceProviderFullData);
+    when(registryDataService.getRegistryData()).thenReturn(Mono.just(mockedData));
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(fakeActivationDto));
     when(defaultApi.postRequestToPayRequests(any(), any(), any()))
