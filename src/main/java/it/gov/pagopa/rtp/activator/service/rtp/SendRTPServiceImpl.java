@@ -111,18 +111,19 @@ public class SendRTPServiceImpl implements SendRTPService {
     placeHolderHashMap.put("UNCRITMM", "https://cbiglobeopenbankingapigateway.nexi.it/srtp/sp/sepa-request-to-pay-requests");
     sendApi.getApiClient().setBasePath(placeHolderHashMap.get(rtpToSend.serviceProviderCreditor()));
 
-    return sendApi.postRequestToPayRequests(UUID.randomUUID(), UUID.randomUUID().toString(),
+    return sendApi.postRequestToPayRequests(
+            UUID.randomUUID(),
+            UUID.randomUUID().toString(),
             sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
         .retryWhen(sendRetryPolicy())
         .onErrorMap(Throwable::getCause)
         .map(response -> rtpToSend)
         .defaultIfEmpty(rtpToSend)
-        .doOnSuccess(
-            rtpSent -> log.info("RTP sent to {} with id: {}", rtpSent.serviceProviderDebtor(),
-                rtpSent.resourceID().getId()));
+        .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
+            rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
   }
 
-  
+
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
       case NOT_FOUND -> new PayerNotActivatedException();
