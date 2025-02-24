@@ -109,18 +109,18 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
 
     return registryDataService.getRegistryData()
-        .map(data -> data.get(rtpToSend.serviceProviderCreditor()))
+        .map(data -> data.get(rtpToSend.serviceProviderDebtor()))
         .switchIfEmpty(Mono.error(new IllegalStateException(
-            "No service provider found for creditor: " + rtpToSend.serviceProviderCreditor())))
+            "No service provider found for creditor: " + rtpToSend.serviceProviderDebtor())))
         .map(provider -> provider.tsp().serviceEndpoint())
         .flatMap(basePath -> {
           sendApi.setApiClient(sendApi.getApiClient().setBasePath(basePath));
           return sendApi.postRequestToPayRequests(
               UUID.randomUUID(),
               UUID.randomUUID().toString(),
-              sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
+              sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
+              .retryWhen(sendRetryPolicy());
         })
-        .retryWhen(sendRetryPolicy())
         .onErrorMap(Throwable::getCause)
         .map(response -> rtpToSend)
         .defaultIfEmpty(rtpToSend)

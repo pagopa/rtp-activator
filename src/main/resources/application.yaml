@@ -55,6 +55,6 @@ cache:
 blob-storage:
   storage-account-name: ${AZURE_STORAGE_ACCOUNT_NAME:cstardweurtpblobstorage}
   container-name: ${AZURE_STORAGE_CONTAINER_NAME:rtp-debtor-service-provider}
-  blob-name: ${AZURE_BLOB_NAME:testname.json}
+  blob-name: ${AZURE_BLOB_NAME:serviceregistry.json}
   managed-identity: ${IDENTITY_CLIENT_ID:}
 
