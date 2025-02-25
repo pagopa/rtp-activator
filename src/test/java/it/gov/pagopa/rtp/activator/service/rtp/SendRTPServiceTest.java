@@ -12,6 +12,8 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
+import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
+import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
@@ -19,12 +21,15 @@ import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
+import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,6 +61,9 @@ class SendRTPServiceTest {
   @Mock
   private DefaultApi defaultApi;
 
+  @Mock
+  private RegistryDataService registryDataService;
+
   private SendRTPServiceImpl sendRTPService;
 
   final String noticeNumber = "12345";
@@ -78,7 +86,7 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, defaultApi);
+        serviceProviderConfig, rtpRepository, defaultApi, registryDataService);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -99,12 +107,22 @@ class SendRTPServiceTest {
     SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
         .callbackUrl(URI.create("http://callback.url"));
 
+    Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
+    mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
+        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", null)));
+
+    var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
+    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
+    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
+
     when(sepaRequestToPayMapper.toEpcRequestToPay(any()))
         .thenReturn(mockSepaRequestToPayRequestResource);
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(fakeActivationDto));
     when(rtpRepository.save(any()))
         .thenReturn(Mono.just(expectedRtp));
+    when(registryDataService.getRegistryData())
+        .thenReturn(Mono.just(mockRegistryData));
     when(defaultApi.postRequestToPayRequests(any(), any(), any()))
         .thenReturn(Mono.just(new SynchronousSepaRequestToPayCreationResponseDto()));
 
@@ -183,7 +201,17 @@ class SendRTPServiceTest {
   void givenInternalErrorOnExternalSendWhenSendThenPropagateMonoError() {
     var fakeActivationDto = mockActivationDto();
     var expectedRtp = mockRtp();
+    // New mock for registry data
+    Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
+    mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
+        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", null)));
 
+    var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
+    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
+    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
+
+    when(registryDataService.getRegistryData())
+        .thenReturn(Mono.just(mockRegistryData));
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(fakeActivationDto));
     when(defaultApi.postRequestToPayRequests(any(), any(), any()))
@@ -210,7 +238,17 @@ class SendRTPServiceTest {
 
     final var sourceRtp = mockRtp(RtpStatus.CREATED, resourceId, savingDateTime);
     final var rtpSent = mockRtp(RtpStatus.SENT, resourceId, savingDateTime);
+    // New mock for registry data
+    Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
+    mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
+        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", null)));
 
+    var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
+    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
+    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
+
+    when(registryDataService.getRegistryData())
+        .thenReturn(Mono.just(mockRegistryData));
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
 
@@ -246,7 +284,16 @@ class SendRTPServiceTest {
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
+    Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
+    mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
+        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", null)));
 
+    var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
+    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
+    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
+
+    when(registryDataService.getRegistryData())
+        .thenReturn(Mono.just(mockRegistryData));
     /*
      * Mocks the save method.
      * The first then return is due to a prior invocation of the method that is not
