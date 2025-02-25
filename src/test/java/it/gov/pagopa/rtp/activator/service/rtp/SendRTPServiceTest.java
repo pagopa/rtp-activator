@@ -114,7 +114,6 @@ class SendRTPServiceTest {
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
     when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
-    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
 
     when(sepaRequestToPayMapper.toEpcRequestToPay(any()))
         .thenReturn(mockSepaRequestToPayRequestResource);
@@ -210,7 +209,6 @@ class SendRTPServiceTest {
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
     when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
-    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
 
     when(registryDataService.getRegistryData())
         .thenReturn(Mono.just(mockRegistryData));
@@ -248,7 +246,6 @@ class SendRTPServiceTest {
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
     when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
-    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
 
     when(registryDataService.getRegistryData())
         .thenReturn(Mono.just(mockRegistryData));
@@ -294,7 +291,6 @@ class SendRTPServiceTest {
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
     when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
-    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
 
     when(registryDataService.getRegistryData())
         .thenReturn(Mono.just(mockRegistryData));
