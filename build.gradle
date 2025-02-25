@@ -228,6 +228,7 @@ tasks.register('generateOpenAPIEPCClient', GenerateTask) {
 	configOptions.set([
 			"dateLibrary"         : "java8",
 			"useJakartaEe"        : "true",
+			"additionalModelTypeAnnotations": "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)"
 	])
 	typeMappings.set([
 			"DateTime"       : "java.time.LocalDateTime",
