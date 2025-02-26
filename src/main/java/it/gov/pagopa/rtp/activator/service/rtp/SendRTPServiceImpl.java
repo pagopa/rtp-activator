@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.configuration.SslContextFactory;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
@@ -61,10 +62,11 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final RtpRepository rtpRepository;
   private final DefaultApi sendApi;
   private final RegistryDataService registryDataService;
+  private final SslContextFactory sslContextFactory;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
       ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
-      DefaultApi sendApi, RegistryDataService registryDataService) {
+      DefaultApi sendApi, RegistryDataService registryDataService, SslContextFactory sslContextFactory) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
@@ -72,6 +74,7 @@ public class SendRTPServiceImpl implements SendRTPService {
     this.sendApi = sendApi;
     this.registryDataService = registryDataService;
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    this.sslContextFactory = sslContextFactory;
   }
 
   @NonNull
@@ -79,10 +82,18 @@ public class SendRTPServiceImpl implements SendRTPService {
   public Mono<Rtp> send(@NonNull final Rtp rtp) {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
-    final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
-            rtp.payerId(),
-            serviceProviderConfig.activation().apiVersion())
-        .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
+    final var temp = Mono.defer(() -> {
+      final var sslContext = this.sslContextFactory.getSslContext();
+      log.info("Is SSL context present: {}", Objects.nonNull(sslContext));
+      return Mono.just(sslContext);
+    });
+
+    final var activationData = temp.then(
+        activationApi.findActivationByPayerId(UUID.randomUUID(),
+                rtp.payerId(),
+                serviceProviderConfig.activation().apiVersion())
+            .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException)
+    );
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)

@@ -10,6 +10,7 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Activation;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
+import it.gov.pagopa.rtp.activator.configuration.SslContextFactory;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
@@ -26,6 +27,7 @@ import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -34,6 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.net.ssl.SSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,6 +67,9 @@ class SendRTPServiceTest {
   @Mock
   private RegistryDataService registryDataService;
 
+  @Mock
+  private SslContextFactory sslContextFactory;
+
   private SendRTPServiceImpl sendRTPService;
 
   final String noticeNumber = "12345";
@@ -86,7 +92,7 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, defaultApi, registryDataService);
+        serviceProviderConfig, rtpRepository, defaultApi, registryDataService, sslContextFactory);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -99,7 +105,7 @@ class SendRTPServiceTest {
   }
 
   @Test
-  void testSend() {
+  void testSend() throws NoSuchAlgorithmException {
     var fakeActivationDto = mockActivationDto();
 
     var expectedRtp = mockRtp();
@@ -125,6 +131,8 @@ class SendRTPServiceTest {
         .thenReturn(Mono.just(mockRegistryData));
     when(defaultApi.postRequestToPayRequests(any(), any(), any()))
         .thenReturn(Mono.just(new SynchronousSepaRequestToPayCreationResponseDto()));
+    when(sslContextFactory.getSslContext())
+        .thenReturn(SSLContext.getDefault());
 
     Mono<Rtp> result = sendRTPService.send(inputRtp);
     StepVerifier.create(result)
@@ -150,10 +158,12 @@ class SendRTPServiceTest {
   }
 
   @Test
-  void givenPayerIdNotActivatedWhenSendThenMonoError() {
+  void givenPayerIdNotActivatedWhenSendThenMonoError() throws NoSuchAlgorithmException {
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.error(new WebClientResponseException(404, "Not Found", null, null, null)));
+    when(sslContextFactory.getSslContext())
+        .thenReturn(SSLContext.getDefault());
 
     Mono<Rtp> result = sendRTPService.send(inputRtp);
 
@@ -166,10 +176,12 @@ class SendRTPServiceTest {
   }
 
   @Test
-  void givenPayerIdBadFormedWhenSendThenMonoError() {
+  void givenPayerIdBadFormedWhenSendThenMonoError() throws NoSuchAlgorithmException {
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.error(new WebClientResponseException(400, "Bad Request", null,
             "{}".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8)));
+    when(sslContextFactory.getSslContext())
+        .thenReturn(SSLContext.getDefault());
 
     Mono<Rtp> result = sendRTPService.send(inputRtp);
 
@@ -198,7 +210,8 @@ class SendRTPServiceTest {
   }
 
   @Test
-  void givenInternalErrorOnExternalSendWhenSendThenPropagateMonoError() {
+  void givenInternalErrorOnExternalSendWhenSendThenPropagateMonoError()
+      throws NoSuchAlgorithmException {
     var fakeActivationDto = mockActivationDto();
     var expectedRtp = mockRtp();
     // New mock for registry data
@@ -218,6 +231,8 @@ class SendRTPServiceTest {
         .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
     when(rtpRepository.save(any()))
         .thenReturn(Mono.just(expectedRtp));
+    when(sslContextFactory.getSslContext())
+        .thenReturn(SSLContext.getDefault());
 
     Mono<Rtp> result = sendRTPService.send(inputRtp);
 
@@ -232,7 +247,7 @@ class SendRTPServiceTest {
   }
 
   @Test
-  void givenRtp_whenSavingFailsOnce_thenRetriesAndSucceeds() {
+  void givenRtp_whenSavingFailsOnce_thenRetriesAndSucceeds() throws NoSuchAlgorithmException {
     final var resourceId = ResourceID.createNew();
     final var savingDateTime = LocalDateTime.now();
 
@@ -270,6 +285,8 @@ class SendRTPServiceTest {
 
     when(defaultApi.postRequestToPayRequests(any(), any(), any()))
         .thenReturn(Mono.empty());
+    when(sslContextFactory.getSslContext())
+        .thenReturn(SSLContext.getDefault());
 
     StepVerifier.create(sendRTPService.send(sourceRtp))
         .expectNext(rtpSent)
@@ -279,7 +296,7 @@ class SendRTPServiceTest {
   }
 
   @Test
-  void givenRtp_whenSavingFailsIndefinitely_thenThrows() {
+  void givenRtp_whenSavingFailsIndefinitely_thenThrows() throws NoSuchAlgorithmException {
     final var sourceRtp = mockRtp();
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
@@ -312,6 +329,8 @@ class SendRTPServiceTest {
 
     when(defaultApi.postRequestToPayRequests(any(), any(), any()))
         .thenReturn(Mono.empty());
+    when(sslContextFactory.getSslContext())
+        .thenReturn(SSLContext.getDefault());
 
     StepVerifier.create(sendRTPService.send(sourceRtp))
         .expectError(RuntimeException.class)
