@@ -57,7 +57,8 @@ public class DefaultSslContextFactory implements SslContextFactory {
   @NonNull
   private KeyStore initKeyStore() {
 
-    try (final var keyStoreInputStream = this.convertPfxFileToInputStream(this.sslContextProps.pfxFile())) {
+    try (final var keyStoreInputStream = this.convertPfxFileToInputStream(
+        this.sslContextProps.pfxFile())) {
 
       final var keyStore = KeyStore.getInstance(this.sslContextProps.pfxType());
       final var password = this.sslContextProps.pfxPassword().toCharArray();
@@ -78,12 +79,12 @@ public class DefaultSslContextFactory implements SslContextFactory {
 
     Objects.requireNonNull(keyStore, "Key store cannot be null");
 
-    final KeyManagerFactory keyManagerFactory;
-
     try {
-      keyManagerFactory = KeyManagerFactory.getInstance(
+      final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(
           KeyManagerFactory.getDefaultAlgorithm());
-      keyManagerFactory.init(keyStore, this.sslContextProps.pfxPassword().toCharArray());
+      final var password = this.sslContextProps.pfxPassword().toCharArray();
+
+      keyManagerFactory.init(keyStore, password);
       return keyManagerFactory;
 
     } catch (NoSuchAlgorithmException | UnrecoverableKeyException | KeyStoreException e) {
