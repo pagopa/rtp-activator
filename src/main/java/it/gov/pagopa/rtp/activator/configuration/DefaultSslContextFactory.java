@@ -20,20 +20,42 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 
+/**
+ * Factory class for creating an {@link SSLContext} instance using a PKCS12 keystore.
+ * <p>
+ * This class loads SSL configuration from {@link SslContextProps}, decodes the PFX file,
+ * initializes the keystore, and sets up a key manager factory for secure SSL connections.
+ * </p>
+ */
 @Component("sslContextFactory")
 @Slf4j
 public class DefaultSslContextFactory implements SslContextFactory {
 
+  /**
+   * Holds SSL context configuration properties such as the PFX file and password.
+   */
   private final SslContextProps sslContextProps;
 
-
-  public DefaultSslContextFactory(@NonNull final SslContextPropsProvider sslContextPropsProvider) {
+  /**
+   * Constructs an instance of {@code DefaultSslContextFactory} using the provided
+   * {@link SslContextPropsProvider}.
+   *
+   * @param sslContextPropsProvider the provider for SSL context properties.
+   * @throws SslContextCreationException if SSL context properties cannot be retrieved.
+   */
+  public DefaultSslContextFactory(
+      @NonNull final SslContextPropsProvider sslContextPropsProvider) {
     this.sslContextProps = Optional.of(sslContextPropsProvider)
         .map(SslContextPropsProvider::getSslContextProps)
-        .orElseThrow(() -> new SslContextCreationException("Error getting ssl context props"));
+        .orElseThrow(() -> new SslContextCreationException("Error getting SSL context props"));
   }
 
-
+  /**
+   * Creates and returns an {@link SSLContext} instance.
+   *
+   * @return an initialized {@link SSLContext}.
+   * @throws SslContextCreationException if there is an error during SSL context creation.
+   */
   @NonNull
   @Override
   public SSLContext getSslContext() {
@@ -41,19 +63,30 @@ public class DefaultSslContextFactory implements SslContextFactory {
         .map(this::initKeyManagerFactory)
         .map(KeyManagerFactory::getKeyManagers)
         .map(this::initSSLContext)
-        .orElseThrow(() -> new SslContextCreationException("Error creating ssl context"));
+        .orElseThrow(() -> new SslContextCreationException("Error creating SSL context"));
   }
 
-
+  /**
+   * Converts a Base64-encoded PFX file into an {@link InputStream}.
+   *
+   * @param base64PfxFile the Base64-encoded PFX file.
+   * @return an {@link InputStream} representing the decoded PFX file.
+   * @throws SslContextCreationException if decoding fails.
+   */
   @NonNull
   private InputStream convertPfxFileToInputStream(@NonNull final String base64PfxFile) {
     return Optional.of(base64PfxFile)
         .map(Base64.getMimeDecoder()::decode)
         .map(ByteArrayInputStream::new)
-        .orElseThrow(() -> new SslContextCreationException("Error decoding pfx file"));
+        .orElseThrow(() -> new SslContextCreationException("Error decoding PFX file"));
   }
 
-
+  /**
+   * Initializes a {@link KeyStore} instance from the PFX file.
+   *
+   * @return an initialized {@link KeyStore}.
+   * @throws SslContextCreationException if keystore loading fails.
+   */
   @NonNull
   private KeyStore initKeyStore() {
 
@@ -72,11 +105,15 @@ public class DefaultSslContextFactory implements SslContextFactory {
     }
   }
 
-
+  /**
+   * Initializes a {@link KeyManagerFactory} using the provided keystore.
+   *
+   * @param keyStore the initialized {@link KeyStore}.
+   * @return an initialized {@link KeyManagerFactory}.
+   * @throws SslContextCreationException if key manager initialization fails.
+   */
   @NonNull
-  private KeyManagerFactory initKeyManagerFactory(
-      @NonNull final KeyStore keyStore) {
-
+  private KeyManagerFactory initKeyManagerFactory(@NonNull final KeyStore keyStore) {
     Objects.requireNonNull(keyStore, "Key store cannot be null");
 
     try {
@@ -93,22 +130,26 @@ public class DefaultSslContextFactory implements SslContextFactory {
     }
   }
 
-
+  /**
+   * Initializes and returns an {@link SSLContext} using the given key managers.
+   *
+   * @param keyManagers an array of {@link KeyManager} instances.
+   * @return an initialized {@link SSLContext}.
+   * @throws SslContextCreationException if SSL context initialization fails.
+   */
   @NonNull
-  private SSLContext initSSLContext(
-      @NonNull final KeyManager[] keyManagers) {
+  private SSLContext initSSLContext(@NonNull final KeyManager[] keyManagers) {
     Objects.requireNonNull(keyManagers, "Key managers cannot be null");
 
-    final SSLContext sslContext;
     try {
-      sslContext = SSLContext.getInstance(this.sslContextProps.protocol());
+      final SSLContext sslContext = SSLContext.getInstance(this.sslContextProps.protocol());
       sslContext.init(keyManagers, null, null);
       return sslContext;
 
     } catch (NoSuchAlgorithmException | KeyManagementException e) {
-      log.error("Error creating ssl context", e);
+      log.error("Error creating SSL context", e);
       throw new SslContextCreationException(e);
     }
   }
-
 }
+
