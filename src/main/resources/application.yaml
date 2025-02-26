@@ -60,7 +60,7 @@ blob-storage:
 
 client:
   ssl:
-    pfx-file: ${PFX_FILE}
-    pfx-password: ${PFX_FILE_PASSWORD}
+    pfx-file: ${CLIENT_CERTIFICATE}
+    pfx-password: ${CLIENT_CERTIFICATE_PASSWORD:}
     pfx-type: PKCS12
     protocol: TLS
