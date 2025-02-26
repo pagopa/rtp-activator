@@ -1,4 +1,4 @@
-package it.gov.pagopa.rtp.activator.configuration;
+package it.gov.pagopa.rtp.activator.configuration.ssl;
 
 import javax.net.ssl.SSLContext;
 

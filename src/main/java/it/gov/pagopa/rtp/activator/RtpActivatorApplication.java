@@ -1,12 +1,10 @@
 package it.gov.pagopa.rtp.activator;
 
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
-
-import it.gov.pagopa.rtp.activator.configuration.CachesConfigProperties;
-
 import it.gov.pagopa.rtp.activator.configuration.BlobStorageConfig;
+import it.gov.pagopa.rtp.activator.configuration.CachesConfigProperties;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
-import it.gov.pagopa.rtp.activator.configuration.SslContextProps;
+import it.gov.pagopa.rtp.activator.configuration.ssl.SslContextProps;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

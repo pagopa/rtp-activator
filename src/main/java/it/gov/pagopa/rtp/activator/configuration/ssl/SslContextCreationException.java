@@ -1,4 +1,4 @@
-package it.gov.pagopa.rtp.activator.configuration;
+package it.gov.pagopa.rtp.activator.configuration.ssl;
 
 public class SslContextCreationException extends RuntimeException {
 
