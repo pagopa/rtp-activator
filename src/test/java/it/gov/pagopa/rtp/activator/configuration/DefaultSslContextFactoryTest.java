@@ -117,6 +117,36 @@ class DefaultSslContextFactoryTest {
   }
 
 
+  @Test
+  void givenInvalidPfxType_whenGetSslContext_thenSslContextCreationException() {
+    final var sslContextProps = new SslContextProps(
+        getValidPfxBase64(),
+        this.pfxFilePassword,
+        "invalid-pfx-type",
+        this.protocol
+    );
+
+    final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
+
+    assertThrows(SslContextCreationException.class, sslContextFactory::getSslContext);
+  }
+
+
+  @Test
+  void givenInvalidSslProtocol_whenGetSslContext_thenSslContextCreationException() {
+    final var sslContextProps = new SslContextProps(
+        getValidPfxBase64(),
+        this.pfxFilePassword,
+        this.pfxType,
+        "invalid-protocol"
+    );
+
+    final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
+
+    assertThrows(SslContextCreationException.class, sslContextFactory::getSslContext);
+  }
+
+
   private String getValidPfxBase64() {
     try {
       final var pfxBytes = new ClassPathResource(this.pfxFileName)
