@@ -28,3 +28,9 @@ blob-storage:
   blob-name: testname.json
   managed-identity: fake
 
+client:
+  ssl:
+    pfx-name: keystore.pfx
+    pfx-password: test
+    pfx-type: PKCS12
+    protocol: TLS
