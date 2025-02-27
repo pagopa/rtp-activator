@@ -1,27 +1,28 @@
 package it.gov.pagopa.rtp.activator.configuration.ssl;
 
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
-import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 
 /**
- * Factory class for creating an {@link SSLContext} instance using a PKCS12 keystore.
+ * Factory class for creating an {@link SslContext} instance using a PKCS12 keystore.
  * <p>
  * This class loads SSL configuration from {@link SslContextProps}, decodes the PFX file,
  * initializes the keystore, and sets up a key manager factory for secure SSL connections.
@@ -51,17 +52,16 @@ public class DefaultSslContextFactory implements SslContextFactory {
   }
 
   /**
-   * Creates and returns an {@link SSLContext} instance.
+   * Creates and returns an {@link SslContext} instance.
    *
-   * @return an initialized {@link SSLContext}.
+   * @return an initialized {@link SslContext}.
    * @throws SslContextCreationException if there is an error during SSL context creation.
    */
   @NonNull
   @Override
-  public SSLContext getSslContext() {
+  public SslContext getSslContext() {
     return Optional.of(this.initKeyStore())
         .map(this::initKeyManagerFactory)
-        .map(KeyManagerFactory::getKeyManagers)
         .map(this::initSSLContext)
         .orElseThrow(() -> new SslContextCreationException("Error creating SSL context"));
   }
@@ -131,22 +131,23 @@ public class DefaultSslContextFactory implements SslContextFactory {
   }
 
   /**
-   * Initializes and returns an {@link SSLContext} using the given key managers.
+   * Initializes and returns an {@link SslContext} using the given key managers.
    *
-   * @param keyManagers an array of {@link KeyManager} instances.
-   * @return an initialized {@link SSLContext}.
+   * @param keyManagerFactory an array of {@link KeyManagerFactory} instances.
+   * @return an initialized {@link SslContext}.
    * @throws SslContextCreationException if SSL context initialization fails.
    */
   @NonNull
-  private SSLContext initSSLContext(@NonNull final KeyManager[] keyManagers) {
-    Objects.requireNonNull(keyManagers, "Key managers cannot be null");
+  private SslContext initSSLContext(@NonNull final KeyManagerFactory keyManagerFactory) {
+    Objects.requireNonNull(keyManagerFactory, "Key manager factory cannot be null");
 
     try {
-      final SSLContext sslContext = SSLContext.getInstance(this.sslContextProps.protocol());
-      sslContext.init(keyManagers, null, null);
-      return sslContext;
+      return SslContextBuilder.forClient()
+          .keyManager(keyManagerFactory)
+          .protocols(Collections.singletonList(this.sslContextProps.protocol()))
+          .build();
 
-    } catch (NoSuchAlgorithmException | KeyManagementException e) {
+    } catch (SSLException e) {
       log.error("Error creating SSL context", e);
       throw new SslContextCreationException(e);
     }

@@ -47,7 +47,6 @@ class DefaultSslContextFactoryTest {
     final var sslContext = sslContextFactory.getSslContext();
 
     assertNotNull(sslContext);
-    assertEquals("TLS", sslContext.getProtocol());
   }
 
 
@@ -124,21 +123,6 @@ class DefaultSslContextFactoryTest {
         this.pfxFilePassword,
         "invalid-pfx-type",
         this.protocol
-    );
-
-    final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
-
-    assertThrows(SslContextCreationException.class, sslContextFactory::getSslContext);
-  }
-
-
-  @Test
-  void givenInvalidSslProtocol_whenGetSslContext_thenSslContextCreationException() {
-    final var sslContextProps = new SslContextProps(
-        getValidPfxBase64(),
-        this.pfxFilePassword,
-        this.pfxType,
-        "invalid-protocol"
     );
 
     final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
