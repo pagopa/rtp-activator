@@ -2,47 +2,29 @@ package it.gov.pagopa.rtp.activator.configuration.ssl;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-import java.util.Base64;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.lang.NonNull;
 
 
 @SpringBootTest
 class DefaultSslContextFactoryTest {
 
-  private final String pfxFileName;
-  private final String pfxFilePassword;
-  private final String pfxType;
-  private final String protocol;
+  private final SslContextProps sslContextProps;
 
 
+  @Autowired
   public DefaultSslContextFactoryTest(
-      @NonNull @Value("${client.ssl.pfx-name}") String pfxFileName,
-      @NonNull @Value("${client.ssl.pfx-password}") String pfxFilePassword,
-      @NonNull @Value("${client.ssl.pfx-type}") String pfxType,
-      @NonNull @Value("${client.ssl.protocol}") String protocol
+      @NonNull final SslContextProps sslContextProps
   ) {
-    this.pfxFileName = pfxFileName;
-    this.pfxFilePassword = pfxFilePassword;
-    this.pfxType = pfxType;
-    this.protocol = protocol;
+    this.sslContextProps = sslContextProps;
   }
 
   @Test
   void givenValidSslProps_whenGetSslContext_thenReturnValidSslContext() {
-    final var sslContextProps = new SslContextProps(
-        getValidPfxBase64(),
-        this.pfxFilePassword,
-        this.pfxType,
-        this.protocol
-    );
-
-    final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
+    final var sslContextFactory = new DefaultSslContextFactory(() -> this.sslContextProps);
 
     final var sslContext = sslContextFactory.getSslContext();
 
@@ -52,14 +34,9 @@ class DefaultSslContextFactoryTest {
 
   @Test
   void givenInvalidPfx_whenGetSslContext_thenThrowIllegalArgumentException() {
-    final var sslContextProps = new SslContextProps(
-        "invalid-base64",
-        this.pfxFilePassword,
-        this.pfxType,
-        this.protocol
-    );
+    final var inputSslContextProps = this.sslContextProps.withPfxFile("invalid-base64");
 
-    final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
+    final var sslContextFactory = new DefaultSslContextFactory(() -> inputSslContextProps);
 
     assertThrows(IllegalArgumentException.class, sslContextFactory::getSslContext);
   }
@@ -67,50 +44,19 @@ class DefaultSslContextFactoryTest {
 
   @Test
   void givenInvalidPassword_whenGetSslContext_thenThrowException() {
-    final var sslContextProps = new SslContextProps(
-        getValidPfxBase64(),
-        "invalid-password",
-        this.pfxType,
-        this.protocol
-    );
+    final var inputSslContextProps = this.sslContextProps.withPfxPassword("invalid-password");
 
-    final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
+    final var sslContextFactory = new DefaultSslContextFactory(() -> inputSslContextProps);
 
     assertThrows(SslContextCreationException.class, sslContextFactory::getSslContext);
   }
 
 
   @Test
-  void givenNullSslProps_whenInstantiate_thenThrowNullPointerException() {
-    assertThrows(NullPointerException.class, () -> new DefaultSslContextFactory(null));
-  }
-
-
-  @Test
-  void givenNullPfxFile_whenGetSslContext_thenThrowNullPointerException() {
-    final var sslContextProps = new SslContextProps(
-        null,
-        this.pfxFilePassword,
-        this.pfxType,
-        this.protocol
-    );
-
-    final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
-
-    assertThrows(NullPointerException.class, sslContextFactory::getSslContext);
-  }
-
-
-  @Test
   void givenNullPfxPassword_whenGetSslContext_thenThrowNullPointerException() {
-    final var sslContextProps = new SslContextProps(
-        getValidPfxBase64(),
-        null,
-        this.pfxType,
-        this.protocol
-    );
+    final var inputSslContextProps = this.sslContextProps.withPfxPassword(null);
 
-    final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
+    final var sslContextFactory = new DefaultSslContextFactory(() -> inputSslContextProps);
 
     assertThrows(NullPointerException.class, sslContextFactory::getSslContext);
   }
@@ -118,31 +64,11 @@ class DefaultSslContextFactoryTest {
 
   @Test
   void givenInvalidPfxType_whenGetSslContext_thenSslContextCreationException() {
-    final var sslContextProps = new SslContextProps(
-        getValidPfxBase64(),
-        this.pfxFilePassword,
-        "invalid-pfx-type",
-        this.protocol
-    );
+    final var inputSslContextProps = this.sslContextProps.withPfxType("invalid-pfx-type");
 
-    final var sslContextFactory = new DefaultSslContextFactory(() -> sslContextProps);
+    final var sslContextFactory = new DefaultSslContextFactory(() -> inputSslContextProps);
 
     assertThrows(SslContextCreationException.class, sslContextFactory::getSslContext);
-  }
-
-
-  private String getValidPfxBase64() {
-    try {
-      final var pfxBytes = new ClassPathResource(this.pfxFileName)
-          .getInputStream()
-          .readAllBytes();
-
-      return Base64.getEncoder()
-          .encodeToString(pfxBytes);
-
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }
