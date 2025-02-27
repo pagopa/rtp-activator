@@ -58,3 +58,9 @@ blob-storage:
   blob-name: ${AZURE_BLOB_NAME:serviceregistry.json}
   managed-identity: ${IDENTITY_CLIENT_ID:}
 
+client:
+  ssl:
+    pfx-file: ${CLIENT_CERTIFICATE}
+    pfx-password: ${CLIENT_CERTIFICATE_PASSWORD:}
+    pfx-type: PKCS12
+    protocol: TLS
