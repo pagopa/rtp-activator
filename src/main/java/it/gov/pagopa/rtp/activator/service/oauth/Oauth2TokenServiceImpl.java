@@ -37,7 +37,7 @@ public class Oauth2TokenServiceImpl implements Oauth2TokenService {
         return webClient.post().uri(tokenUri).header("clientId", clientId).header("clientSecret", clientSecret)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED).body(BodyInserters.fromFormData(formData))
                 .retrieve().bodyToMono(Map.class).map(response -> (String) response.get("access_token"))
-                .doOnError(e -> log.error("Failed to obtain OAuth2 token from {}: {}", tokenUri, e.getMessage()));
+                .doOnError(e -> log.error("Failed to obtain OAuth2 token {}", e.getMessage()));
     }
 
 }
