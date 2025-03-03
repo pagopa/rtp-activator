@@ -33,6 +33,10 @@ public record OAuth2(
     String clientSecretKvUrl,
 
     @NotBlank
+    @JsonProperty("client_secret_env_var")
+    String clientSecretEnvVar,
+
+    @NotBlank
     @JsonProperty("scope")
     String scope
 ) {}
