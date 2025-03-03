@@ -3,6 +3,7 @@ package it.gov.pagopa.rtp.activator.service.oauth;
 
 import java.util.Map;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Slf4j
+@Component
 public class Oauth2TokenServiceImpl implements Oauth2TokenService {
     private MtlsWebClientFactory mtlsWebClientFactory;
 
