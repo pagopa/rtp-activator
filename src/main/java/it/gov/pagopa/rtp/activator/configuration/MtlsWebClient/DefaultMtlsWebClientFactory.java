@@ -18,7 +18,7 @@ public class DefaultMtlsWebClientFactory implements MtlsWebClientFactory {
   @Override
   public WebClient createMtlsWebClient() {
     HttpClient httpClient = HttpClient.create()
-        .secure(sslContexSpec -> sslContexSpec.sslContext(sslContextFactory.getSslContext()));
+        .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextFactory.getSslContext()));
 
     return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
   }
