@@ -45,6 +45,7 @@ rtp_activator_base_url                          = "https://mil-d-apim.azure-api.
 rtp_environment_secrets = {
   COSMOS_ACCOUNT_RTP_CONNECTION_STRING  : "cosmosdb-account-rtp-connection-string"
   APPLICATIONINSIGHTS_CONNECTION_STRING : "appinsights-connection-string"
+  CLIENT_CERTIFICATE                    : "client-certificate"
 }
 
 
