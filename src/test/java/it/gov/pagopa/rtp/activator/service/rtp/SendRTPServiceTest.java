@@ -21,6 +21,8 @@ import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
+import it.gov.pagopa.rtp.activator.service.oauth.MtlsApiClientFactory;
+import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 
 import java.math.BigDecimal;
@@ -39,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -60,9 +63,14 @@ class SendRTPServiceTest {
   private RtpRepository rtpRepository;
   @Mock
   private DefaultApi defaultApi;
-
   @Mock
   private RegistryDataService registryDataService;
+  @Mock
+  private Oauth2TokenService oauth2TokenService;
+  @Mock
+  private MtlsApiClientFactory mtlsApiClientFactory;
+  @Mock
+  private Environment environment;
 
   private SendRTPServiceImpl sendRTPService;
 
@@ -86,7 +94,8 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, defaultApi, registryDataService);
+        serviceProviderConfig, rtpRepository, defaultApi, registryDataService, mtlsApiClientFactory, oauth2TokenService,
+        environment);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
