@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.service.oauth;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public class Oauth2TokenServiceImpl implements Oauth2TokenService {
   }
 
   @Override
-  public Mono<String> getAccessToken(String tokenUri, String clientId, String clientSecret, String scope) {
+  public Mono<String> getAccessToken(String tokenUri, String clientId, String   clientSecret, String scope) {
     if (clientId == null || clientSecret == null || tokenUri == null) {
       return Mono.error(new IllegalStateException("OAuth2 configuration params not complete"));
     }
@@ -33,13 +34,13 @@ public class Oauth2TokenServiceImpl implements Oauth2TokenService {
     WebClient webClient = mtlsWebClientFactory.createMtlsWebClient();
 
     MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-    formData.add("grant_type", "client_credential");
+    formData.add("grant_type", "client_credentials");
     if (scope != null) {
       formData.add("scope", scope);
     }
 
     String credential = clientId + ":" + clientSecret;
-    String encodedCredentials = Base64.getEncoder().encodeToString(credential.getBytes());
+    String encodedCredentials = Base64.getEncoder().encodeToString(credential.getBytes(StandardCharsets.UTF_8));
     String authHeader = "Basic " + encodedCredentials;
 
     return webClient

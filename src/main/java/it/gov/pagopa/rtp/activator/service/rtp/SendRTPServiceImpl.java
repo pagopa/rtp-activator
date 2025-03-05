@@ -129,7 +129,7 @@ public class SendRTPServiceImpl implements SendRTPService {
 
           String tokenEndpoint = provider.tsp().oauth2().tokenEndpoint();
           String clientId = provider.tsp().oauth2().clientId();
-          String clientSecret = environment.getProperty(provider.tsp().oauth2().clientSecretEnvVar());
+          String clientSecret = environment.getProperty("client." + provider.tsp().oauth2().clientSecretEnvVar());
           String scope = provider.tsp().oauth2().scope();
 
           sendApi.setApiClient(mtlsApiClientFactory.createMtlsApiClient(basePath));
@@ -137,12 +137,12 @@ public class SendRTPServiceImpl implements SendRTPService {
           return oauth2TokenService
               .getAccessToken(tokenEndpoint, clientId, clientSecret, scope)
               .flatMap(token -> {
-                sendApi.getApiClient().addDefaultHeader("Authorization ", "Bearer " + token);
+                sendApi.getApiClient().addDefaultHeader("Authorization", "Bearer " + token);
                 return sendApi.postRequestToPayRequests(
                     UUID.randomUUID(),
                     UUID.randomUUID().toString(),
-                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
-                    .retryWhen(sendRetryPolicy());
+                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
+                    //.retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
               });
 
         })
