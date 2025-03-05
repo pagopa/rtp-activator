@@ -11,7 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import javax.net.ssl.KeyManagerFactory;
@@ -144,7 +143,7 @@ public class DefaultSslContextFactory implements SslContextFactory {
     try {
       return SslContextBuilder.forClient()
           .keyManager(keyManagerFactory)
-          .protocols(Collections.singletonList(this.sslContextProps.protocol()))
+          .protocols("TLSv1.2","TLSv1.3")
           .build();
 
     } catch (SSLException e) {
