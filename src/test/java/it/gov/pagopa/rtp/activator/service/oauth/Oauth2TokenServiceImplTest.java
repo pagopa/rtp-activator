@@ -79,7 +79,7 @@ class Oauth2TokenServiceImplTest {
             .expectNext(accessToken)
             .verifyComplete();
         
-        verify(requestBodySpec).header(eq(HttpHeaders.AUTHORIZATION), 
+        verify(requestBodySpec).header(HttpHeaders.AUTHORIZATION, 
             eq("Basic " + Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8))));
     }
     
