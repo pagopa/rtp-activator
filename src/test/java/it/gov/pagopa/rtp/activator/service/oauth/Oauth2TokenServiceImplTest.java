@@ -54,7 +54,7 @@ class Oauth2TokenServiceImplTest {
     }
     
     @Test
-    void getAccessToken_WhenAllParamsProvided_ReturnsToken() {
+    void getAccessTokenWhenAllParamsProvidedReturnsToken() {
         String tokenUri = "https://example.com/token";
         String clientId = "test-client";
         String clientSecret = "test-secret";
@@ -80,12 +80,11 @@ class Oauth2TokenServiceImplTest {
             .verifyComplete();
         
         verify(requestBodySpec).header(HttpHeaders.AUTHORIZATION, 
-            eq("Basic " + Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8))));
+            "Basic " + Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8)));
     }
     
     @Test
-    void getAccessToken_WhenScopeIsNull_DoesNotAddScopeToForm() {
-        // Given
+    void getAccessTokenWhenScopeIsNullDoesNotAddScopeToForm() {
         String tokenUri = "https://example.com/token";
         String clientId = "test-client";
         String clientSecret = "test-secret";
@@ -103,51 +102,42 @@ class Oauth2TokenServiceImplTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(Map.class)).thenReturn(Mono.just(responseMap));
         
-        // When
         Mono<String> result = oauth2TokenService.getAccessToken(tokenUri, clientId, clientSecret, null);
         
-        // Then
         StepVerifier.create(result)
             .expectNext(accessToken)
             .verifyComplete();
     }
     
     @Test
-    void getAccessToken_WhenClientIdIsNull_ReturnsError() {
-        // When
+    void getAccessTokenWhenClientIdIsNullReturnsError() {
         Mono<String> result = oauth2TokenService.getAccessToken("https://example.com/token", null, "secret", "scope");
         
-        // Then
         StepVerifier.create(result)
             .expectError(IllegalStateException.class)
             .verify();
     }
     
     @Test
-    void getAccessToken_WhenClientSecretIsNull_ReturnsError() {
-        // When
+    void getAccessTokenWhenClientSecretIsNullReturnsError() {
         Mono<String> result = oauth2TokenService.getAccessToken("https://example.com/token", "client", null, "scope");
         
-        // Then
         StepVerifier.create(result)
             .expectError(IllegalStateException.class)
             .verify();
     }
     
     @Test
-    void getAccessToken_WhenTokenUriIsNull_ReturnsError() {
-        // When
+    void getAccessTokenWhenTokenUriIsNullReturnsError() {
         Mono<String> result = oauth2TokenService.getAccessToken(null, "client", "secret", "scope");
         
-        // Then
         StepVerifier.create(result)
             .expectError(IllegalStateException.class)
             .verify();
     }
     
     @Test
-    void getAccessToken_WhenRequestFails_PropagatesError() {
-        // Given
+    void getAccessTokenWhenRequestFailsPropagatesError() {
         String tokenUri = "https://example.com/token";
         String clientId = "test-client";
         String clientSecret = "test-secret";
@@ -162,25 +152,21 @@ class Oauth2TokenServiceImplTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(Map.class)).thenReturn(Mono.error(new RuntimeException("Network error")));
         
-        // When
         Mono<String> result = oauth2TokenService.getAccessToken(tokenUri, clientId, clientSecret, scope);
         
-        // Then
         StepVerifier.create(result)
             .expectError(RuntimeException.class)
             .verify();
     }
     
     @Test
-    void getAccessToken_WhenResponseMissingAccessToken_ReturnsError() {
-        // Given
+    void getAccessTokenWhenResponseMissingAccessTokenReturnsError() {
         String tokenUri = "https://example.com/token";
         String clientId = "test-client";
         String clientSecret = "test-secret";
         String scope = "test-scope";
         
         Map<String, Object> responseMap = new HashMap<>();
-        // No access_token in response
         
         when(mtlsWebClientFactory.createMtlsWebClient()).thenReturn(webClient);
         when(webClient.post()).thenReturn(requestBodyUriSpec);
@@ -191,10 +177,8 @@ class Oauth2TokenServiceImplTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(Map.class)).thenReturn(Mono.just(responseMap));
         
-        // When
         Mono<String> result = oauth2TokenService.getAccessToken(tokenUri, clientId, clientSecret, scope);
         
-        // Then
         StepVerifier.create(result)
             .expectError(NullPointerException.class)
             .verify();

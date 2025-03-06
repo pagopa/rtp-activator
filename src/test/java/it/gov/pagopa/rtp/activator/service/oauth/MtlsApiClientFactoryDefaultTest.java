@@ -30,7 +30,7 @@ class MtlsApiClientFactoryDefaultTest {
    }
    
    @Test
-   void createMtlsApiClient_CreatesApiClientWithCorrectBasePath() {
+   void createMtlsApiClientCreatesApiClientWithCorrectBasePath() {
        String basePath = "https://test-api.example.com";
        when(mtlsWebClientFactory.createMtlsWebClient()).thenReturn(webClient);
        
