@@ -12,7 +12,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import it.gov.pagopa.rtp.activator.configuration.MtlsWebClient.MtlsWebClientFactory;
+import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.MtlsWebClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 

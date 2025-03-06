@@ -1,4 +1,4 @@
-package it.gov.pagopa.rtp.activator.configuration.MtlsWebClient;
+package it.gov.pagopa.rtp.activator.configuration.mtlswebclient;
 
 import org.springframework.web.reactive.function.client.WebClient;
 

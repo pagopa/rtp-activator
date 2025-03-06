@@ -2,7 +2,7 @@ package it.gov.pagopa.rtp.activator.service.oauth;
 
 import org.springframework.stereotype.Component;
 
-import it.gov.pagopa.rtp.activator.configuration.MtlsWebClient.MtlsWebClientFactory;
+import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.MtlsWebClientFactory;
 import it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient;
 
 @Component
