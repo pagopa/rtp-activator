@@ -46,6 +46,7 @@ rtp_environment_secrets = {
   COSMOS_ACCOUNT_RTP_CONNECTION_STRING  : "cosmosdb-account-rtp-connection-string"
   APPLICATIONINSIGHTS_CONNECTION_STRING : "appinsights-connection-string"
   CLIENT_CERTIFICATE                    : "client-certificate"
+  CLIENT_SECRET_CBI                     : "client-secret-cbi"
 }
 
 
