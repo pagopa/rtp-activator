@@ -43,6 +43,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -95,7 +96,8 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, defaultApi, registryDataService, mtlsApiClientFactory, oauth2TokenService,
+        serviceProviderConfig, rtpRepository, defaultApi, registryDataService, mtlsApiClientFactory,
+        oauth2TokenService,
         environment);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
@@ -118,7 +120,7 @@ class SendRTPServiceTest {
         .callbackUrl(URI.create("http://callback.url"));
 
     Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
-    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint","post","client_credentials","","","","srtp");
+    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
     mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
         new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
 
@@ -216,9 +218,9 @@ class SendRTPServiceTest {
   void givenInternalErrorOnExternalSendWhenSendThenPropagateMonoError() {
     var fakeActivationDto = mockActivationDto();
     var expectedRtp = mockRtp();
-    
+
     Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
-    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint","post","client_credentials","","","","srtp");
+    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
     mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
         new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
 
@@ -227,15 +229,12 @@ class SendRTPServiceTest {
     when(mtlsApiClientFactory.createMtlsApiClient(any())).thenReturn(mockApiClient);
     when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
     when(environment.getProperty(any())).thenReturn("fakeProp");
-
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
+    when(registryDataService.getRegistryData()).thenReturn(Mono.just(mockRegistryData));
+    when(readApi.findActivationByPayerId(any(), any(), any())).thenReturn(Mono.just(fakeActivationDto));
 
-    when(registryDataService.getRegistryData())
-        .thenReturn(Mono.just(mockRegistryData));
-    when(readApi.findActivationByPayerId(any(), any(), any()))
-        .thenReturn(Mono.just(fakeActivationDto));
-    when(defaultApi.postRequestToPayRequests(any(), any(), any()))
-        .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+    when(defaultApi.postRequestToPayRequests(any(), any(), any())).thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+
     when(rtpRepository.save(any()))
         .thenReturn(Mono.just(expectedRtp));
 
@@ -258,9 +257,9 @@ class SendRTPServiceTest {
 
     final var sourceRtp = mockRtp(RtpStatus.CREATED, resourceId, savingDateTime);
     final var rtpSent = mockRtp(RtpStatus.SENT, resourceId, savingDateTime);
-    
+
     Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
-    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint","post","client_credentials","","","","srtp");
+    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
     mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
         new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
 
@@ -309,10 +308,9 @@ class SendRTPServiceTest {
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
-    
-        
+
     Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
-    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint","post","client_credentials","","","","srtp");
+    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
     mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
         new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
 

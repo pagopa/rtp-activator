@@ -28,6 +28,7 @@ import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResour
 import it.gov.pagopa.rtp.activator.service.oauth.MtlsApiClientFactory;
 import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
+import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -141,15 +142,11 @@ public class SendRTPServiceImpl implements SendRTPService {
                     UUID.randomUUID(),
                     UUID.randomUUID().toString(),
                     sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
-                    //.retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
-              });
-
-        })
-        .onErrorMap(Throwable::getCause)
-        .map(response -> rtpToSend)
-        .defaultIfEmpty(rtpToSend)
-        .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
-            rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
+                // .retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
+              }).onErrorMap(ExceptionUtils::gracefullyHandleError).map(response -> rtpToSend).defaultIfEmpty(rtpToSend)
+              .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
+                  rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
+        });
   }
 
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {

@@ -44,8 +44,6 @@ otel:
     mongo:
       enabled: true
 
-
-
 cache:
   params:
     - name: registry-data
