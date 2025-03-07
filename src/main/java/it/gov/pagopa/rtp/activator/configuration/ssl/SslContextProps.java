@@ -20,9 +20,6 @@ public record SslContextProps(
     String pfxPassword,
 
     @NotBlank
-    String pfxType,
-
-    @NotBlank
-    String protocol
+    String pfxType
 
 ) {}

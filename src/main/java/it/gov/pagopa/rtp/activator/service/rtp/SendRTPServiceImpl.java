@@ -25,7 +25,9 @@ import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
+import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -34,6 +36,7 @@ import java.util.UUID;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -42,7 +45,7 @@ import reactor.util.retry.RetryBackoffSpec;
 
 @Service
 @Slf4j
-@RegisterReflectionForBinding({SepaRequestToPayRequestResourceDto.class,
+@RegisterReflectionForBinding({ SepaRequestToPayRequestResourceDto.class,
     PersonIdentification13EPC25922V30DS02WrapperDto.class, ISODateWrapperDto.class,
     ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class,
     ExternalServiceLevel1CodeWrapperDto.class,
@@ -62,9 +65,13 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final DefaultApi sendApi;
   private final RegistryDataService registryDataService;
 
+  private final Oauth2TokenService oauth2TokenService;
+  private final Environment environment;
+
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
       ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
-      DefaultApi sendApi, RegistryDataService registryDataService) {
+      DefaultApi sendApi, RegistryDataService registryDataService,
+      Oauth2TokenService oauth2TokenService, Environment environment) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
@@ -72,6 +79,9 @@ public class SendRTPServiceImpl implements SendRTPService {
     this.sendApi = sendApi;
     this.registryDataService = registryDataService;
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+
+    this.oauth2TokenService = oauth2TokenService;
+    this.environment = environment;
   }
 
   @NonNull
@@ -80,8 +90,8 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
-            rtp.payerId(),
-            serviceProviderConfig.activation().apiVersion())
+        rtp.payerId(),
+        serviceProviderConfig.activation().apiVersion())
         .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
@@ -99,7 +109,7 @@ public class SendRTPServiceImpl implements SendRTPService {
         );
 
     return sentRtp.doOnSuccess(
-            rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+        rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
@@ -112,20 +122,30 @@ public class SendRTPServiceImpl implements SendRTPService {
         .map(data -> data.get(rtpToSend.serviceProviderDebtor()))
         .switchIfEmpty(Mono.error(new IllegalStateException(
             "No service provider found for creditor: " + rtpToSend.serviceProviderDebtor())))
-        .map(provider -> provider.tsp().serviceEndpoint())
-        .flatMap(basePath -> {
-          sendApi.setApiClient(sendApi.getApiClient().setBasePath(basePath));
-          return sendApi.postRequestToPayRequests(
-                  UUID.randomUUID(),
-                  UUID.randomUUID().toString(),
-                  sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
-              .retryWhen(sendRetryPolicy());
-        })
-        .onErrorMap(Throwable::getCause)
-        .map(response -> rtpToSend)
-        .defaultIfEmpty(rtpToSend)
-        .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
-            rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
+        .flatMap(provider -> {
+
+          String basePath = provider.tsp().serviceEndpoint();
+
+          String tokenEndpoint = provider.tsp().oauth2().tokenEndpoint();
+          String clientId = provider.tsp().oauth2().clientId();
+          String clientSecret = environment.getProperty("client." + provider.tsp().oauth2().clientSecretEnvVar());
+          String scope = provider.tsp().oauth2().scope();
+
+          sendApi.getApiClient().setBasePath(basePath);
+
+          return oauth2TokenService
+              .getAccessToken(tokenEndpoint, clientId, clientSecret, scope)
+              .flatMap(token -> {
+                sendApi.getApiClient().addDefaultHeader("Authorization", "Bearer " + token);
+                return sendApi.postRequestToPayRequests(
+                    UUID.randomUUID(),
+                    UUID.randomUUID().toString(),
+                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
+                // .retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
+              }).onErrorMap(ExceptionUtils::gracefullyHandleError).map(response -> rtpToSend).defaultIfEmpty(rtpToSend)
+              .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
+                  rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
+        });
   }
 
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {

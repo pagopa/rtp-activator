@@ -12,6 +12,7 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
+import it.gov.pagopa.rtp.activator.domain.registryfile.OAuth2;
 import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
 import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
@@ -21,6 +22,7 @@ import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
+import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 
 import java.math.BigDecimal;
@@ -39,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -60,9 +63,12 @@ class SendRTPServiceTest {
   private RtpRepository rtpRepository;
   @Mock
   private DefaultApi defaultApi;
-
   @Mock
   private RegistryDataService registryDataService;
+  @Mock
+  private Oauth2TokenService oauth2TokenService;
+  @Mock
+  private Environment environment;
 
   private SendRTPServiceImpl sendRTPService;
 
@@ -86,7 +92,9 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, defaultApi, registryDataService);
+        serviceProviderConfig, rtpRepository, defaultApi, registryDataService,
+        oauth2TokenService,
+        environment);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -108,12 +116,16 @@ class SendRTPServiceTest {
         .callbackUrl(URI.create("http://callback.url"));
 
     Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
+    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
     mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
-        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", null)));
+        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
 
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
-    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
+
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
+
+    when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
+    when(environment.getProperty(any())).thenReturn("fakeProp");
 
     when(sepaRequestToPayMapper.toEpcRequestToPay(any()))
         .thenReturn(mockSepaRequestToPayRequestResource);
@@ -201,21 +213,22 @@ class SendRTPServiceTest {
   void givenInternalErrorOnExternalSendWhenSendThenPropagateMonoError() {
     var fakeActivationDto = mockActivationDto();
     var expectedRtp = mockRtp();
-    // New mock for registry data
+
     Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
+    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
     mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
-        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", null)));
+        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
 
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
-    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
-    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
 
-    when(registryDataService.getRegistryData())
-        .thenReturn(Mono.just(mockRegistryData));
-    when(readApi.findActivationByPayerId(any(), any(), any()))
-        .thenReturn(Mono.just(fakeActivationDto));
-    when(defaultApi.postRequestToPayRequests(any(), any(), any()))
-        .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+    when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
+    when(environment.getProperty(any())).thenReturn("fakeProp");
+    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
+    when(registryDataService.getRegistryData()).thenReturn(Mono.just(mockRegistryData));
+    when(readApi.findActivationByPayerId(any(), any(), any())).thenReturn(Mono.just(fakeActivationDto));
+
+    when(defaultApi.postRequestToPayRequests(any(), any(), any())).thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+
     when(rtpRepository.save(any()))
         .thenReturn(Mono.just(expectedRtp));
 
@@ -238,13 +251,17 @@ class SendRTPServiceTest {
 
     final var sourceRtp = mockRtp(RtpStatus.CREATED, resourceId, savingDateTime);
     final var rtpSent = mockRtp(RtpStatus.SENT, resourceId, savingDateTime);
-    // New mock for registry data
+
     Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
+    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
     mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
-        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", null)));
+        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
 
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
-    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
+
+    when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
+    when(environment.getProperty(any())).thenReturn("fakeProp");
+
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
 
     when(registryDataService.getRegistryData())
@@ -284,12 +301,17 @@ class SendRTPServiceTest {
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
+
     Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
+    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
     mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
-        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", null)));
+        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
 
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
-    when(mockApiClient.setBasePath(any())).thenReturn(mockApiClient);
+
+    when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
+    when(environment.getProperty(any())).thenReturn("fakeProp");
+
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
 
     when(registryDataService.getRegistryData())

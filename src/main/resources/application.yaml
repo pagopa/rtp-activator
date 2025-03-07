@@ -44,8 +44,6 @@ otel:
     mongo:
       enabled: true
 
-
-
 cache:
   params:
     - name: registry-data
@@ -59,8 +57,8 @@ blob-storage:
   managed-identity: ${IDENTITY_CLIENT_ID:}
 
 client:
+  client-secret-cbi: ${CLIENT_SECRET_CBI:test}
   ssl:
     pfx-file: ${CLIENT_CERTIFICATE}
     pfx-password: ${CLIENT_CERTIFICATE_PASSWORD:}
     pfx-type: PKCS12
-    protocol: TLS
