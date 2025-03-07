@@ -29,6 +29,7 @@ import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
 
+import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
@@ -45,7 +46,7 @@ import reactor.util.retry.RetryBackoffSpec;
 
 @Service
 @Slf4j
-@RegisterReflectionForBinding({ SepaRequestToPayRequestResourceDto.class,
+@RegisterReflectionForBinding({SepaRequestToPayRequestResourceDto.class,
     PersonIdentification13EPC25922V30DS02WrapperDto.class, ISODateWrapperDto.class,
     ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class,
     ExternalServiceLevel1CodeWrapperDto.class,
@@ -90,8 +91,8 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
-        rtp.payerId(),
-        serviceProviderConfig.activation().apiVersion())
+            rtp.payerId(),
+            serviceProviderConfig.activation().apiVersion())
         .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
@@ -109,7 +110,7 @@ public class SendRTPServiceImpl implements SendRTPService {
         );
 
     return sentRtp.doOnSuccess(
-        rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+            rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
@@ -128,7 +129,8 @@ public class SendRTPServiceImpl implements SendRTPService {
 
           String tokenEndpoint = provider.tsp().oauth2().tokenEndpoint();
           String clientId = provider.tsp().oauth2().clientId();
-          String clientSecret = environment.getProperty("client." + provider.tsp().oauth2().clientSecretEnvVar());
+          String clientSecret = environment.getProperty(
+              "client." + provider.tsp().oauth2().clientSecretEnvVar());
           String scope = provider.tsp().oauth2().scope();
 
           sendApi.getApiClient().setBasePath(basePath);
@@ -137,12 +139,15 @@ public class SendRTPServiceImpl implements SendRTPService {
               .getAccessToken(tokenEndpoint, clientId, clientSecret, scope)
               .flatMap(token -> {
                 sendApi.getApiClient().addDefaultHeader("Authorization", "Bearer " + token);
-                return sendApi.postRequestToPayRequests(
-                    UUID.randomUUID(),
+                return Mono.defer(() -> sendApi.postRequestToPayRequests(
+                    rtpToSend.resourceID().getId(),
                     UUID.randomUUID().toString(),
-                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
+                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend)));
                 // .retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
-              }).onErrorMap(ExceptionUtils::gracefullyHandleError).map(response -> rtpToSend).defaultIfEmpty(rtpToSend)
+              })
+              .onErrorMap(ExceptionUtils::gracefullyHandleError)
+              .map(response -> rtpToSend)
+              .defaultIfEmpty(rtpToSend)
               .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
                   rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
         });
