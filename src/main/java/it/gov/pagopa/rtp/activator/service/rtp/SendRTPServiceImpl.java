@@ -45,7 +45,7 @@ import reactor.util.retry.RetryBackoffSpec;
 
 @Service
 @Slf4j
-@RegisterReflectionForBinding({ SepaRequestToPayRequestResourceDto.class,
+@RegisterReflectionForBinding({SepaRequestToPayRequestResourceDto.class,
     PersonIdentification13EPC25922V30DS02WrapperDto.class, ISODateWrapperDto.class,
     ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto.class,
     ExternalServiceLevel1CodeWrapperDto.class,
@@ -90,14 +90,20 @@ public class SendRTPServiceImpl implements SendRTPService {
     Objects.requireNonNull(rtp, "Rtp cannot be null");
 
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
-        rtp.payerId(),
-        serviceProviderConfig.activation().apiVersion())
+            rtp.payerId(),
+            serviceProviderConfig.activation().apiVersion())
+        .doFirst(() -> log.info("Finding activation data for payerId: {}", rtp.payerId()))
+        .doOnSuccess(act -> log.info("Activation data found for payerId: {}", rtp.payerId()))
+        .doOnError(error -> log.error("Error finding activation data for payerId: {}", rtp.payerId(), error))
         .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
+        .doOnSuccess(rtpWithActivationInfo -> log.info("Saving Rtp to be sent: {}", rtpWithActivationInfo))
         .flatMap(rtpRepository::save)
-        .flatMap(this::logRtpAsJson);
+        .flatMap(this::logRtpAsJson)
+        .doOnSuccess(rtpSaved -> log.info("Rtp to be sent saved with id: {}", rtpSaved.resourceID().getId()))
+        .doOnError(error -> log.error("Error saving Rtp to be sent: {}", error.getMessage(), error));
 
     final var sentRtp = rtpToSend.flatMap(this::sendRtpToServiceProviderDebtor)
         .map(rtp::toRtpSent)
@@ -109,7 +115,8 @@ public class SendRTPServiceImpl implements SendRTPService {
         );
 
     return sentRtp.doOnSuccess(
-        rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+            rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+        .doOnError(error -> log.error("Error sending RTP: {}", error.getMessage(), error))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
@@ -128,21 +135,33 @@ public class SendRTPServiceImpl implements SendRTPService {
 
           String tokenEndpoint = provider.tsp().oauth2().tokenEndpoint();
           String clientId = provider.tsp().oauth2().clientId();
-          String clientSecret = environment.getProperty("client." + provider.tsp().oauth2().clientSecretEnvVar());
+          String clientSecret = environment.getProperty(
+              "client." + provider.tsp().oauth2().clientSecretEnvVar());
           String scope = provider.tsp().oauth2().scope();
 
           sendApi.getApiClient().setBasePath(basePath);
 
           return oauth2TokenService
               .getAccessToken(tokenEndpoint, clientId, clientSecret, scope)
+              .doFirst(() -> log.info("Retrieving access token"))
+              .doOnSuccess(token -> log.info("Successfully retrieved access token"))
+              .doOnError(error -> log.error("Error retrieving access token: {}", error.getMessage()))
               .flatMap(token -> {
+
                 sendApi.getApiClient().addDefaultHeader("Authorization", "Bearer " + token);
-                return sendApi.postRequestToPayRequests(
-                    UUID.randomUUID(),
-                    UUID.randomUUID().toString(),
-                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
-                // .retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
-              }).onErrorMap(ExceptionUtils::gracefullyHandleError).map(response -> rtpToSend).defaultIfEmpty(rtpToSend)
+
+                return Mono.defer(() -> sendApi.postRequestToPayRequests(
+                        rtpToSend.resourceID().getId(),
+                        UUID.randomUUID().toString(),
+                        sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend)))
+                    .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()))
+                    .retryWhen(sendRetryPolicy());
+              })
+              .doOnSuccess(response -> log.info("Successfully sent RTP to {}", rtpToSend.serviceProviderDebtor()))
+              .doOnError(error -> log.error("Error sending RTP to {}: {}", rtpToSend.serviceProviderDebtor(), error.getMessage()))
+              .onErrorMap(ExceptionUtils::gracefullyHandleError)
+              .map(response -> rtpToSend)
+              .defaultIfEmpty(rtpToSend)
               .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
                   rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
         });

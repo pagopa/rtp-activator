@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.service.rtp;
 
+import it.gov.pagopa.rtp.activator.configuration.CallbackProperties;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.epcClient.model.AccountIdentification4ChoiceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.AmountType4ChoiceEPC25922V30DS02Dto;
@@ -40,12 +41,21 @@ import it.gov.pagopa.rtp.activator.epcClient.model.ServiceLevel8ChoiceDto;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SepaRequestToPayMapper {
 
   private static final String BIC_REGEX = "^([A-Z0-9]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?)$";
+
+  private final CallbackProperties callbackProperties;
+
+  public SepaRequestToPayMapper(@NonNull final CallbackProperties callbackProperties) {
+    this.callbackProperties = Objects.requireNonNull(callbackProperties, "Callback properties cannot be null");
+  }
+
 
   public SepaRequestToPayRequestResourceDto toEpcRequestToPay(Rtp rtp) {
 
@@ -208,7 +218,7 @@ public class SepaRequestToPayMapper {
     var documentEPC25922V30DS02Dto = new DocumentEPC25922V30DS02Dto()
         .cdtrPmtActvtnReq(creditorPaymentActivationRequestV10EPC25922V30DS02Dto);
 
-    sepaRequestToPayRequestResourceDto.setCallbackUrl(URI.create("http://spsrtp.api.cstar.pagopa.it"));// FIXED
+    sepaRequestToPayRequestResourceDto.setCallbackUrl(URI.create(this.callbackProperties.url().send()));
     sepaRequestToPayRequestResourceDto.setResourceId(rtp.resourceID().getId().toString());
     sepaRequestToPayRequestResourceDto.document(documentEPC25922V30DS02Dto);
 

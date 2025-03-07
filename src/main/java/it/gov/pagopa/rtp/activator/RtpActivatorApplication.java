@@ -3,6 +3,7 @@ package it.gov.pagopa.rtp.activator;
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.configuration.BlobStorageConfig;
 import it.gov.pagopa.rtp.activator.configuration.CachesConfigProperties;
+import it.gov.pagopa.rtp.activator.configuration.CallbackProperties;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.configuration.ssl.SslContextProps;
 import org.springframework.boot.SpringApplication;
@@ -16,7 +17,8 @@ import reactor.core.publisher.Hooks;
     ServiceProviderConfig.class,
     BlobStorageConfig.class,
     CachesConfigProperties.class,
-    SslContextProps.class
+    SslContextProps.class,
+    CallbackProperties.class,
 })
 public class RtpActivatorApplication {
 
