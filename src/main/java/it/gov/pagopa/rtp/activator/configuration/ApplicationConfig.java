@@ -30,11 +30,8 @@ public class ApplicationConfig {
   @Bean
   public DefaultApi defaultApi(ServiceProviderConfig serviceProviderConfig, MtlsWebClientFactory mtlsWebClientFactory) {
     var apiClient = new it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient(mtlsWebClientFactory.createMtlsWebClient());
-    
     apiClient.setBasePath(serviceProviderConfig.send().epcMockUrl());
-
     return new DefaultApi(apiClient);
-
   }
 
 }
