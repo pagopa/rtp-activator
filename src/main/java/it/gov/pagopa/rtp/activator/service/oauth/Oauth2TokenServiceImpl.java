@@ -40,7 +40,7 @@ public class Oauth2TokenServiceImpl implements Oauth2TokenService {
     }
 
     String credential = clientId + ":" + clientSecret;
-    String encodedCredentials = Base64.getEncoder().encodeToString(credential.getBytes(StandardCharsets.UTF_8));
+    String encodedCredentials = Base64.getUrlEncoder().encodeToString(credential.getBytes(StandardCharsets.UTF_8));
     String authHeader = "Basic " + encodedCredentials;
 
     return webClient
