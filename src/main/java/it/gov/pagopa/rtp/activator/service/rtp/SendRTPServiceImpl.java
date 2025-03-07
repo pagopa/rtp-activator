@@ -142,7 +142,7 @@ public class SendRTPServiceImpl implements SendRTPService {
 
           return oauth2TokenService
               .getAccessToken(tokenEndpoint, clientId, clientSecret, scope)
-              doFirst(() -> log.info("Retrieving access token"))
+              .doFirst(() -> log.info("Retrieving access token"))
               .doOnSuccess(token -> log.info("Successfully retrieved access token"))
               .doOnError(error -> log.error("Error retrieving access token: {}", error.getMessage()))
               .flatMap(token -> {
@@ -151,13 +151,14 @@ public class SendRTPServiceImpl implements SendRTPService {
                     UUID.randomUUID(),
                     UUID.randomUUID().toString(),
                     sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
-                                       .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()));
+                    .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()));
 
                 // .retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
               })
               .doOnSuccess(response -> log.info("Successfully sent RTP to {}", rtpToSend.serviceProviderDebtor()))
-             .doOnError(error -> log.error("Error sending RTP to {}: {}", rtpToSend.serviceProviderDebtor(), error.getMessage()))
-.onErrorMap(ExceptionUtils::gracefullyHandleError).map(response -> rtpToSend).defaultIfEmpty(rtpToSend)
+              .doOnError(error -> log.error("Error sending RTP to {}: {}", rtpToSend.serviceProviderDebtor(),
+                  error.getMessage()))
+              .onErrorMap(ExceptionUtils::gracefullyHandleError).map(response -> rtpToSend).defaultIfEmpty(rtpToSend)
               .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
                   rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
         });
