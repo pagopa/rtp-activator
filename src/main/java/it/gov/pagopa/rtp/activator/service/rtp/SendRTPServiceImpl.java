@@ -142,8 +142,8 @@ public class SendRTPServiceImpl implements SendRTPService {
                 return Mono.defer(() -> sendApi.postRequestToPayRequests(
                     rtpToSend.resourceID().getId(),
                     UUID.randomUUID().toString(),
-                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend)));
-                // .retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
+                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend)))
+                .retryWhen(sendRetryPolicy());
               })
               .onErrorMap(ExceptionUtils::gracefullyHandleError)
               .map(response -> rtpToSend)

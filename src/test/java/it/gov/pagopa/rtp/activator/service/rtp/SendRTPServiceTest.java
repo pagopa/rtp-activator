@@ -352,10 +352,12 @@ class SendRTPServiceTest {
     final var rtpId = inputRtp.resourceID().getId();
     final var expectedRtp = inputRtp.toRtpSent(inputRtp);
     final var mockRegistryData = new HashMap<String, ServiceProviderFullData>();
+    final var mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
+
     mockRegistryData.put(
         rtpSpId,
         new ServiceProviderFullData("", "",
-            new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", null)));
+            new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
@@ -365,6 +367,11 @@ class SendRTPServiceTest {
 
     when(registryDataService.getRegistryData())
         .thenReturn(Mono.just(mockRegistryData));
+
+    when(oauth2TokenService.getAccessToken(any(), any(), any(), any()))
+        .thenReturn(Mono.just("fakeToken"));
+
+    when(environment.getProperty(any())).thenReturn("fakeProp");
 
     when(defaultApi.getApiClient()).thenReturn(new ApiClient());
 
