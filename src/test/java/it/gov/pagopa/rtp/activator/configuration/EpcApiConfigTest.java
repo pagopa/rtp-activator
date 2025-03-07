@@ -3,27 +3,19 @@ package it.gov.pagopa.rtp.activator.configuration;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-import io.netty.handler.ssl.SslContext;
-import it.gov.pagopa.rtp.activator.configuration.ssl.SslContextFactory;
+import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.MtlsWebClientFactory;
 import it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
 class EpcApiConfigTest {
 
   @Mock
-  private SslContextFactory sslContextFactory;
-
-  @Mock
-  private SslContext sslContext;
-
-  @Mock
-  private WebClient webClient;
+  private MtlsWebClientFactory webClientFactory;
 
   @Mock
   private ApiClient apiClient;
@@ -38,21 +30,12 @@ class EpcApiConfigTest {
 
   @BeforeEach
   void setUp() {
-    when(sslContextFactory.getSslContext()).thenReturn(sslContext);
-
-    epcApiConfig = new EpcApiConfig(sslContextFactory);
-  }
-
-  @Test
-  void givenValidSslContext_whenCreatingWebClient_thenReturnConfiguredWebClient() {
-    final var mTlsWebClient = epcApiConfig.mTlsWebClient();
-
-    assertNotNull(mTlsWebClient, "WebClient should not be null");
+    epcApiConfig = new EpcApiConfig();
   }
 
   @Test
   void givenWebClient_whenCreatingApiClient_thenReturnApiClient() {
-    final var createdApiClient = epcApiConfig.apiClient(webClient);
+    final var createdApiClient = epcApiConfig.apiClient(webClientFactory);
 
     assertNotNull(createdApiClient, "ApiClient should not be null");
   }
@@ -94,14 +77,5 @@ class EpcApiConfigTest {
     assertThrows(IllegalStateException.class,
         () -> epcApiConfig.defaultApi(apiClient, serviceProviderConfig),
         "Should throw IllegalStateException if mock base path is null");
-  }
-
-  @Test
-  void givenNullSslContext_whenCreatingConfig_thenThrowException() {
-    when(sslContextFactory.getSslContext()).thenReturn(null);
-
-    assertThrows(IllegalStateException.class,
-        () -> new EpcApiConfig(sslContextFactory),
-        "Should throw IllegalStateException if SSL context is null");
   }
 }

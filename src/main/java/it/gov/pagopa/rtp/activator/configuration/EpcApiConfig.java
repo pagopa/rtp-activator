@@ -1,7 +1,6 @@
 package it.gov.pagopa.rtp.activator.configuration;
 
-import io.netty.handler.ssl.SslContext;
-import it.gov.pagopa.rtp.activator.configuration.ssl.SslContextFactory;
+import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.MtlsWebClientFactory;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient;
 import java.util.Objects;
@@ -10,70 +9,32 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.client.HttpClient;
 
 
 /**
  * Configuration class for setting up EPC API client with mTLS security.
  * <p>
- * This class is responsible for creating and configuring the required WebClient and API clients
- * with mutual TLS (mTLS) support. It retrieves the necessary SSL context from the provided
- * {@link SslContextFactory}.
+ * This class is responsible for creating and configuring the EPC API clients
+ * with mutual TLS (mTLS) support.
  * </p>
  */
 @Configuration
 @Slf4j
 public class EpcApiConfig {
 
-  private final SslContext sslContext;
-
-
-  /**
-   * Constructs an instance of {@link EpcApiConfig} with the required SSL context.
-   *
-   * @param sslContextFactory       the factory used to create the SSL context.
-   * @throws IllegalStateException  if the SSL context cannot be retrieved.
-   */
-  public EpcApiConfig(@NonNull final SslContextFactory sslContextFactory) {
-    this.sslContext = Optional.of(sslContextFactory)
-        .map(SslContextFactory::getSslContext)
-        .orElseThrow(() -> new IllegalStateException("SSL context is null"));
-  }
-
-
-  /**
-   * Creates a WebClient bean with mutual TLS (mTLS) security enabled.
-   *
-   * @return a configured {@link WebClient} instance.
-   */
-  @Bean("mTlsWebClient")
-  @NonNull
-  public WebClient mTlsWebClient() {
-    log.trace("Creating mTLS web client");
-
-    final var httpClient = HttpClient.create()
-        .secure(ssl -> ssl.sslContext(this.sslContext)
-            .build());
-
-    return WebClient.builder()
-        .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .build();
-  }
-
 
   /**
    * Creates an EPC API client bean that uses the mTLS-enabled WebClient.
    *
-   * @param mTlsWebClient the {@link WebClient} instance configured with mTLS.
-   * @return              a new {@link ApiClient} instance.
+   * @param mtlsWebClientFactory a factory that produces a {@link WebClient} instance configured with mTLS.
+   * @return                     a new {@link ApiClient} instance.
    */
   @Bean("epcApiClient")
   @NonNull
-  public ApiClient apiClient(@Qualifier("mTlsWebClient") @NonNull final WebClient mTlsWebClient) {
-    return new ApiClient(mTlsWebClient);
+  public ApiClient apiClient(@NonNull final MtlsWebClientFactory mtlsWebClientFactory) {
+    return new ApiClient(mtlsWebClientFactory.createMtlsWebClient());
   }
 
 
