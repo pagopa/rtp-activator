@@ -22,7 +22,6 @@ import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
-import it.gov.pagopa.rtp.activator.service.oauth.MtlsApiClientFactory;
 import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 
@@ -69,8 +68,6 @@ class SendRTPServiceTest {
   @Mock
   private Oauth2TokenService oauth2TokenService;
   @Mock
-  private MtlsApiClientFactory mtlsApiClientFactory;
-  @Mock
   private Environment environment;
 
   private SendRTPServiceImpl sendRTPService;
@@ -95,7 +92,7 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, defaultApi, registryDataService, mtlsApiClientFactory,
+        serviceProviderConfig, rtpRepository, defaultApi, registryDataService,
         oauth2TokenService,
         environment);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
@@ -127,7 +124,6 @@ class SendRTPServiceTest {
 
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
 
-    when(mtlsApiClientFactory.createMtlsApiClient(any())).thenReturn(mockApiClient);
     when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
     when(environment.getProperty(any())).thenReturn("fakeProp");
 
@@ -225,7 +221,6 @@ class SendRTPServiceTest {
 
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
 
-    when(mtlsApiClientFactory.createMtlsApiClient(any())).thenReturn(mockApiClient);
     when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
     when(environment.getProperty(any())).thenReturn("fakeProp");
     when(defaultApi.getApiClient()).thenReturn(mockApiClient);
@@ -264,7 +259,6 @@ class SendRTPServiceTest {
 
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
 
-    when(mtlsApiClientFactory.createMtlsApiClient(any())).thenReturn(mockApiClient);
     when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
     when(environment.getProperty(any())).thenReturn("fakeProp");
 
@@ -315,7 +309,6 @@ class SendRTPServiceTest {
 
     var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
 
-    when(mtlsApiClientFactory.createMtlsApiClient(any())).thenReturn(mockApiClient);
     when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
     when(environment.getProperty(any())).thenReturn("fakeProp");
 

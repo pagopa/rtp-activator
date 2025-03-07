@@ -25,7 +25,6 @@ import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
-import it.gov.pagopa.rtp.activator.service.oauth.MtlsApiClientFactory;
 import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
@@ -65,13 +64,13 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final RtpRepository rtpRepository;
   private final DefaultApi sendApi;
   private final RegistryDataService registryDataService;
-  private final MtlsApiClientFactory mtlsApiClientFactory;
+
   private final Oauth2TokenService oauth2TokenService;
   private final Environment environment;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
       ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
-      DefaultApi sendApi, RegistryDataService registryDataService, MtlsApiClientFactory mtlsApiClientFactory,
+      DefaultApi sendApi, RegistryDataService registryDataService,
       Oauth2TokenService oauth2TokenService, Environment environment) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
@@ -80,7 +79,7 @@ public class SendRTPServiceImpl implements SendRTPService {
     this.sendApi = sendApi;
     this.registryDataService = registryDataService;
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-    this.mtlsApiClientFactory = mtlsApiClientFactory;
+
     this.oauth2TokenService = oauth2TokenService;
     this.environment = environment;
   }
@@ -132,7 +131,7 @@ public class SendRTPServiceImpl implements SendRTPService {
           String clientSecret = environment.getProperty("client." + provider.tsp().oauth2().clientSecretEnvVar());
           String scope = provider.tsp().oauth2().scope();
 
-          sendApi.setApiClient(mtlsApiClientFactory.createMtlsApiClient(basePath));
+          sendApi.getApiClient().setBasePath(basePath);
 
           return oauth2TokenService
               .getAccessToken(tokenEndpoint, clientId, clientSecret, scope)
