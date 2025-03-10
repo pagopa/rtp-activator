@@ -150,11 +150,11 @@ public class SendRTPServiceImpl implements SendRTPService {
                 return sendApi.postRequestToPayRequests(
                     UUID.randomUUID(),
                     UUID.randomUUID().toString(),
-                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
-                    .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()));
-
+                    sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend));
                 // .retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
               })
+              .doOnError(error -> log.error("Error sending RTP to {}: {}", rtpToSend.serviceProviderDebtor(),
+                  error.getMessage()))
               .onErrorMap(ExceptionUtils::gracefullyHandleError).map(response -> rtpToSend).defaultIfEmpty(rtpToSend)
               .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
                   rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
