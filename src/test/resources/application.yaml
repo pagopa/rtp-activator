@@ -34,3 +34,7 @@ client:
     pfx-password: test
     pfx-type: PKCS12
     protocol: TLS
+
+callback:
+  url:
+    send: https://spsrtp.api.cstar.pagopa.it/send

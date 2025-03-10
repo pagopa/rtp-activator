@@ -51,15 +51,16 @@ rtp_environment_secrets = {
 
 
 rtp_environment_configs = {
-  DB_NAME                   : "rtp"
-  BASE_URL                  : "https://api-rtp.uat.cstar.pagopa.it/rtp/activation/activations/"
-  SP_BASE_URL               : "https://api-rtp.uat.cstar.pagopa.it/rtp/rtps/"
-  OTEL_TRACES_SAMPLER       : "always_on"
-  EPC_MOCK_URL              : "https://api-rtp.uat.cstar.pagopa.it/rtp/mock"
-  EPC_SEND_RETRY_MAX_ATTEMPTS: 1
-  EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS: 1000
-  EPC_SEND_RETRY_BACKOFF_JITTER: 0.75
-  AZURE_STORAGE_ACCOUNT_NAME:  "cstaruweurtpblobstorage"
-  AZURE_STORAGE_CONTAINER_NAME: "rtp-debtor-service-provider"
-  AZURE_BLOB_NAME: "serviceregistry.json"
+  DB_NAME                                 : "rtp"
+  BASE_URL                                : "https://api-rtp.uat.cstar.pagopa.it/rtp/activation/activations/"
+  SP_BASE_URL                             : "https://api-rtp.uat.cstar.pagopa.it/rtp/rtps/"
+  OTEL_TRACES_SAMPLER                     : "always_on"
+  EPC_MOCK_URL                            : "https://api-rtp.uat.cstar.pagopa.it/rtp/mock"
+  EPC_SEND_RETRY_MAX_ATTEMPTS             : 1
+  EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS  : 1000
+  EPC_SEND_RETRY_BACKOFF_JITTER           : 0.75
+  AZURE_STORAGE_ACCOUNT_NAME              : "cstaruweurtpblobstorage"
+  AZURE_STORAGE_CONTAINER_NAME            : "rtp-debtor-service-provider"
+  AZURE_BLOB_NAME                         : "serviceregistry.json"
+  CALLBACK_BASE_URL                       : "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb"
 }

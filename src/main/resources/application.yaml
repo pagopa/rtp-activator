@@ -62,3 +62,7 @@ client:
     pfx-file: ${CLIENT_CERTIFICATE}
     pfx-password: ${CLIENT_CERTIFICATE_PASSWORD:}
     pfx-type: PKCS12
+
+callback:
+  url:
+    send: ${CALLBACK_BASE_URL:https://spsrtp.api.cstar.pagopa.it}/send
