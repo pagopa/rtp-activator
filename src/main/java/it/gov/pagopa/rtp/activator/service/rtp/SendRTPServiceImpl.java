@@ -155,9 +155,6 @@ public class SendRTPServiceImpl implements SendRTPService {
 
                 // .retryWhen(sendRetryPolicy()); // disable until we'll not have a 200 response
               })
-              .doOnSuccess(response -> log.info("Successfully sent RTP to {}", rtpToSend.serviceProviderDebtor()))
-              .doOnError(error -> log.error("Error sending RTP to {}: {}", rtpToSend.serviceProviderDebtor(),
-                  error.getMessage()))
               .onErrorMap(ExceptionUtils::gracefullyHandleError).map(response -> rtpToSend).defaultIfEmpty(rtpToSend)
               .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
                   rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
