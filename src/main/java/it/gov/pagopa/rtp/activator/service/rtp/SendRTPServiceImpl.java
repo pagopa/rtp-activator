@@ -92,15 +92,12 @@ public class SendRTPServiceImpl implements SendRTPService {
     final var activationData = activationApi.findActivationByPayerId(UUID.randomUUID(),
         rtp.payerId(),
         serviceProviderConfig.activation().apiVersion())
-        .doOnSuccess(act -> log.info("Activation data found for payerId: {}", rtp.payerId()))
         .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
         .flatMap(rtpRepository::save)
-        .flatMap(this::logRtpAsJson)
-        .doOnSuccess(rtpSaved -> log.info("Rtp to be sent saved with id: {}", rtpSaved.resourceID().getId()))
-        .doOnError(error -> log.error("Error saving Rtp to be sent: {}", error.getMessage(), error));
+        .flatMap(this::logRtpAsJson);
 
     final var sentRtp = rtpToSend.flatMap(this::sendRtpToServiceProviderDebtor)
         .map(rtp::toRtpSent)
