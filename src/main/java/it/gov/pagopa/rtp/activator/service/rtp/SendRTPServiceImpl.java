@@ -138,7 +138,6 @@ public class SendRTPServiceImpl implements SendRTPService {
 
           return oauth2TokenService
               .getAccessToken(tokenEndpoint, clientId, clientSecret, scope)
-              .doOnSuccess(token -> log.info("Successfully retrieved access token"))
               .flatMap(token -> {
                 sendApi.getApiClient().addDefaultHeader("Authorization", "Bearer " + token);
                 return sendApi.postRequestToPayRequests(
