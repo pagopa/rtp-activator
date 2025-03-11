@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.configuration.mtlswebclient;
 
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.configuration.ssl.SslContextFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,8 @@ class DefaultMtlsWebClientFactoryTest {
 
    @Mock
    private SslContextFactory sslContextFactory;
+   @Mock
+   private ServiceProviderConfig config;
 
    @Mock
    private SslContext sslContext;
@@ -28,12 +31,13 @@ class DefaultMtlsWebClientFactoryTest {
 
    @BeforeEach
    void setUp() {
-       mtlsWebClientFactory = new DefaultMtlsWebClientFactory(sslContextFactory);
+       mtlsWebClientFactory = new DefaultMtlsWebClientFactory(sslContextFactory, config);
    }
 
    @Test
    void createMtlsWebClient_CreatesWebClientWithSslContext() {
        when(sslContextFactory.getSslContext()).thenReturn(sslContext);
+       when(config.send().timeout()).thenReturn(10000L);
 
        WebClient result = mtlsWebClientFactory.createMtlsWebClient();
 
