@@ -1,5 +1,12 @@
 package it.gov.pagopa.rtp.activator.controller.rtp;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import io.netty.handler.timeout.ReadTimeoutException;
 import it.gov.pagopa.rtp.activator.model.generated.send.MalformedRequestErrorResponseDto;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,10 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.support.WebExchangeBindException;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class RtpExceptionHandlerTest {
 
@@ -110,5 +113,18 @@ class RtpExceptionHandlerTest {
         assertNull(response.getBody());
     }
 
+    @Test
+    void givenReadTimeoutException_whenHandled_thenReturnsGatewayTimeout() {
+        // Given
+        ReadTimeoutException readTimeoutException = ReadTimeoutException.INSTANCE;
+
+        // When
+        ResponseEntity<Void> response = rtpExceptionHandler.handleReadTimeoutException(readTimeoutException);
+
+        // Then
+        assertNotNull(response, "Response should not be null");
+        assertEquals(HttpStatus.GATEWAY_TIMEOUT, response.getStatusCode(), "Status should be 504 Gateway Timeout");
+        assertNull(response.getBody(), "Response body should be null");
+    }
 
 }
