@@ -59,7 +59,7 @@ rtp_environment_configs = {
   EPC_SEND_RETRY_MAX_ATTEMPTS             : 1
   EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS  : 1000
   EPC_SEND_RETRY_BACKOFF_JITTER           : 0.75
-  EPC_SEND_TIMEOUT_MS                     : 10000
+  EPC_SEND_TIMEOUT_MS                     : 6000
   AZURE_STORAGE_ACCOUNT_NAME              : "cstardweurtpblobstorage"
   AZURE_STORAGE_CONTAINER_NAME            : "rtp-debtor-service-provider"
   AZURE_BLOB_NAME                         : "serviceregistry.json"
