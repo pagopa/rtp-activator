@@ -33,9 +33,10 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
         return activationDBRepository.findByFiscalCode(fiscalCode)
             .flatMap(existingEntity -> Mono.<Payer>error(new PayerAlreadyExists()))
             .switchIfEmpty(Mono.defer(() -> activationDBRepository.save(payer)))
-            .doOnSuccess(newPayer -> MDC.put("Service_Provider", serviceProviderDebtor))
-            .doOnSuccess(newPayer -> MDC.put("Debtor", fiscalCode))
-            .doOnSuccess(newPayer -> log.info("Payer activated with id: {}", newPayer.activationID().getId()));
+            .doOnSuccess(newPayer -> MDC.put("service_provider", serviceProviderDebtor))
+            .doOnSuccess(newPayer -> MDC.put("debtor", fiscalCode))
+            .doOnSuccess(newPayer -> log.info("Payer activated with id: {}", newPayer.activationID().getId()))
+            .doFinally(__ -> MDC.clear());
     }
 
     @Override
