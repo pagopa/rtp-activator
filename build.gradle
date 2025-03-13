@@ -71,10 +71,9 @@ dependencies {
 	implementation 'com.microsoft.azure:msal4j:1.19.0'
 
 	// OpenTelemetry
-	implementation 'io.opentelemetry:opentelemetry-api'
+	implementation 'io.opentelemetry:opentelemetry-api:1.48.0'
+	implementation 'io.opentelemetry:opentelemetry-context:1.19.0'
 	implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations'
-	implementation 'io.micrometer:context-propagation'
-	implementation 'com.microsoft.azure:applicationinsights-core:3.4.19'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
