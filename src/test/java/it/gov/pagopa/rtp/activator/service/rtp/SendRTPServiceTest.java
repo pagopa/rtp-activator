@@ -62,7 +62,7 @@ class SendRTPServiceTest {
   private final ServiceProviderConfig serviceProviderConfig = new ServiceProviderConfig(
       "http://localhost:8080",
       new Activation("http://localhost:8080"),
-      new Send("v1", new Retry(3, 100, 0.75)));
+      new Send("v1", new Retry(3, 100, 0.75), 10000L));
   @Mock
   private RtpRepository rtpRepository;
   @Mock

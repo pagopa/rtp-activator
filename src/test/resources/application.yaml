@@ -12,6 +12,7 @@ service-provider:
     api-version: v1
   send:
     epc-mock-url: ${EPC_MOCK_URL:http://localhost:8080/rtp/mock}
+    timeout: ${EPC_SEND_TIMEOUT_MS:10000}
     retry:
       max-attempts: ${EPC_SEND_RETRY_MAX_ATTEMPTS:3}
       backoff-min-duration: ${EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS:1000}

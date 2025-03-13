@@ -1,43 +1,46 @@
 package it.gov.pagopa.rtp.activator.configuration.mtlswebclient;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import io.netty.handler.ssl.SslContext;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ssl.SslContextFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.web.reactive.function.client.WebClient;
-
-import io.netty.handler.ssl.SslContext;
-
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultMtlsWebClientFactoryTest {
 
-   @Mock
-   private SslContextFactory sslContextFactory;
+  @Mock
+  private SslContextFactory sslContextFactory;
+  @Mock
+  private ServiceProviderConfig config;
 
-   @Mock
-   private SslContext sslContext;
+  @Mock
+  private SslContext sslContext;
 
-   private DefaultMtlsWebClientFactory mtlsWebClientFactory;
+  private DefaultMtlsWebClientFactory mtlsWebClientFactory;
 
-   @BeforeEach
-   void setUp() {
-       mtlsWebClientFactory = new DefaultMtlsWebClientFactory(sslContextFactory);
-   }
+  @BeforeEach
+  void setUp() {
+    mtlsWebClientFactory = new DefaultMtlsWebClientFactory(sslContextFactory, config);
+  }
 
-   @Test
-   void createMtlsWebClient_CreatesWebClientWithSslContext() {
-       when(sslContextFactory.getSslContext()).thenReturn(sslContext);
+  @Test
+  void createMtlsWebClient_CreatesWebClientWithSslContext() {
+    when(sslContextFactory.getSslContext()).thenReturn(sslContext);
+    when(config.send()).thenReturn(new Send(null, null, 10000L));
 
-       WebClient result = mtlsWebClientFactory.createMtlsWebClient();
+    WebClient result = mtlsWebClientFactory.createMtlsWebClient();
 
-       assertNotNull(result);
-       verify(sslContextFactory).getSslContext();
-   }
+    assertNotNull(result);
+    verify(sslContextFactory).getSslContext();
+  }
 }
