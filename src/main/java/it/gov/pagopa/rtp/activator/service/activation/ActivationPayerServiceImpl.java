@@ -30,12 +30,11 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
         ActivationID activationID = ActivationID.createNew();
         Payer payer = new Payer(activationID, serviceProviderDebtor, fiscalCode, Instant.now());
 
-        MDC.put("Service_Provider", serviceProviderDebtor);
-        MDC.put("Debtor", fiscalCode);
-
         return activationDBRepository.findByFiscalCode(fiscalCode)
             .flatMap(existingEntity -> Mono.<Payer>error(new PayerAlreadyExists()))
             .switchIfEmpty(Mono.defer(() -> activationDBRepository.save(payer)))
+            .doOnSuccess(newPayer -> MDC.put("Service_Provider", serviceProviderDebtor))
+            .doOnSuccess(newPayer -> MDC.put("Debtor", fiscalCode))
             .doOnSuccess(newPayer -> log.info("Payer activated with id: {}", newPayer.activationID().getId()));
     }
 
