@@ -34,6 +34,7 @@ service-provider:
     api-version: v1
   send:
     epc-mock-url: ${EPC_MOCK_URL:https://api-rtp.dev.cstar.pagopa.it/rtp/mock}
+    timeout: ${EPC_SEND_TIMEOUT_MS:10000}
     retry:
       max-attempts: ${EPC_SEND_RETRY_MAX_ATTEMPTS:3}
       backoff-min-duration: ${EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS:1000}
@@ -62,3 +63,7 @@ client:
     pfx-file: ${CLIENT_CERTIFICATE}
     pfx-password: ${CLIENT_CERTIFICATE_PASSWORD:}
     pfx-type: PKCS12
+
+callback:
+  url:
+    send: ${CALLBACK_BASE_URL:https://spsrtp.api.cstar.pagopa.it}/send

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import it.gov.pagopa.rtp.activator.configuration.CallbackProperties;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto;
@@ -11,16 +12,28 @@ import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentific
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class SepaRequestToPayMapperTest {
 
-  @InjectMocks
+  private CallbackProperties callbackProperties;
+
   private SepaRequestToPayMapper sepaRequestToPayMapper;
+
+
+  @BeforeEach
+  void setUp() {
+    callbackProperties = new CallbackProperties(
+        new CallbackProperties.UrlProperties("https://spsrtp.api.cstar.pagopa.it/send")
+    );
+    sepaRequestToPayMapper = new SepaRequestToPayMapper(callbackProperties);
+  }
+
+
 
   @Test
   void testToEpcRequestToPay() {
@@ -52,7 +65,7 @@ class SepaRequestToPayMapperTest {
 
     assertNotNull(result);
     assertEquals(resourceId.getId().toString(), result.getResourceId());
-    assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
+    assertEquals(this.callbackProperties.url().send(), result.getCallbackUrl().toString());
     assertEquals(resourceId.getId().toString(),
         result.getDocument().getCdtrPmtActvtnReq().getGrpHdr().getMsgId());
     assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0)
@@ -99,7 +112,7 @@ class SepaRequestToPayMapperTest {
     assertEquals("BOID", cdtTrfTx.getCdtrAgt().getFinInstnId().getOthr().getSchmeNm().getCd());
 
     // Verify callback URL
-    assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
+    assertEquals(this.callbackProperties.url().send(), result.getCallbackUrl().toString());
   }
 
   @Test
@@ -132,7 +145,7 @@ class SepaRequestToPayMapperTest {
 
     assertNotNull(result);
     assertEquals(resourceId.getId().toString(), result.getResourceId());
-    assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
+    assertEquals(this.callbackProperties.url().send(), result.getCallbackUrl().toString());
     assertEquals(resourceId.getId().toString(),
         result.getDocument().getCdtrPmtActvtnReq().getGrpHdr().getMsgId());
     assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0)
@@ -182,6 +195,6 @@ class SepaRequestToPayMapperTest {
 
     
     // Verify callback URL
-    assertEquals("http://spsrtp.api.cstar.pagopa.it", result.getCallbackUrl().toString());
+    assertEquals(this.callbackProperties.url().send(), result.getCallbackUrl().toString());
   }
 }
