@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.controller.rtp;
 
+import io.netty.handler.timeout.ReadTimeoutException;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.model.generated.send.MalformedRequestErrorResponseDto;
 import java.util.Collection;
@@ -103,4 +104,14 @@ public class RtpExceptionHandler {
     return ResponseEntity.badRequest().body(errorsDto);
   }
 
+  /**
+   * Handles {@link ReadTimeoutException} exceptions thrown during the processing of requests.
+   * @param ex the {@link ReadTimeoutException} thrown during request processing.
+   * @return a {@link ResponseEntity} with status {@code 504 Gateway Timeout}.
+   */
+  @ExceptionHandler(ReadTimeoutException.class)
+  @ResponseStatus(HttpStatus.GATEWAY_TIMEOUT)
+  public ResponseEntity<Void> handleReadTimeoutException(ReadTimeoutException ex) {
+    return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).build();
+  }
 }

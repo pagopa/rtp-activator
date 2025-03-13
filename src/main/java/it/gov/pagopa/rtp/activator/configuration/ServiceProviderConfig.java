@@ -15,7 +15,8 @@ public record ServiceProviderConfig(
 
   public record Send(
       String epcMockUrl,
-      Retry retry
+      Retry retry,
+      Long timeout
   ) {
 
     public record Retry(
