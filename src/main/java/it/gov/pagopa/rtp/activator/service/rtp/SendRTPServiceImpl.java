@@ -14,7 +14,6 @@ import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
-import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.model.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto;
@@ -25,9 +24,7 @@ import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
-import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
-import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
-import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
+import it.gov.pagopa.rtp.activator.service.rtp.handler.SendRtpProcessor;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -36,7 +33,6 @@ import java.util.UUID;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -62,26 +58,16 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final ObjectMapper objectMapper;
   private final ServiceProviderConfig serviceProviderConfig;
   private final RtpRepository rtpRepository;
-  private final DefaultApi sendApi;
-  private final RegistryDataService registryDataService;
-
-  private final Oauth2TokenService oauth2TokenService;
-  private final Environment environment;
+  private final SendRtpProcessor sendRtpProcessor;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
-      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
-      DefaultApi sendApi, RegistryDataService registryDataService,
-      Oauth2TokenService oauth2TokenService, Environment environment) {
+      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository, SendRtpProcessor sendRtpProcessor) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
     this.rtpRepository = rtpRepository;
-    this.sendApi = sendApi;
-    this.registryDataService = registryDataService;
     this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-
-    this.oauth2TokenService = oauth2TokenService;
-    this.environment = environment;
+    this.sendRtpProcessor = sendRtpProcessor;
   }
 
   @NonNull
@@ -105,7 +91,7 @@ public class SendRTPServiceImpl implements SendRTPService {
         .doOnSuccess(rtpSaved -> log.info("Rtp to be sent saved with id: {}", rtpSaved.resourceID().getId()))
         .doOnError(error -> log.error("Error saving Rtp to be sent: {}", error.getMessage(), error));
 
-    final var sentRtp = rtpToSend.flatMap(this::sendRtpToServiceProviderDebtor)
+    final var sentRtp = rtpToSend.flatMap(this.sendRtpProcessor::sendRtpToServiceProviderDebtor)
         .map(rtp::toRtpSent)
         .flatMap(
             rtpToSave -> rtpRepository.save(rtpToSave)
@@ -119,52 +105,6 @@ public class SendRTPServiceImpl implements SendRTPService {
         .doOnError(error -> log.error("Error sending RTP: {}", error.getMessage(), error))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
-  }
-
-  @NonNull
-  private Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
-    Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
-
-    return registryDataService.getRegistryData()
-        .map(data -> data.get(rtpToSend.serviceProviderDebtor()))
-        .switchIfEmpty(Mono.error(new IllegalStateException(
-            "No service provider found for creditor: " + rtpToSend.serviceProviderDebtor())))
-        .flatMap(provider -> {
-
-          String basePath = provider.tsp().serviceEndpoint();
-
-          String tokenEndpoint = provider.tsp().oauth2().tokenEndpoint();
-          String clientId = provider.tsp().oauth2().clientId();
-          String clientSecret = environment.getProperty(
-              "client." + provider.tsp().oauth2().clientSecretEnvVar());
-          String scope = provider.tsp().oauth2().scope();
-
-          sendApi.getApiClient().setBasePath(basePath);
-
-          return oauth2TokenService
-              .getAccessToken(tokenEndpoint, clientId, clientSecret, scope)
-              .doFirst(() -> log.info("Retrieving access token"))
-              .doOnSuccess(token -> log.info("Successfully retrieved access token"))
-              .doOnError(error -> log.error("Error retrieving access token: {}", error.getMessage()))
-              .flatMap(token -> {
-
-                sendApi.getApiClient().addDefaultHeader("Authorization", "Bearer " + token);
-
-                return Mono.defer(() -> sendApi.postRequestToPayRequests(
-                        rtpToSend.resourceID().getId(),
-                        UUID.randomUUID().toString(),
-                        sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend)))
-                    .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()))
-                    .retryWhen(sendRetryPolicy());
-              })
-              .doOnSuccess(response -> log.info("Successfully sent RTP to {}", rtpToSend.serviceProviderDebtor()))
-              .doOnError(error -> log.error("Error sending RTP to {}: {}", rtpToSend.serviceProviderDebtor(), error.getMessage()))
-              .onErrorMap(ExceptionUtils::gracefullyHandleError)
-              .map(response -> rtpToSend)
-              .defaultIfEmpty(rtpToSend)
-              .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
-                  rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()));
-        });
   }
 
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
