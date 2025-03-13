@@ -14,7 +14,7 @@ public class CheckCertificate {
 
   private final RegistryDataService registryDataService;
 
-  private CheckCertificate(RegistryDataService registryDataService) {
+  public CheckCertificate(RegistryDataService registryDataService) {
     this.registryDataService = registryDataService;
   }
 
@@ -22,7 +22,7 @@ public class CheckCertificate {
       AsynchronousSepaRequestToPayResponseResourceDto requestBody, String certificateSerialNumber) {
 
     String serviceProviderDebtorId = requestBody.getAsynchronousSepaRequestToPayResponse().getCdtrPmtActvtnReqStsRpt()
-        .getGrpHdr().getInitgPty().getId().getOrgId().getAnyBIC().toString();
+        .getGrpHdr().getInitgPty().getId().getOrgId().getAnyBIC();
 
     return registryDataService.getRegistryData()
         .flatMap(data -> {
