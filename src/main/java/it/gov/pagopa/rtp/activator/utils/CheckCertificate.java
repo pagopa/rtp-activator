@@ -23,10 +23,15 @@ public class CheckCertificate {
 
     String serviceProviderDebtorId = requestBody.getAsynchronousSepaRequestToPayResponse().getCdtrPmtActvtnReqStsRpt()
         .getGrpHdr().getInitgPty().getId().getOrgId().getAnyBIC().toString();
-        
+
     return registryDataService.getRegistryData()
-        .map(data -> data.get(serviceProviderDebtorId)).switchIfEmpty(Mono.error(new IllegalStateException(
-            "No service provider found for creditor: " + serviceProviderDebtorId)))
+        .flatMap(data -> {
+          if (!data.containsKey(serviceProviderDebtorId)) {
+            return Mono.error(new IllegalStateException(
+              "No service provider found for creditor: " + serviceProviderDebtorId));
+          }
+          return Mono.just(data.get(serviceProviderDebtorId));
+        })
         .flatMap(provider -> {
           String certificateServiceNumberRegistry = provider.tsp().certificateSerialNumber();
           log.info("Certificate Serial Number from caller: {} and from registry", certificateSerialNumber,
