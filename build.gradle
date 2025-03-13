@@ -73,6 +73,7 @@ dependencies {
 	// OpenTelemetry
 	implementation 'io.opentelemetry:opentelemetry-api'
 	implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations'
+	implementation 'io.micrometer:context-propagation'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
