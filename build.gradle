@@ -74,7 +74,7 @@ dependencies {
 	implementation 'io.opentelemetry:opentelemetry-api'
 	implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations'
 	implementation 'io.micrometer:context-propagation'
-	implementation 'com.microsoft.azure:applicationinsights-runtime-attach:3.4.19'
+	implementation 'com.microsoft.azure:applicationinsights-core:3.4.19'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
