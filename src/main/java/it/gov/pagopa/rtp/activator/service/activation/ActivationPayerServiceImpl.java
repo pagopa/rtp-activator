@@ -30,7 +30,7 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
         ActivationID activationID = ActivationID.createNew();
         Payer payer = new Payer(activationID, serviceProviderDebtor, fiscalCode, Instant.now());
 
-        MDC.put("Service Provider", serviceProviderDebtor);
+        MDC.put("Service_Provider", serviceProviderDebtor);
         MDC.put("Debtor", fiscalCode);
 
         return activationDBRepository.findByFiscalCode(fiscalCode)

@@ -70,6 +70,9 @@ dependencies {
 	implementation 'com.azure:azure-storage-blob:12.30.0-beta.1'
 	implementation 'com.microsoft.azure:msal4j:1.19.0'
 
+	// OpenTelemetry
+	implementation 'io.opentelemetry:opentelemetry-api'
+	implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
