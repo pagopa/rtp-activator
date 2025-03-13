@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
+import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +27,10 @@ public class RegistryDataHandler implements RequestHandler<EpcRequest> {
     return this.registryDataService.getRegistryData()
         .doFirst(() -> log.info("Calling registry data service. Request: {}", request))
         .doOnNext(data -> log.info("Successfully called registry data."))
-        .map(data -> data.get(request.rtpToSend().serviceProviderDebtor()))
+        .flatMap(data ->
+            Mono.justOrEmpty(data.get(request.rtpToSend().serviceProviderDebtor())))
         .doOnNext(data -> log.info("Successfully extracted service provider data."))
-        .switchIfEmpty(Mono.error(new IllegalStateException(
+        .switchIfEmpty(Mono.error(new ServiceProviderNotFoundException(
             "No service provider found for creditor: " + request.rtpToSend().serviceProviderDebtor())))
         .map(request::withServiceProviderFullData)
         .doOnSuccess(data -> log.info("Successfully retrieved registry data for creditor: {}", data))
