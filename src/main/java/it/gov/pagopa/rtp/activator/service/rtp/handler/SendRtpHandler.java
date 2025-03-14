@@ -66,11 +66,16 @@ public class SendRtpHandler implements RequestHandler<EpcRequest> {
         .filter(req ->
             StringUtils.trimToNull(req.serviceProviderFullData().tsp().certificateSerialNumber())
                 != null)
+        .doOnNext(req -> log.info("Using mTLS for sending RTP to {}", req.rtpToSend().serviceProviderDebtor()))
         .map(req -> this.webClientFactory.createMtlsWebClient())
-        .switchIfEmpty(Mono.fromSupplier(this.webClientFactory::createSimpleWebClient))
+        .switchIfEmpty(Mono.fromSupplier(() -> {
+          log.info("Using simple web client for sending RTP to {}", request.rtpToSend().serviceProviderDebtor());
+          return this.webClientFactory.createSimpleWebClient();
+        }))
         .map(this.epcClientFactory::createClient);
 
-    return epcClientMono.flatMap(epcClient -> {
+    return epcClientMono.doOnNext(epcClient -> log.debug("Successfully created EPC client"))
+        .flatMap(epcClient -> {
           final var rtpToSend = request.rtpToSend();
           final var sepaRequest = this.sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend);
           final var basePath = request.serviceProviderFullData().tsp().serviceEndpoint();
@@ -79,9 +84,13 @@ public class SendRtpHandler implements RequestHandler<EpcRequest> {
           Optional.of(request)
               .map(EpcRequest::token)
               .map(StringUtils::trimToNull)
-              .ifPresent(token ->
-                  epcClient.getApiClient()
-                      .addDefaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token));
+              .ifPresentOrElse(
+                  token -> {
+                    log.info("Using OAuth2 token for sending RTP to {}", rtpToSend.serviceProviderDebtor());
+                    epcClient.getApiClient()
+                        .addDefaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+                  },
+                  () -> log.info("No OAuth2 token found for sending RTP to {}", rtpToSend.serviceProviderDebtor()));
 
           return Mono.defer(() -> epcClient.postRequestToPayRequests(
                   request.rtpToSend().resourceID().getId(),

@@ -64,9 +64,17 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
   @Override
   public Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
     return Mono.just(rtpToSend)
+        .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()))
+        .doOnNext(rtp -> log.debug("Creating EPC request."))
         .map(EpcRequest::of)
+        .doOnNext(epcRequest -> log.debug("EPC request created: {}", epcRequest))
+        .doOnNext(epcRequest -> log.debug("Calling registry data handler."))
         .flatMap(this.registryDataHandler::handle)
+        .doOnNext(data -> log.debug("Successfully called registry data handler."))
+        .doOnNext(epcRequest -> log.debug("Calling OAuth2 handler."))
         .flatMap(this.oauth2Handler::handle)
+        .doOnNext(data -> log.debug("Successfully called OAuth2 handler."))
+        .doOnNext(epcRequest -> log.debug("Calling send RTP handler."))
         .flatMap(this.sendRtpHandler::handle)
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
         .map(response -> rtpToSend)
