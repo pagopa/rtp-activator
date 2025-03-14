@@ -11,6 +11,10 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 
+/**
+ * Handles OAuth2 authentication for service provider requests.
+ * This class retrieves and injects access tokens into requests requiring OAuth2 authentication.
+ */
 @Component("oauth2Handler")
 @Slf4j
 public class Oauth2Handler implements RequestHandler<EpcRequest> {
@@ -20,16 +24,27 @@ public class Oauth2Handler implements RequestHandler<EpcRequest> {
   private final Oauth2TokenService oauth2TokenService;
   private final Environment environment;
 
-
+  /**
+   * Constructs an instance of Oauth2Handler.
+   *
+   * @param oauth2TokenService the service responsible for retrieving OAuth2 tokens
+   * @param environment        the application environment for retrieving configuration properties
+   */
   public Oauth2Handler(
       @NonNull final Oauth2TokenService oauth2TokenService,
       @NonNull final Environment environment) {
-
     this.oauth2TokenService = Objects.requireNonNull(oauth2TokenService);
     this.environment = Objects.requireNonNull(environment);
   }
 
-
+  /**
+   * Handles OAuth2 token retrieval and injection into the request.
+   * If the request requires OAuth2 authentication, it retrieves the access token
+   * and adds it to the request.
+   *
+   * @param request the incoming request requiring authentication handling
+   * @return a Mono containing the request with the access token injected if required
+   */
   @NonNull
   @Override
   public Mono<EpcRequest> handle(@NonNull final EpcRequest request) {
@@ -45,7 +60,13 @@ public class Oauth2Handler implements RequestHandler<EpcRequest> {
         }));
   }
 
-
+  /**
+   * Calls the OAuth2 token service to retrieve an access token.
+   *
+   * @param request the request requiring an access token
+   * @return a Mono containing the request with the access token injected
+   * @throws IllegalStateException if the client secret environment variable is not found
+   */
   @NonNull
   private Mono<EpcRequest> callOauth2TokenService(@NonNull final EpcRequest request) {
     final var oauthData = request.serviceProviderFullData().tsp().oauth2();
@@ -62,3 +83,4 @@ public class Oauth2Handler implements RequestHandler<EpcRequest> {
         .map(request::withToken);
   }
 }
+
