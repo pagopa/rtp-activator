@@ -25,7 +25,7 @@ repositories {
 
 ext {
 	set('springCloudAzureVersion', "5.19.0")
-	set('otelInstrumentationVersion','2.12.0')
+	set('otelInstrumentationVersion','2.13.3')
 }
 
 dependencies {
@@ -50,10 +50,9 @@ dependencies {
 	compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
 
 	// Alternative to com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6
-	// implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.12.0")
-    // implementation("com.azure:azure-monitor-opentelemetry-exporter:1.0.0-beta.30")
+	implementation 'com.azure:azure-monitor-opentelemetry-autoconfigure:1.0.0'
+	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.13.3'
 
-	implementation("com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6")
 	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 	implementation 'org.apache.commons:commons-lang3:3.0'
 
@@ -244,16 +243,16 @@ graalvmNative {
 		main {
 			buildArgs.add("--initialize-at-build-time=org.slf4j.helpers")
 			buildArgs.add('--initialize-at-build-time=com.azure.core.credential.TokenCredential')
-            
+
             // Initialize MSAL classes at runtime
             buildArgs.add('--initialize-at-run-time=com.microsoft.aad.msal4j')
             buildArgs.add('--initialize-at-run-time=com.azure.identity')
             buildArgs.add('--initialize-at-run-time=com.azure.core.credential.AccessToken')
-            
+
             buildArgs.add('--enable-all-security-services')
             buildArgs.add('--enable-url-protocols=https')
             buildArgs.add('--no-fallback')
-            
+
 			jvmArgs.add("-Djava.security.properties=${file("${projectDir}/src/main/resources/custom.security").absolutePath}")
 		}
 	}
