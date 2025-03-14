@@ -44,6 +44,9 @@ otel:
   instrumentation:
     mongo:
       enabled: true
+    logback-appender:
+      experimental:
+        capture-mdc-attributes: "*"
 
 cache:
   params:
