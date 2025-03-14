@@ -8,6 +8,10 @@ spring:
     mongodb:
       uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
       database: ${DB_NAME:rtp}
+  cloud:
+    azure:
+      monitor:
+        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING}
 
 activation.base-url: ${BASE_URL:http://localhost}
 
@@ -25,7 +29,7 @@ management:
     tracing:
       export:
         type: console
-#repository
+  #repository
   health.mongo.enabled: false
 
 service-provider:
