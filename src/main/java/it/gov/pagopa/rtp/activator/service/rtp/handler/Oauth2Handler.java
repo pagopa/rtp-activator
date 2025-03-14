@@ -1,7 +1,9 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
+import it.gov.pagopa.rtp.activator.domain.registryfile.OAuth2;
 import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
@@ -47,9 +49,10 @@ public class Oauth2Handler implements RequestHandler<EpcRequest> {
   @NonNull
   private Mono<EpcRequest> callOauth2TokenService(@NonNull final EpcRequest request) {
     final var oauthData = request.serviceProviderFullData().tsp().oauth2();
-    final var clientSecret = this.environment.getProperty(
-        String.format(CLIENT_SECRET_ENV_VAR_PATTERN, oauthData.clientSecretEnvVar())
-    );
+    final var clientSecret = Optional.of(oauthData)
+        .map(OAuth2::clientSecretEnvVar)
+        .map(envVar -> this.environment.getProperty(String.format(CLIENT_SECRET_ENV_VAR_PATTERN, envVar)))
+        .orElseThrow(() -> new IllegalStateException("Couldn't find client secret env var"));
 
     return this.oauth2TokenService.getAccessToken(
             oauthData.tokenEndpoint(),
