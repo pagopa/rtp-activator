@@ -77,7 +77,7 @@ class CheckCertificateTest {
   }
 
   @Test
-  void verifyRequestCertificate_withNonExistentServiceProvider_shouldThrowIllegalStateException() {
+  void verifyRequestCertificateWithNonExistentServiceProviderShouldThrowIllegalStateException() {
     Map<String, ServiceProviderFullData> registryDataMap = new HashMap<>();
     TechnicalServiceProvider tsp = new TechnicalServiceProvider("otherTSPId", "otherTSPName",
         "otherServiceProviderDebtorId", "otherCertSerialNumber", null);

@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.utils;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import it.gov.pagopa.rtp.activator.domain.errors.IncorrectCertificate;

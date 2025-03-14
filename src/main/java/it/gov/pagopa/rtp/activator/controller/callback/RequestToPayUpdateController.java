@@ -30,10 +30,12 @@ public class RequestToPayUpdateController implements RequestToPayUpdateApi {
       @Valid Mono<AsynchronousSepaRequestToPayResponseResourceDto> asynchronousSepaRequestToPayResponseResourceDto) {
 
     return asynchronousSepaRequestToPayResponseResourceDto
-        .map(s -> checkCertificate.verifyRequestCertificate(s, clientCertificateSerialNumber))
+        .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
+        .flatMap(s -> checkCertificate.verifyRequestCertificate(s, clientCertificateSerialNumber))
         .<ResponseEntity<Void>>map(response -> ResponseEntity.ok().build())
         .onErrorReturn(IncorrectCertificate.class,
             ResponseEntity.status(403).build())
+        .onErrorReturn(IllegalArgumentException.class, ResponseEntity.badRequest().build())
         .doOnError(a -> log.error("Error receiving the update callback {}", a.getMessage()));
   }
 
