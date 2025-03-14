@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.rtp.activator.configuration.OpenAPIClientFactory;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
-import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.MtlsWebClientFactory;
+import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
 import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
 import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
@@ -44,7 +44,7 @@ class SendRtpHandlerTest {
 
 
   @Mock
-  private MtlsWebClientFactory webClientFactory;
+  private WebClientFactory webClientFactory;
 
   @Mock
   private OpenAPIClientFactory<DefaultApi> epcClientFactory;

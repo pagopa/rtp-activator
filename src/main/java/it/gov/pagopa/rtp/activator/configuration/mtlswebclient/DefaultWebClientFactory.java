@@ -12,12 +12,12 @@ import reactor.netty.http.client.HttpClient;
 
 
 @Component("defaultMtlsWebClientFactory")
-public class DefaultMtlsWebClientFactory implements MtlsWebClientFactory {
+public class DefaultWebClientFactory implements WebClientFactory {
 
   private final SslContextFactory sslContextFactory;
   private final ServiceProviderConfig serviceProviderConfig;
 
-  public DefaultMtlsWebClientFactory(SslContextFactory sslContextFactory,
+  public DefaultWebClientFactory(SslContextFactory sslContextFactory,
       ServiceProviderConfig serviceProviderConfig) {
     this.sslContextFactory = sslContextFactory;
     this.serviceProviderConfig = serviceProviderConfig;

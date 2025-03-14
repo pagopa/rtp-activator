@@ -2,7 +2,7 @@ package it.gov.pagopa.rtp.activator.configuration;
 
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.invoker.ApiClient;
-import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.MtlsWebClientFactory;
+import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
 import java.util.Optional;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,9 +15,9 @@ public class ApplicationConfig {
 
   @Bean("webClient")
   @Primary
-  public WebClient webClient(@NonNull final MtlsWebClientFactory webClientFactory) {
+  public WebClient webClient(@NonNull final WebClientFactory webClientFactory) {
     return Optional.of(webClientFactory)
-        .map(MtlsWebClientFactory::createSimpleWebClient)
+        .map(WebClientFactory::createSimpleWebClient)
         .orElseThrow(() -> new IllegalStateException("Couldn't create web client"));
   }
 

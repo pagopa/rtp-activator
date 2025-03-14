@@ -2,7 +2,7 @@ package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
 import it.gov.pagopa.rtp.activator.configuration.OpenAPIClientFactory;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
-import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.MtlsWebClientFactory;
+import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.service.rtp.SepaRequestToPayMapper;
 import java.time.Duration;
@@ -28,7 +28,7 @@ import reactor.util.retry.RetryBackoffSpec;
 @Slf4j
 public class SendRtpHandler implements RequestHandler<EpcRequest> {
 
-  private final MtlsWebClientFactory webClientFactory;
+  private final WebClientFactory webClientFactory;
   private final OpenAPIClientFactory<DefaultApi> epcClientFactory;
   private final SepaRequestToPayMapper sepaRequestToPayMapper;
   private final ServiceProviderConfig serviceProviderConfig;
@@ -41,7 +41,7 @@ public class SendRtpHandler implements RequestHandler<EpcRequest> {
    * @param sepaRequestToPayMapper  Mapper for converting RTP requests into EPC-compliant format.
    * @param serviceProviderConfig   Configuration settings for the service provider.
    */
-  public SendRtpHandler(@NonNull final MtlsWebClientFactory webClientFactory,
+  public SendRtpHandler(@NonNull final WebClientFactory webClientFactory,
       @NonNull final OpenAPIClientFactory<DefaultApi> epcClientFactory,
       @NonNull final SepaRequestToPayMapper sepaRequestToPayMapper,
       @NonNull final ServiceProviderConfig serviceProviderConfig) {
