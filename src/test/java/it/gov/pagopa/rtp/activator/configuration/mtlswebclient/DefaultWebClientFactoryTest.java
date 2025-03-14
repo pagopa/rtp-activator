@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
-class DefaultMtlsWebClientFactoryTest {
+class DefaultWebClientFactoryTest {
 
   @Mock
   private SslContextFactory sslContextFactory;
@@ -26,11 +26,11 @@ class DefaultMtlsWebClientFactoryTest {
   @Mock
   private SslContext sslContext;
 
-  private DefaultMtlsWebClientFactory mtlsWebClientFactory;
+  private DefaultWebClientFactory mtlsWebClientFactory;
 
   @BeforeEach
   void setUp() {
-    mtlsWebClientFactory = new DefaultMtlsWebClientFactory(sslContextFactory, config);
+    mtlsWebClientFactory = new DefaultWebClientFactory(sslContextFactory, config);
   }
 
   @Test

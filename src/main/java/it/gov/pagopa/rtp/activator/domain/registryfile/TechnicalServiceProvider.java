@@ -18,7 +18,6 @@ public record TechnicalServiceProvider(
     @JsonProperty("service_endpoint")
     String serviceEndpoint,
 
-    @NotBlank
     @JsonProperty("certificate_serial_number")
     String certificateSerialNumber,
 

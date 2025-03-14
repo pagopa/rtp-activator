@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient.RequestBodyUri
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec;
 import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 
-import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.MtlsWebClientFactory;
+import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 class Oauth2TokenServiceImplTest {
 
     @Mock
-    private MtlsWebClientFactory mtlsWebClientFactory;
+    private WebClientFactory webClientFactory;
     
     @Mock
     private WebClient webClient;
@@ -50,7 +50,7 @@ class Oauth2TokenServiceImplTest {
     
     @BeforeEach
     void setUp() {
-        oauth2TokenService = new Oauth2TokenServiceImpl(mtlsWebClientFactory);
+        oauth2TokenService = new Oauth2TokenServiceImpl(webClientFactory);
     }
     
     @Test
@@ -64,7 +64,7 @@ class Oauth2TokenServiceImplTest {
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put("access_token", accessToken);
         
-        when(mtlsWebClientFactory.createMtlsWebClient()).thenReturn(webClient);
+        when(webClientFactory.createMtlsWebClient()).thenReturn(webClient);
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(tokenUri)).thenReturn(requestBodySpec);
         when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
@@ -93,7 +93,7 @@ class Oauth2TokenServiceImplTest {
         Map<String, Object> responseMap = new HashMap<>();
         responseMap.put("access_token", accessToken);
         
-        when(mtlsWebClientFactory.createMtlsWebClient()).thenReturn(webClient);
+        when(webClientFactory.createMtlsWebClient()).thenReturn(webClient);
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(tokenUri)).thenReturn(requestBodySpec);
         when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
@@ -143,7 +143,7 @@ class Oauth2TokenServiceImplTest {
         String clientSecret = "test-secret";
         String scope = "test-scope";
         
-        when(mtlsWebClientFactory.createMtlsWebClient()).thenReturn(webClient);
+        when(webClientFactory.createMtlsWebClient()).thenReturn(webClient);
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(tokenUri)).thenReturn(requestBodySpec);
         when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
@@ -168,7 +168,7 @@ class Oauth2TokenServiceImplTest {
         
         Map<String, Object> responseMap = new HashMap<>();
         
-        when(mtlsWebClientFactory.createMtlsWebClient()).thenReturn(webClient);
+        when(webClientFactory.createMtlsWebClient()).thenReturn(webClient);
         when(webClient.post()).thenReturn(requestBodyUriSpec);
         when(requestBodyUriSpec.uri(tokenUri)).thenReturn(requestBodySpec);
         when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);

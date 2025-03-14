@@ -3,6 +3,7 @@ package it.gov.pagopa.rtp.activator.controller.rtp;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
+import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
 import it.gov.pagopa.rtp.activator.utils.TokenInfo;
@@ -45,6 +46,8 @@ public class SendAPIControllerImpl implements RtpsApi {
             .created(URI.create(serviceProviderConfig.baseUrl() + rtp.resourceID().getId()))
             .build())
         .onErrorReturn(PayerNotActivatedException.class,
+            ResponseEntity.unprocessableEntity().build())
+        .onErrorReturn(ServiceProviderNotFoundException.class,
             ResponseEntity.unprocessableEntity().build())
         .doOnError(a -> log.error("Error creating RTP {}", a.getMessage()));
   }

@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.service.rtp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -13,28 +12,18 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
-import it.gov.pagopa.rtp.activator.domain.registryfile.OAuth2;
-import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
-import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
-import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
-import it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
-import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
-import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 
+import it.gov.pagopa.rtp.activator.service.rtp.handler.SendRtpProcessor;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,10 +31,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -66,13 +53,7 @@ class SendRTPServiceTest {
   @Mock
   private RtpRepository rtpRepository;
   @Mock
-  private DefaultApi defaultApi;
-  @Mock
-  private RegistryDataService registryDataService;
-  @Mock
-  private Oauth2TokenService oauth2TokenService;
-  @Mock
-  private Environment environment;
+  private SendRtpProcessor sendRtpProcessor;
 
   private SendRTPServiceImpl sendRTPService;
 
@@ -96,9 +77,7 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, defaultApi, registryDataService,
-        oauth2TokenService,
-        environment);
+        serviceProviderConfig, rtpRepository, sendRtpProcessor);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -119,28 +98,14 @@ class SendRTPServiceTest {
     SepaRequestToPayRequestResourceDto mockSepaRequestToPayRequestResource = new SepaRequestToPayRequestResourceDto()
         .callbackUrl(URI.create("http://callback.url"));
 
-    Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
-    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
-    mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
-        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
-
-    var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
-
-    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
-
-    when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
-    when(environment.getProperty(any())).thenReturn("fakeProp");
-
     when(sepaRequestToPayMapper.toEpcRequestToPay(any()))
         .thenReturn(mockSepaRequestToPayRequestResource);
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(fakeActivationDto));
+    when(sendRtpProcessor.sendRtpToServiceProviderDebtor(any()))
+        .thenReturn(Mono.just(expectedRtp));
     when(rtpRepository.save(any()))
         .thenReturn(Mono.just(expectedRtp));
-    when(registryDataService.getRegistryData())
-        .thenReturn(Mono.just(mockRegistryData));
-    when(defaultApi.postRequestToPayRequests(any(), any(), any()))
-        .thenReturn(Mono.just(new SynchronousSepaRequestToPayCreationResponseDto()));
 
     Mono<Rtp> result = sendRTPService.send(inputRtp);
     StepVerifier.create(result)
@@ -159,9 +124,8 @@ class SendRTPServiceTest {
             && rtp.status().equals(expectedRtp.status())
             && rtp.subject().equals(expectedRtp.subject()))
         .verifyComplete();
-    verify(sepaRequestToPayMapper, times(2)).toEpcRequestToPay(any(Rtp.class));
+    verify(sepaRequestToPayMapper, times(1)).toEpcRequestToPay(any(Rtp.class));
     verify(readApi, times(1)).findActivationByPayerId(any(), any(), any());
-    verify(defaultApi, times(1)).postRequestToPayRequests(any(), any(), any());
     verify(rtpRepository, times(2)).save(any());
   }
 
@@ -219,20 +183,10 @@ class SendRTPServiceTest {
     var fakeActivationDto = mockActivationDto();
     var expectedRtp = mockRtp();
 
-    Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
-    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
-    mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
-        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
-
-    var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
-
-    when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
-    when(environment.getProperty(any())).thenReturn("fakeProp");
-    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
-    when(registryDataService.getRegistryData()).thenReturn(Mono.just(mockRegistryData));
     when(readApi.findActivationByPayerId(any(), any(), any())).thenReturn(Mono.just(fakeActivationDto));
 
-    when(defaultApi.postRequestToPayRequests(any(), any(), any())).thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
+    when(sendRtpProcessor.sendRtpToServiceProviderDebtor(any()))
+        .thenReturn(Mono.error(new WebClientResponseException(500, "Internal Server Error", null, null, null)));
 
     when(rtpRepository.save(any()))
         .thenReturn(Mono.just(expectedRtp));
@@ -254,22 +208,11 @@ class SendRTPServiceTest {
     final var sourceRtp = mockRtp(RtpStatus.CREATED, resourceId, savingDateTime);
     final var rtpSent = mockRtp(RtpStatus.SENT, resourceId, savingDateTime);
 
-    Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
-    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
-    mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
-        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
-
-    var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
-
-    when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
-    when(environment.getProperty(any())).thenReturn("fakeProp");
-
-    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
-
-    when(registryDataService.getRegistryData())
-        .thenReturn(Mono.just(mockRegistryData));
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
+
+    when(sendRtpProcessor.sendRtpToServiceProviderDebtor(any()))
+        .thenReturn(Mono.just(rtpSent));
 
     /*
      * Mocks the save method.
@@ -287,9 +230,6 @@ class SendRTPServiceTest {
           return Mono.just(invocation.getArgument(0));
         });
 
-    when(defaultApi.postRequestToPayRequests(any(), any(), any()))
-        .thenReturn(Mono.empty());
-
     StepVerifier.create(sendRTPService.send(sourceRtp))
         .expectNext(rtpSent)
         .verifyComplete();
@@ -304,20 +244,9 @@ class SendRTPServiceTest {
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
 
-    Map<String, ServiceProviderFullData> mockRegistryData = new HashMap<>();
-    OAuth2 mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
-    mockRegistryData.put(activationRtpSpId, new ServiceProviderFullData("", "",
-        new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
+    when(sendRtpProcessor.sendRtpToServiceProviderDebtor(any()))
+        .thenReturn(Mono.just(sourceRtp));
 
-    var mockApiClient = mock(it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient.class);
-
-    when(oauth2TokenService.getAccessToken(any(), any(), any(), any())).thenReturn(Mono.just("fakeToken"));
-    when(environment.getProperty(any())).thenReturn("fakeProp");
-
-    when(defaultApi.getApiClient()).thenReturn(mockApiClient);
-
-    when(registryDataService.getRegistryData())
-        .thenReturn(Mono.just(mockRegistryData));
     /*
      * Mocks the save method.
      * The first then return is due to a prior invocation of the method that is not
@@ -334,69 +263,11 @@ class SendRTPServiceTest {
           return Mono.error(new RuntimeException("Simulated DB failure"));
         });
 
-    when(defaultApi.postRequestToPayRequests(any(), any(), any()))
-        .thenReturn(Mono.empty());
-
     StepVerifier.create(sendRTPService.send(sourceRtp))
         .expectError(RuntimeException.class)
         .verify();
 
     verify(rtpRepository, times(2)).save(any());
-  }
-
-
-  @Test
-  void givenPartiallyFailingRtpSend_whenSendingSrtp_thenRequestIdShouldChange() {
-    final var numRetries = 3;
-
-    final var rtpId = inputRtp.resourceID().getId();
-    final var expectedRtp = inputRtp.toRtpSent(inputRtp);
-    final var mockRegistryData = new HashMap<String, ServiceProviderFullData>();
-    final var mOAuth2 = new OAuth2("fakeEndpoint", "post", "client_credentials", "", "", "", "srtp");
-
-    mockRegistryData.put(
-        rtpSpId,
-        new ServiceProviderFullData("", "",
-            new TechnicalServiceProvider("", "", "http://test-endpoint.com", "", mOAuth2)));
-
-    when(readApi.findActivationByPayerId(any(), any(), any()))
-        .thenReturn(Mono.just(mockActivationDto()));
-
-    when(rtpRepository.save(any()))
-        .thenReturn(Mono.just(expectedRtp));
-
-    when(registryDataService.getRegistryData())
-        .thenReturn(Mono.just(mockRegistryData));
-
-    when(oauth2TokenService.getAccessToken(any(), any(), any(), any()))
-        .thenReturn(Mono.just("fakeToken"));
-
-    when(environment.getProperty(any())).thenReturn("fakeProp");
-
-    when(defaultApi.getApiClient()).thenReturn(new ApiClient());
-
-    final var retryCounter = new AtomicInteger();
-    when(defaultApi.postRequestToPayRequests(any(), any(), any()))
-        .thenAnswer(
-            invocation -> {
-              if (retryCounter.getAndIncrement() < numRetries - 1) {
-                throw new RuntimeException("Simulated call failure");
-              }
-              return Mono.just(new SynchronousSepaRequestToPayCreationResponseDto());
-            }
-        );
-
-    StepVerifier.create(sendRTPService.send(inputRtp))
-        .expectNext(expectedRtp)
-        .verifyComplete();
-
-    final var requestIdCaptor = ArgumentCaptor.forClass(String.class);
-    verify(defaultApi, atLeast(numRetries))
-        .postRequestToPayRequests(eq(rtpId), requestIdCaptor.capture(), any());
-
-    final var capturedRequestIds = requestIdCaptor.getAllValues();
-    assertEquals(numRetries, capturedRequestIds.size());
-    assertEquals(numRetries, new HashSet<>(capturedRequestIds).size());
   }
 
 
