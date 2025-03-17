@@ -22,7 +22,7 @@ public interface RequestToPayUpdateApi {
    * @param requestBody The SEPA Request-To-Pay Response
    * @return A response entity with HTTP 200 if successful
    */
-  @PostMapping(value = "/sendCallback")
+  @PostMapping(value = "/send")
   Mono<ResponseEntity<Void>> handleRequestToPayUpdate(
       @RequestHeader(value = "X-Client-Cert-Serial", required = true) String clientCertificateSerialNumber,
       @Valid @RequestBody Mono<AsynchronousSepaRequestToPayResponseResourceDto> asynchronousSepaRequestToPayResponseResourceDto);
