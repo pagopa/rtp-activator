@@ -39,16 +39,6 @@ public class MSALConfiguration {
                 .registerType(TypeReference.of("com.microsoft.aad.msal4j.ManagedIdentityErrorResponse"))
                 .registerType(TypeReference.of("com.microsoft.aad.msal4j.ManagedIdentityResponse"));
 
-            // Azure Monitor hints
-            hints.reflection()
-                    .registerType(TypeReference.of("com.azure.monitor.opentelemetry.exporter.implementation.models.TelemetryItem"),
-                            builder -> builder.withMembers(MemberCategory.values()))
-                    .registerType(TypeReference.of("com.azure.monitor.opentelemetry.exporter.implementation.models.MonitorBase"),
-                            builder -> builder.withMembers(MemberCategory.values()))
-                    .registerType(TypeReference.of("com.azure.monitor.opentelemetry.exporter.implementation.models.MessageData"),
-                            builder -> builder.withMembers(MemberCategory.values()))
-                    .registerType(TypeReference.of("com.azure.monitor.opentelemetry.exporter.implementation.models.ExceptionData"),
-                            builder -> builder.withMembers(MemberCategory.values()));
         }
     }
 }
