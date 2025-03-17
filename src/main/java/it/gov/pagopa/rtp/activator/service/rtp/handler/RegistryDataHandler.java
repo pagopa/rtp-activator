@@ -43,14 +43,14 @@ public class RegistryDataHandler implements RequestHandler<EpcRequest> {
   @Override
   public Mono<EpcRequest> handle(@NonNull final EpcRequest request) {
     return this.registryDataService.getRegistryData()
-        .doFirst(() -> log.info("Calling registry data service. Request: {}", request))
+        .doFirst(() -> log.info("Calling registry data service"))
         .doOnNext(data -> log.info("Successfully called registry data."))
         .flatMap(data -> Mono.justOrEmpty(data.get(request.rtpToSend().serviceProviderDebtor())))
         .doOnNext(data -> log.info("Successfully extracted service provider data."))
         .switchIfEmpty(Mono.error(new ServiceProviderNotFoundException(
             "No service provider found for creditor: " + request.rtpToSend().serviceProviderDebtor())))
         .map(request::withServiceProviderFullData)
-        .doOnSuccess(data -> log.info("Successfully retrieved registry data for creditor: {}", data))
+        .doOnSuccess(data -> log.info("Successfully retrieved registry data for creditor"))
         .doOnError(error -> log.error("Error retrieving registry data: {}", error.getMessage(), error));
   }
 }
