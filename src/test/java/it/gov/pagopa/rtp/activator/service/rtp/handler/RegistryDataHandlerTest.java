@@ -37,7 +37,7 @@ class RegistryDataHandlerTest {
     final var rtpToSend = mock(Rtp.class);
     final var request = new EpcRequest(rtpToSend, null, null, null);
     final var serviceProviderData = new ServiceProviderFullData(spId, "spName",
-        new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret", null, null));
+        new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret", null, true));
 
     final var expectedRequest = new EpcRequest(rtpToSend, serviceProviderData, null, null);
 

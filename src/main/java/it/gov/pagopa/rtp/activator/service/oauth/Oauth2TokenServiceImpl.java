@@ -26,12 +26,6 @@ public class Oauth2TokenServiceImpl implements Oauth2TokenService {
 
 
   @Override
-  public Mono<String> getAccessToken(String tokenUri, String clientId, String   clientSecret, String scope) {
-    return this.getAccessToken(tokenUri, clientId, clientSecret, scope, true);
-  }
-
-
-  @Override
   public Mono<String> getAccessToken(
       String tokenUri, String clientId, String   clientSecret, String scope, boolean isMtlsEnabled) {
 

@@ -44,7 +44,7 @@ class Oauth2HandlerTest {
     final var rtpToSend = mock(Rtp.class);
     final var oauth2Data = mock(OAuth2.class);
     final var tspData = new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret",
-        oauth2Data, null);
+        oauth2Data, true);
     final var serviceProviderData = new ServiceProviderFullData("spId", "spName", tspData);
     final var request = new EpcRequest(rtpToSend, serviceProviderData, null, null);
 
@@ -75,7 +75,7 @@ class Oauth2HandlerTest {
   void givenRequestWithoutOauth2_whenHandle_thenSkipTokenRetrieval() {
     final var rtpToSend = mock(Rtp.class);
     final var tspData = new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret",
-        null, null);
+        null, true);
     final var serviceProviderData = new ServiceProviderFullData("spId", "spName", tspData);
     final var request = new EpcRequest(rtpToSend, serviceProviderData, null, null);
 
@@ -94,7 +94,7 @@ class Oauth2HandlerTest {
     final var rtpToSend = mock(Rtp.class);
     final var oauth2Data = mock(OAuth2.class);
     final var tspData = new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret",
-        oauth2Data, null);
+        oauth2Data, true);
     final var serviceProviderData = new ServiceProviderFullData("spId", "spName", tspData);
     final var request = new EpcRequest(rtpToSend, serviceProviderData, null, null);
 
