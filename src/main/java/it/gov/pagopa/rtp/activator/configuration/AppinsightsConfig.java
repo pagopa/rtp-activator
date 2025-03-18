@@ -12,7 +12,6 @@ public class AppinsightsConfig {
 
   private final ApplicationInsightsProperties applicationInsightsProperties;
 
-
   public AppinsightsConfig(ApplicationInsightsProperties applicationInsightsProperties) {
     this.applicationInsightsProperties = applicationInsightsProperties;
   }
