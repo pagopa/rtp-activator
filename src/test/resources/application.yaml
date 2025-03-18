@@ -1,10 +1,11 @@
 logging.level.org.springframework.security: DEBUG
 activation.baseUrl: http://localhost:8080/
 
-# OpenTelemetry
-applicationinsights:
-  enabled: false
-  connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:InstrumentationKey=5bdc5554-4ca4-4797-be08-e5982d5a413a}
+spring:
+  cloud:
+    azure:
+      monitor:
+        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:InstrumentationKey=5bdc5554-4ca4-4797-be08-e5982d5a413a}
 
 azure.cosmos:
   uri: https://example.com/db/endpoint
