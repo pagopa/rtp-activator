@@ -40,31 +40,7 @@ public record OAuth2(
     @JsonProperty("scope")
     String scope,
 
-    @JsonProperty("is_mtls_enabled")
-    Boolean isMtlsEnabled
-) {
-
-    private static final boolean FALLBACK_MTLS_ENALED = true;
-
-
-    public OAuth2(
-        String tokenEndpoint,
-        String method,
-        String credentialsTransportMode,
-        String clientId,
-        String clientSecretKvUrl,
-        String clientSecretEnvVar,
-        String scope,
-        Boolean isMtlsEnabled) {
-
-        this.tokenEndpoint = tokenEndpoint;
-        this.method = method;
-        this.credentialsTransportMode = credentialsTransportMode;
-        this.clientId = clientId;
-        this.clientSecretKvUrl = clientSecretKvUrl;
-        this.clientSecretEnvVar = clientSecretEnvVar;
-        this.scope = scope;
-        this.isMtlsEnabled = (isMtlsEnabled != null) ? isMtlsEnabled : FALLBACK_MTLS_ENALED;
-    }
-}
+    @JsonProperty("mtls_enabled")
+    Boolean mtlsEnabled
+) {}
 

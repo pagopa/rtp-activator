@@ -98,7 +98,7 @@ class SendRtpHandlerTest {
         .thenReturn(tsp);
     when(tsp.serviceEndpoint())
         .thenReturn("https://example.com");
-    when(tsp.isMtlsEnabled())
+    when(tsp.mtlsEnabled())
         .thenReturn(true);
     when(epcClientFactory.createClient(any()))
         .thenReturn(epcClient);
@@ -141,7 +141,7 @@ class SendRtpHandlerTest {
         .thenReturn(providerData);
     when(providerData.tsp())
         .thenReturn(tsp);
-    when(tsp.isMtlsEnabled())
+    when(tsp.mtlsEnabled())
         .thenReturn(false);
     when(webClientFactory.createSimpleWebClient())
         .thenReturn(webClient);
@@ -284,7 +284,7 @@ class SendRtpHandlerTest {
         .thenReturn(tsp);
     when(tsp.serviceEndpoint())
         .thenReturn("https://example.com");
-    when(tsp.isMtlsEnabled())
+    when(tsp.mtlsEnabled())
         .thenReturn(true);
     when(epcClientFactory.createClient(any()))
         .thenReturn(epcClient);

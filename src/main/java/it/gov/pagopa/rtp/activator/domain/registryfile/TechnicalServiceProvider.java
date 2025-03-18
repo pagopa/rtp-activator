@@ -24,27 +24,7 @@ public record TechnicalServiceProvider(
 
     OAuth2 oauth2,
 
-    @JsonProperty("is_mtls_enabled")
-    Boolean isMtlsEnabled
-) {
-
-  private static final boolean FALLBACK_MTLS_ENALED = true;
-
-
-  public TechnicalServiceProvider(
-      String id,
-      String name,
-      String serviceEndpoint,
-      String certificateSerialNumber,
-      OAuth2 oauth2,
-      Boolean isMtlsEnabled) {
-
-    this.id = id;
-    this.name = name;
-    this.serviceEndpoint = serviceEndpoint;
-    this.certificateSerialNumber = certificateSerialNumber;
-    this.oauth2 = oauth2;
-    this.isMtlsEnabled = (isMtlsEnabled != null) ? isMtlsEnabled : FALLBACK_MTLS_ENALED;
-  }
-}
+    @JsonProperty("mtls_enabled")
+    Boolean mtlsEnabled
+) {}
 

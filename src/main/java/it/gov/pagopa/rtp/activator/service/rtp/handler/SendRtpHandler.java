@@ -123,7 +123,7 @@ public class SendRtpHandler implements RequestHandler<EpcRequest> {
   /**
    * Determines whether mutual TLS (mTLS) should be used for sending the RTP request.
    * It retrieves the configuration from the {@link TechnicalServiceProvider} associated
-   * with the given request and checks the `isMtlsEnabled` flag. If the flag is absent,
+   * with the given request and checks the `mtlsEnabled` flag. If the flag is absent,
    * it defaults to {@code true}, ensuring secure communication by default.
    *
    * @param request The EPC request containing service provider details.
@@ -134,7 +134,7 @@ public class SendRtpHandler implements RequestHandler<EpcRequest> {
     return Optional.of(request)
         .map(EpcRequest::serviceProviderFullData)
         .map(ServiceProviderFullData::tsp)
-        .map(TechnicalServiceProvider::isMtlsEnabled)
+        .map(TechnicalServiceProvider::mtlsEnabled)
         .orElse(true);
   }
 }
