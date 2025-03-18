@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -25,13 +24,25 @@ public class Oauth2TokenServiceImpl implements Oauth2TokenService {
     this.webClientFactory = webClientFactory;
   }
 
+
   @Override
   public Mono<String> getAccessToken(String tokenUri, String clientId, String   clientSecret, String scope) {
+    return this.getAccessToken(tokenUri, clientId, clientSecret, scope, true);
+  }
+
+
+  @Override
+  public Mono<String> getAccessToken(
+      String tokenUri, String clientId, String   clientSecret, String scope, boolean isMtlsEnabled) {
+
     if (clientId == null || clientSecret == null || tokenUri == null) {
       return Mono.error(new IllegalStateException("OAuth2 configuration params not complete"));
     }
 
-    WebClient webClient = webClientFactory.createMtlsWebClient();
+    log.debug("Is mTLS enabled: {}", isMtlsEnabled);
+    final var webClient = isMtlsEnabled
+        ? this.webClientFactory.createMtlsWebClient()
+        : this.webClientFactory.createSimpleWebClient();
 
     MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
     formData.add("grant_type", "client_credentials");

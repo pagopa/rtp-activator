@@ -28,6 +28,9 @@ public record TechnicalServiceProvider(
     Boolean isMtlsEnabled
 ) {
 
+  private static final boolean FALLBACK_MTLS_ENALED = true;
+
+
   public TechnicalServiceProvider(
       String id,
       String name,
@@ -41,7 +44,7 @@ public record TechnicalServiceProvider(
     this.serviceEndpoint = serviceEndpoint;
     this.certificateSerialNumber = certificateSerialNumber;
     this.oauth2 = oauth2;
-    this.isMtlsEnabled = (isMtlsEnabled != null) ? isMtlsEnabled : true;
+    this.isMtlsEnabled = (isMtlsEnabled != null) ? isMtlsEnabled : FALLBACK_MTLS_ENALED;
   }
 }
 

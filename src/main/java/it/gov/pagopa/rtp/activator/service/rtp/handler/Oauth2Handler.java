@@ -1,6 +1,8 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
 import it.gov.pagopa.rtp.activator.domain.registryfile.OAuth2;
+import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
+import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.service.oauth.Oauth2TokenService;
 import java.util.Objects;
 import java.util.Optional;
@@ -75,12 +77,36 @@ public class Oauth2Handler implements RequestHandler<EpcRequest> {
         .map(envVar -> this.environment.getProperty(String.format(CLIENT_SECRET_ENV_VAR_PATTERN, envVar)))
         .orElseThrow(() -> new IllegalStateException("Couldn't find client secret env var"));
 
+    final var isMtlsEnabled = checkMtlsEnabled(request);
+
     return this.oauth2TokenService.getAccessToken(
             oauthData.tokenEndpoint(),
             oauthData.clientId(),
             clientSecret,
-            oauthData.scope())
+            oauthData.scope(),
+            isMtlsEnabled)
         .map(request::withToken);
   }
+
+
+  /**
+   * Determines whether mutual TLS (mTLS) should be used for sending the RTP request.
+   * It retrieves the configuration from the {@link TechnicalServiceProvider} associated
+   * with the given request and checks the `isMtlsEnabled` flag. If the flag is absent,
+   * it defaults to {@code true}, ensuring secure communication by default.
+   *
+   * @param request The EPC request containing service provider details.
+   * @return {@code true} if mTLS should be used, {@code false} otherwise.
+   */
+  @NonNull
+  private boolean checkMtlsEnabled(@NonNull final EpcRequest request) {
+    return Optional.of(request)
+        .map(EpcRequest::serviceProviderFullData)
+        .map(ServiceProviderFullData::tsp)
+        .map(TechnicalServiceProvider::oauth2)
+        .map(OAuth2::isMtlsEnabled)
+        .orElse(true);
+  }
+
 }
 

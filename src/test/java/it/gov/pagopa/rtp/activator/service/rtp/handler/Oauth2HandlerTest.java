@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -54,7 +55,7 @@ class Oauth2HandlerTest {
 
     when(environment.getProperty("client.secret.value")).thenReturn(CLIENT_SECRET_ENV_VAR);
     when(oauth2TokenService.getAccessToken(
-        anyString(), anyString(), anyString(), anyString()))
+        anyString(), anyString(), anyString(), anyString(), anyBoolean()))
         .thenReturn(Mono.just(ACCESS_TOKEN));
 
     // When
@@ -66,7 +67,7 @@ class Oauth2HandlerTest {
         .verifyComplete();
 
     verify(oauth2TokenService).getAccessToken(
-        anyString(), anyString(), anyString(), anyString());
+        anyString(), anyString(), anyString(), anyString(), anyBoolean());
   }
 
 
@@ -104,7 +105,7 @@ class Oauth2HandlerTest {
 
     when(environment.getProperty("client.secret.value")).thenReturn(CLIENT_SECRET_ENV_VAR);
     when(oauth2TokenService.getAccessToken(
-        anyString(), anyString(), anyString(), anyString()))
+        anyString(), anyString(), anyString(), anyString(), anyBoolean()))
         .thenReturn(Mono.error(new RuntimeException("Token retrieval failed")));
 
     var resultMono = oauth2Handler.handle(request);
@@ -115,6 +116,6 @@ class Oauth2HandlerTest {
         .verify();
 
     verify(oauth2TokenService).getAccessToken(
-        anyString(), anyString(), anyString(), anyString());
+        anyString(), anyString(), anyString(), anyString(), anyBoolean());
   }
 }
