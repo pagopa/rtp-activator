@@ -11,8 +11,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppinsightsConfig {
 
-  @Value("${spring.cloud.azure.monitor.connection-string}")
-  private String connectionString;
+  private final String connectionString;
+
+
+  public AppinsightsConfig(@Value("${spring.cloud.azure.monitor.connection-string}") String connectionString) {
+    this.connectionString = connectionString;
+  }
 
   @Bean
   public OpenTelemetry configureAzureMonitorExporter() {
