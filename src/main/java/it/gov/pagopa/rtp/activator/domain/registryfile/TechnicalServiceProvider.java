@@ -25,6 +25,6 @@ public record TechnicalServiceProvider(
     OAuth2 oauth2,
 
     @JsonProperty("mtls_enabled")
-    Boolean mtlsEnabled
+    boolean mtlsEnabled
 ) {}
 

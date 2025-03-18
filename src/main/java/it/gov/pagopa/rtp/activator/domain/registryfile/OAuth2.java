@@ -41,6 +41,6 @@ public record OAuth2(
     String scope,
 
     @JsonProperty("mtls_enabled")
-    Boolean mtlsEnabled
+    boolean mtlsEnabled
 ) {}
 
