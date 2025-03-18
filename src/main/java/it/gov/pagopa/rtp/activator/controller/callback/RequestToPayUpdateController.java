@@ -1,7 +1,6 @@
 package it.gov.pagopa.rtp.activator.controller.callback;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import it.gov.pagopa.rtp.activator.domain.errors.IncorrectCertificate;
