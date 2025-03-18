@@ -36,7 +36,7 @@ class RegistryDataServiceImplTest {
   void givenValidResponse_whenGetRegistryData_thenReturnTransformedData() {
 
     var tsp = new TechnicalServiceProvider("TSP1", "Tech Provider 1", "https://endpoint.com",
-        "cert123", null);
+        "cert123", null, true);
     var sp = new ServiceProvider("SP1", "Service Provider 1", "TSP1");
     var serviceProviderDataResponse = new ServiceProviderDataResponse(List.of(tsp), List.of(sp));
 
@@ -81,7 +81,7 @@ class RegistryDataServiceImplTest {
 
     ServiceProviderDataResponse mockResponse = new ServiceProviderDataResponse(
         List.of(new TechnicalServiceProvider("TSP1", "Technical Service Provider 1",
-            "https://example.com", "123456", null)),
+            "https://example.com", "123456", null, false)),
         List.of(new ServiceProvider("SP1", "Service Provider 1", "TSP1"))
     );
 

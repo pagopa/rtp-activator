@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Component
 public class Oauth2TokenServiceImpl implements Oauth2TokenService {
-  private WebClientFactory webClientFactory;
+  private final WebClientFactory webClientFactory;
 
   public Oauth2TokenServiceImpl(WebClientFactory webClientFactory) {
     this.webClientFactory = webClientFactory;

@@ -66,8 +66,8 @@ class BlobStorageClientAzureTest {
         // Prepare test data
         ServiceProviderDataResponse expectedResponse = new ServiceProviderDataResponse(
             List.of(
-                new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null),
-                new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null)
+                new TechnicalServiceProvider("08992631005", "CBI S.c.p.a.", "https://api.cbi.it", "6A7672BD13DAEEBEA96A2D1D", null, true),
+                new TechnicalServiceProvider("BPPIITRRXXX", "Poste Italiane", "https://api.poste.it", "...", null, null)
             ),
             List.of(
                 new ServiceProvider("UNCRITMM", "UniCredit S.p.A.", "08992631005"),

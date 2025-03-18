@@ -18,9 +18,30 @@ public record TechnicalServiceProvider(
     @JsonProperty("service_endpoint")
     String serviceEndpoint,
 
+    @NotBlank
     @JsonProperty("certificate_serial_number")
     String certificateSerialNumber,
 
-    OAuth2 oauth2
-) {}
+    OAuth2 oauth2,
+
+    @JsonProperty("is_mtls_enabled")
+    Boolean isMtlsEnabled
+) {
+
+  public TechnicalServiceProvider(
+      String id,
+      String name,
+      String serviceEndpoint,
+      String certificateSerialNumber,
+      OAuth2 oauth2,
+      Boolean isMtlsEnabled) {
+
+    this.id = id;
+    this.name = name;
+    this.serviceEndpoint = serviceEndpoint;
+    this.certificateSerialNumber = certificateSerialNumber;
+    this.oauth2 = oauth2;
+    this.isMtlsEnabled = (isMtlsEnabled != null) ? isMtlsEnabled : true;
+  }
+}
 

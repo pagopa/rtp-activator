@@ -3,6 +3,8 @@ package it.gov.pagopa.rtp.activator.service.rtp.handler;
 import it.gov.pagopa.rtp.activator.configuration.OpenAPIClientFactory;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
+import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
+import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.service.rtp.SepaRequestToPayMapper;
 import java.time.Duration;
@@ -63,9 +65,7 @@ public class SendRtpHandler implements RequestHandler<EpcRequest> {
   @Override
   public Mono<EpcRequest> handle(@NonNull final EpcRequest request) {
     final var epcClientMono = Mono.just(request)
-        .filter(req ->
-            StringUtils.trimToNull(req.serviceProviderFullData().tsp().certificateSerialNumber())
-                != null)
+        .filter(this::checkMtlsEnabled)
         .doOnNext(req -> log.info("Using mTLS for sending RTP to {}", req.rtpToSend().serviceProviderDebtor()))
         .map(req -> this.webClientFactory.createMtlsWebClient())
         .switchIfEmpty(Mono.fromSupplier(() -> {
@@ -117,6 +117,25 @@ public class SendRtpHandler implements RequestHandler<EpcRequest> {
     return Retry.backoff(maxAttempts, Duration.ofMillis(minDurationMillis))
         .jitter(jitter)
         .doAfterRetry(signal -> log.info("Retry number {}", signal.totalRetries()));
+  }
+
+
+  /**
+   * Determines whether mutual TLS (mTLS) should be used for sending the RTP request.
+   * It retrieves the configuration from the {@link TechnicalServiceProvider} associated
+   * with the given request and checks the `isMtlsEnabled` flag. If the flag is absent,
+   * it defaults to {@code true}, ensuring secure communication by default.
+   *
+   * @param request The EPC request containing service provider details.
+   * @return {@code true} if mTLS should be used, {@code false} otherwise.
+   */
+  @NonNull
+  private boolean checkMtlsEnabled(@NonNull final EpcRequest request) {
+    return Optional.of(request)
+        .map(EpcRequest::serviceProviderFullData)
+        .map(ServiceProviderFullData::tsp)
+        .map(TechnicalServiceProvider::isMtlsEnabled)
+        .orElse(true);
   }
 }
 
