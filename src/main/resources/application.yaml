@@ -46,11 +46,7 @@ service-provider:
 
 otel:
   service:
-    name: rtp-activator
-  resource:
-    attributes: 
-      service:
-        name: rtp-activator
+    name: rtpactivator
   instrumentation:
     mongo:
       enabled: true

@@ -52,6 +52,11 @@ resource "azurerm_container_app" "rtp-activator" {
         secret_name = "identity-client-id"
       }
 
+      env {
+        name  = "OTEL_SERVICE_NAME"
+        value = "rtpactivator"
+      }
+
       dynamic "env" {
         for_each = var.rtp_environment_configs
         content {
