@@ -48,7 +48,7 @@ class CheckCertificateTest {
 
     Map<String, ServiceProviderFullData> registryDataMap = new HashMap<>();
     TechnicalServiceProvider tsp = new TechnicalServiceProvider("fakeTSPId", "fakeTSPName",
-        "serviceProviderDebtorId", validCertificateSerialNumber, null);
+        "serviceProviderDebtorId", validCertificateSerialNumber, null, true);
     ServiceProviderFullData serviceProviderFullData = new ServiceProviderFullData("fakeServiceProviderId",
         "fakeServiceProvider", tsp);
     registryDataMap.put(serviceProviderDebtorId, serviceProviderFullData);
@@ -80,7 +80,7 @@ class CheckCertificateTest {
   void verifyRequestCertificateWithNonExistentServiceProviderShouldThrowIllegalStateException() {
     Map<String, ServiceProviderFullData> registryDataMap = new HashMap<>();
     TechnicalServiceProvider tsp = new TechnicalServiceProvider("otherTSPId", "otherTSPName",
-        "otherServiceProviderDebtorId", "otherCertSerialNumber", null);
+        "otherServiceProviderDebtorId", "otherCertSerialNumber", null, true);
     ServiceProviderFullData serviceProviderFullData = new ServiceProviderFullData("otherServiceProviderId",
         "otherServiceProvider", tsp);
 
