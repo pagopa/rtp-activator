@@ -29,13 +29,13 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
-class CheckCertificateTest {
+class CertificateCheckerTest {
 
   @Mock
   private RegistryDataService registryDataService;
 
   @InjectMocks
-  private CheckCertificate checkCertificate;
+  private CertificateChecker certificateChecker;
 
   private AsynchronousSepaRequestToPayResponseResourceDto requestBody;
   private final String serviceProviderDebtorId = "ABCDITMMXXX";
@@ -58,7 +58,7 @@ class CheckCertificateTest {
 
   @Test
   void verifyRequestCertificateWithValidCertificateShouldReturnRequest() {
-    Mono<AsynchronousSepaRequestToPayResponseResourceDto> result = checkCertificate
+    Mono<AsynchronousSepaRequestToPayResponseResourceDto> result = certificateChecker
         .verifyRequestCertificate(requestBody, validCertificateSerialNumber);
 
     StepVerifier.create(result)
@@ -68,7 +68,7 @@ class CheckCertificateTest {
 
   @Test
   void verifyRequestCertificateWithInvalidCertificateShouldThrowIncorrectCertificate() {
-    Mono<AsynchronousSepaRequestToPayResponseResourceDto> result = checkCertificate
+    Mono<AsynchronousSepaRequestToPayResponseResourceDto> result = certificateChecker
         .verifyRequestCertificate(requestBody, invalidCertificateSerialNumber);
 
     StepVerifier.create(result)
@@ -90,7 +90,7 @@ class CheckCertificateTest {
 
     when(registryDataService.getRegistryData()).thenReturn(Mono.just(registryDataMap));
 
-    Mono<AsynchronousSepaRequestToPayResponseResourceDto> result = checkCertificate
+    Mono<AsynchronousSepaRequestToPayResponseResourceDto> result = certificateChecker
         .verifyRequestCertificate(requestBody, validCertificateSerialNumber);
 
     StepVerifier.create(result)

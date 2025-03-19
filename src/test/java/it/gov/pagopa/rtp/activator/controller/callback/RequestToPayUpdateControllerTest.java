@@ -21,7 +21,7 @@ import it.gov.pagopa.rtp.activator.epcClient.model.GroupHeader87Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS04bDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceIVDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PartyIdentification135Dto;
-import it.gov.pagopa.rtp.activator.utils.CheckCertificate;
+import it.gov.pagopa.rtp.activator.utils.CertificateChecker;
 
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -30,7 +30,7 @@ import reactor.test.StepVerifier;
 class RequestToPayUpdateControllerTest {
 
   @Mock
-  private CheckCertificate checkCertificate;
+  private CertificateChecker certificateChecker;
 
   @InjectMocks
   private RequestToPayUpdateController controller;
@@ -47,7 +47,7 @@ class RequestToPayUpdateControllerTest {
 
   @Test
   void handleRequestToPayUpdateWithValidCertificateShouldReturnOk() {
-    when(checkCertificate.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
+    when(certificateChecker.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
         .thenReturn(Mono.just(requestBody));
     Mono<ResponseEntity<Void>> result = controller.handleRequestToPayUpdate(
         validCertificateSerialNumber, Mono.just(requestBody));
@@ -59,7 +59,7 @@ class RequestToPayUpdateControllerTest {
 
   @Test
   void handleRequestToPayUpdateWithInvalidCertificateShouldReturnForbidden() {
-    when(checkCertificate.verifyRequestCertificate(any(), eq(invalidCertificateSerialNumber)))
+    when(certificateChecker.verifyRequestCertificate(any(), eq(invalidCertificateSerialNumber)))
         .thenReturn(Mono.error(new IncorrectCertificate()));
 
     Mono<ResponseEntity<Void>> result = controller.handleRequestToPayUpdate(
@@ -73,7 +73,7 @@ class RequestToPayUpdateControllerTest {
   @Test
   void handleRequestToPayUpdateWithOtherErrorShouldPropagateError() {
     IllegalStateException exception = new IllegalStateException("Test exception");
-    when(checkCertificate.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
+    when(certificateChecker.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
         .thenReturn(Mono.error(exception));
 
     Mono<ResponseEntity<Void>> result = controller.handleRequestToPayUpdate(

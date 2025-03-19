@@ -11,11 +11,11 @@ import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
-public class CheckCertificate {
+public class CertificateChecker {
 
   private final RegistryDataService registryDataService;
 
-  public CheckCertificate(RegistryDataService registryDataService) {
+  public CertificateChecker(RegistryDataService registryDataService) {
     this.registryDataService = registryDataService;
   }
 

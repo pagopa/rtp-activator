@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import it.gov.pagopa.rtp.activator.domain.errors.IncorrectCertificate;
 import it.gov.pagopa.rtp.activator.epcClient.model.AsynchronousSepaRequestToPayResponseResourceDto;
-import it.gov.pagopa.rtp.activator.utils.CheckCertificate;
+import it.gov.pagopa.rtp.activator.utils.CertificateChecker;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -17,11 +17,11 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class RequestToPayUpdateController implements RequestToPayUpdateApi {
 
-  private final CheckCertificate checkCertificate;
+  private final CertificateChecker certificateChecker;
 
   public RequestToPayUpdateController(
-      CheckCertificate checkCertificate) {
-    this.checkCertificate = checkCertificate;
+      CertificateChecker certificateChecker) {
+    this.certificateChecker = certificateChecker;
   }
 
   @Override
@@ -30,7 +30,7 @@ public class RequestToPayUpdateController implements RequestToPayUpdateApi {
 
     return asynchronousSepaRequestToPayResponseResourceDto
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
-        .flatMap(s -> checkCertificate.verifyRequestCertificate(s, clientCertificateSerialNumber))
+        .flatMap(s -> certificateChecker.verifyRequestCertificate(s, clientCertificateSerialNumber))
         .<ResponseEntity<Void>>map(response -> ResponseEntity.ok().build())
         .onErrorReturn(IncorrectCertificate.class,
             ResponseEntity.status(403).build())
