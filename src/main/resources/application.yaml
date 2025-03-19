@@ -3,7 +3,7 @@ logging.level:
 
 spring:
   application:
-    name: rtp-activator
+    name: rtpactivator
   data:
     mongodb:
       uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
