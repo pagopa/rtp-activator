@@ -54,7 +54,7 @@ resource "azurerm_container_app" "rtp-activator" {
 
       env {
         name  = "OTEL_SERVICE_NAME"
-        value = "rtpactivator"
+        value = "rtp-activator"
       }
 
       dynamic "env" {

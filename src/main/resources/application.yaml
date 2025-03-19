@@ -3,7 +3,7 @@ logging.level:
 
 spring:
   application:
-    name: rtpactivator
+    name: rtp-activator
   data:
     mongodb:
       uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
@@ -45,8 +45,6 @@ service-provider:
       backoff-jitter: ${EPC_SEND_RETRY_BACKOFF_JITTER:0.75}
 
 otel:
-  service:
-    name: rtpactivator
   instrumentation:
     mongo:
       enabled: true
