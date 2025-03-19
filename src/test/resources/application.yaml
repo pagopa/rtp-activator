@@ -2,6 +2,8 @@ logging.level.org.springframework.security: DEBUG
 activation.baseUrl: http://localhost:8080/
 
 spring:
+  application:
+    name: rtp-activator
   cloud:
     azure:
       monitor:
