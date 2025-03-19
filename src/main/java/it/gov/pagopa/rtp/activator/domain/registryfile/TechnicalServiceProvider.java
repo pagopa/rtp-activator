@@ -22,6 +22,9 @@ public record TechnicalServiceProvider(
     @JsonProperty("certificate_serial_number")
     String certificateSerialNumber,
 
-    OAuth2 oauth2
+    OAuth2 oauth2,
+
+    @JsonProperty("mtls_enabled")
+    boolean mtlsEnabled
 ) {}
 
