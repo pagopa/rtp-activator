@@ -15,6 +15,14 @@ spring:
 
 activation.base-url: ${BASE_URL:http://localhost}
 
+azure:
+  monitor:
+    application:
+      name: rtp-activator
+    service:
+      name: rtp-activator
+    role:
+      name: rtp-activator
 # enable spring boot actuator health endpoint
 management:
   endpoints:
