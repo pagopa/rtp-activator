@@ -45,6 +45,12 @@ service-provider:
       backoff-jitter: ${EPC_SEND_RETRY_BACKOFF_JITTER:0.75}
 
 otel:
+  service:
+    name: rtp-activator
+  resource:
+    attributes: 
+      service:
+        name: rtp-activator
   instrumentation:
     mongo:
       enabled: true
