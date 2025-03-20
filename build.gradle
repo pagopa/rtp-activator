@@ -248,7 +248,9 @@ graalvmNative {
             buildArgs.add('--initialize-at-run-time=com.microsoft.aad.msal4j')
             buildArgs.add('--initialize-at-run-time=com.azure.identity')
             buildArgs.add('--initialize-at-run-time=com.azure.core.credential.AccessToken')
-            
+
+			buildArgs.add('--initialize-at-build-time=ch.qos.logback')
+
             buildArgs.add('--enable-all-security-services')
             buildArgs.add('--enable-url-protocols=https')
             buildArgs.add('--no-fallback')
