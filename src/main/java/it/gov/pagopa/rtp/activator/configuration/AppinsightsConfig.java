@@ -25,7 +25,7 @@ public class AppinsightsConfig {
   public OpenTelemetry configureAzureMonitorExporter() {  
     AutoConfiguredOpenTelemetrySdkBuilder sdkBuilder = AutoConfiguredOpenTelemetrySdk.builder();
     
-    AzureMonitorAutoConfigure.customize(sdkBuilder);
+    AzureMonitorAutoConfigure.customize(sdkBuilder, applicationInsightsProperties.connectionString());
 
     return sdkBuilder.build().getOpenTelemetrySdk();
   }
