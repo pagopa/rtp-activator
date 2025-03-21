@@ -129,7 +129,6 @@ public class SendRtpHandler implements RequestHandler<EpcRequest> {
    * @param request The EPC request containing service provider details.
    * @return {@code true} if mTLS should be used, {@code false} otherwise.
    */
-  @NonNull
   private boolean checkMtlsEnabled(@NonNull final EpcRequest request) {
     return Optional.of(request)
         .map(EpcRequest::serviceProviderFullData)
