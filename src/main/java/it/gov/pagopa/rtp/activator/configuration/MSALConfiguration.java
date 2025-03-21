@@ -38,7 +38,6 @@ public class MSALConfiguration {
             hints.serialization()
                 .registerType(TypeReference.of("com.microsoft.aad.msal4j.ManagedIdentityErrorResponse"))
                 .registerType(TypeReference.of("com.microsoft.aad.msal4j.ManagedIdentityResponse"));
-
         }
     }
 }
