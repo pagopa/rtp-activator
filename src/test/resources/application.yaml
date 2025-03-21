@@ -5,7 +5,7 @@ spring:
   cloud:
     azure:
       monitor:
-        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:InstrumentationKey=5bdc5554-4ca4-4797-be08-e5982d5a413a}
+        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:}
 
 azure.cosmos:
   uri: https://example.com/db/endpoint
