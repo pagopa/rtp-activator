@@ -27,6 +27,8 @@ public class RequestToPayUpdateController implements RequestToPayUpdateApi {
   @Override
   public Mono<ResponseEntity<Void>> handleRequestToPayUpdate(String clientCertificateSerialNumber,
       @Valid Mono<AsynchronousSepaRequestToPayResponseResourceDto> asynchronousSepaRequestToPayResponseResourceDto) {
+          
+    log.info("Received send callback request"); 
 
     return asynchronousSepaRequestToPayResponseResourceDto
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
