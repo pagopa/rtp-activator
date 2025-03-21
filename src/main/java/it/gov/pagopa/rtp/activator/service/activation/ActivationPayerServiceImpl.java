@@ -36,7 +36,7 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
             .doOnSuccess(newPayer -> MDC.put("service_provider", serviceProviderDebtor))
             .doOnSuccess(newPayer -> MDC.put("debtor", fiscalCode))
             .doOnSuccess(newPayer -> log.info("Payer activated with id: {}", newPayer.activationID().getId()))
-            .doFinally(__ -> MDC.clear());
+            .doFinally(f -> MDC.clear());
     }
 
     @Override
