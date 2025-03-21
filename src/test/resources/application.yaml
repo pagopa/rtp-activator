@@ -1,6 +1,12 @@
 logging.level.org.springframework.security: DEBUG
 activation.baseUrl: http://localhost:8080/
 
+spring:
+  cloud:
+    azure:
+      monitor:
+        connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:}
+
 azure.cosmos:
   uri: https://example.com/db/endpoint
   key: your-primary-key
