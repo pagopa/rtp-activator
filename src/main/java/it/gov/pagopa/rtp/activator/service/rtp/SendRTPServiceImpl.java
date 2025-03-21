@@ -12,8 +12,10 @@ import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
+import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.model.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto;
@@ -31,9 +33,9 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
 
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -108,6 +110,23 @@ public class SendRTPServiceImpl implements SendRTPService {
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
+
+
+  @NonNull
+  @Override
+  public Mono<Rtp> cancelRtp(@NonNull final ResourceID rtpId) {
+    return this.rtpRepository.findById(rtpId)
+        .doFirst(() -> log.info("Retrieving RTP with id {}", rtpId.getId()))
+        .doOnSuccess(rtp -> log.info("RTP retrieved with id {} and status {}", rtp.resourceID().getId(), rtp.status()))
+        .doOnError(error -> log.error("Error retrieving RTP: {}", error.getMessage(), error))
+        .filter(rtp -> rtp.status().equals(RtpStatus.CREATED))
+        .switchIfEmpty(Mono.error(() -> new IllegalStateException("Cannot cancel RTP with id " + rtpId.getId())))
+        .doOnNext(rtp -> log.debug("Setting status of RTP with id {} to CANCELLED", rtp.resourceID().getId()))
+        .map(rtp -> rtp.withStatus(RtpStatus.CANCELLED))
+        .doOnNext(rtp -> log.info("Saving {} RTP with id {}", rtp.status(), rtp.resourceID().getId()))
+        .flatMap(this.rtpRepository::save);
+  }
+
 
   private Throwable mapActivationResponseToException(WebClientResponseException exception) {
     return switch (exception.getStatusCode()) {
