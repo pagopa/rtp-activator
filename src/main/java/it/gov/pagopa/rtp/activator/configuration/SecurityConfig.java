@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
                 .authorizeExchange(it -> it
-                        .pathMatchers("/actuator/**")
+                        .pathMatchers("/actuator/**","/send")
                         .permitAll()
                         .anyExchange()
                         .authenticated()
