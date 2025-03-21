@@ -13,11 +13,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Slf4j
 @Configuration
-public class AppinsightsConfig {
+public class ApplicationInsightsConfig {
 
   private final ApplicationInsightsProperties applicationInsightsProperties;
 
-  public AppinsightsConfig(ApplicationInsightsProperties applicationInsightsProperties) {
+  public ApplicationInsightsConfig(ApplicationInsightsProperties applicationInsightsProperties) {
     this.applicationInsightsProperties = applicationInsightsProperties;
   }
 
