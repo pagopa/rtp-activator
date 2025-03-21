@@ -2,7 +2,9 @@ package it.gov.pagopa.rtp.activator.service.activation;
 
 import java.time.Instant;
 
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
@@ -21,6 +23,7 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
         this.activationDBRepository = activationDBRepository;
     }
 
+    @WithSpan
     @Override
     public Mono<Payer> activatePayer(String serviceProviderDebtor, String fiscalCode) {
 
@@ -30,7 +33,10 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
         return activationDBRepository.findByFiscalCode(fiscalCode)
             .flatMap(existingEntity -> Mono.<Payer>error(new PayerAlreadyExists()))
             .switchIfEmpty(Mono.defer(() -> activationDBRepository.save(payer)))
-            .doOnSuccess(newPayer -> log.info("Payer activated with id: {}", newPayer.activationID().getId()));
+            .doOnSuccess(newPayer -> MDC.put("service_provider", serviceProviderDebtor))
+            .doOnSuccess(newPayer -> MDC.put("debtor", fiscalCode))
+            .doOnSuccess(newPayer -> log.info("Payer activated with id: {}", newPayer.activationID().getId()))
+            .doFinally(f -> MDC.clear());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator;
 
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
+import it.gov.pagopa.rtp.activator.configuration.ApplicationInsightsProperties;
 import it.gov.pagopa.rtp.activator.configuration.BlobStorageConfig;
 import it.gov.pagopa.rtp.activator.configuration.CachesConfigProperties;
 import it.gov.pagopa.rtp.activator.configuration.CallbackProperties;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Hooks;
     CachesConfigProperties.class,
     SslContextProps.class,
     CallbackProperties.class,
+    ApplicationInsightsProperties.class,
 })
 public class RtpActivatorApplication {
 
