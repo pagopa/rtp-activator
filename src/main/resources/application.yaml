@@ -8,6 +8,8 @@ spring:
     mongodb:
       uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
       database: ${DB_NAME:rtp}
+      uuid-representation: standard
+  
   cloud:
     azure:
       monitor:
@@ -78,3 +80,8 @@ client:
 callback:
   url:
     send: ${CALLBACK_BASE_URL:https://spsrtp.api.cstar.pagopa.it}/send
+    cancel: ${CALLBACK_BASE_URL:https://spsrtp.api.cstar.pagopa.it}/cancel
+
+pagopa:
+  anag:
+    fiscal-code: 15376371009

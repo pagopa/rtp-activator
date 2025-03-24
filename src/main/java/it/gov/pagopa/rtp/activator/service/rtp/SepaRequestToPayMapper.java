@@ -5,43 +5,73 @@ import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.epcClient.model.AccountIdentification4ChoiceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.AmountType4ChoiceEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.CancellationReason33ChoiceEPC25922V30DS11Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.CaseAssignment5EPC25922V30DS11Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.CashAccount38Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.CashAccount40EPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ChargeBearerType1CodeDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.CreditTransferTransaction57EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.CreditorPaymentActivationRequestV10EPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.CustomerPaymentCancellationRequestV08EPC25922V30DS11Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.DateAndDateTime2ChoiceEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.DocumentEPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.DocumentEPC25922V30DS11Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.ExternalCancellationReason1CodeDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeIIDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalPersonIdentification1CodeEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalServiceLevel1CodeDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.FinancialIdentificationSchemeName1ChoiceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.FinancialInstitutionIdentification18EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.GenericFinancialIdentification1Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.GenericOrganisationIdentification1EPC25922V30DS022Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.GenericOrganisationIdentification1EPC25922V30DS04bDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.GenericOrganisationIdentification1EPC25922V30DS112Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.GenericPersonIdentification1EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.GroupHeader105EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.InstructionForCreditorAgent3EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.LocalInstrument2ChoiceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS04bDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS112Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS022Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04b2Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04bDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.OriginalGroupInformation29EPC25922V30DS15RTPDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.OriginalPaymentInstruction34EPC25922V30DS11Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.OriginalTransactionReference28EPC25922V30DS11Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceEPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceEPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceEPC25922V30DS04bDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceEPC25922V30DS113Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.Party40ChoiceEPC25922V30DS113Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.Party40ChoiceEPC25922V30DS11Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PartyIdentification135EPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PartyIdentification135EPC25922V30DS023Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PartyIdentification135EPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.PartyIdentification135EPC25922V30DS04bDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.PartyIdentification135EPC25922V30DS113Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.PaymentCancellationReason5EPC25922V30DS11Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PaymentIdentification6EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PaymentInstruction42EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PaymentMethod7CodeDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.PaymentTransaction109EPC25922V30DS11Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PaymentTypeInformation26EPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.PaymentTypeInformation27EPC25922V30DS15RTPDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentificationSchemeName1ChoiceEPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.RemittanceInformation16EPC25922V30DS04bDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.RemittanceInformation21EPC25922V30DS02Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayCancellationRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ServiceLevel8ChoiceDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.UnderlyingTransaction24EPC25922V30DS11Dto;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -49,11 +79,13 @@ import org.springframework.stereotype.Component;
 public class SepaRequestToPayMapper {
 
   private static final String BIC_REGEX = "^([A-Z0-9]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?)$";
+  private static final String IBAN = "IT81E0300203280398564542723";
 
   private final CallbackProperties callbackProperties;
 
   public SepaRequestToPayMapper(@NonNull final CallbackProperties callbackProperties) {
-    this.callbackProperties = Objects.requireNonNull(callbackProperties, "Callback properties cannot be null");
+    this.callbackProperties = Objects.requireNonNull(callbackProperties,
+        "Callback properties cannot be null");
   }
 
 
@@ -81,7 +113,8 @@ public class SepaRequestToPayMapper {
         .schmeNm(personIdentificationSchemeName1ChoiceEPC25922V30DS02Dto);
 
     var lGenericPersonIdentification1EPC25922V30DS02Dtos = new ArrayList<GenericPersonIdentification1EPC25922V30DS02Dto>();
-    lGenericPersonIdentification1EPC25922V30DS02Dtos.add(genericPersonIdentification1EPC25922V30DS02Dto);
+    lGenericPersonIdentification1EPC25922V30DS02Dtos.add(
+        genericPersonIdentification1EPC25922V30DS02Dto);
 
     var personIdentification13EPC25922V30DS02Dto = new PersonIdentification13EPC25922V30DS02Dto()
         .othr(lGenericPersonIdentification1EPC25922V30DS02Dtos);
@@ -95,7 +128,8 @@ public class SepaRequestToPayMapper {
 
     var dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto = new FinancialInstitutionIdentification18EPC25922V30DS02Dto();
     if (rtp.serviceProviderDebtor().matches(BIC_REGEX)) {
-      dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setBICFI(rtp.serviceProviderDebtor());
+      dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setBICFI(
+          rtp.serviceProviderDebtor());
     } else {
       var financialIdentificationSchemeName1ChoiceDto = new FinancialIdentificationSchemeName1ChoiceDto();
       financialIdentificationSchemeName1ChoiceDto.setCd("BOID");
@@ -103,7 +137,8 @@ public class SepaRequestToPayMapper {
       var genericFinancialIdentification1Dto = new GenericFinancialIdentification1Dto();
       genericFinancialIdentification1Dto.setId(rtp.serviceProviderDebtor());
       genericFinancialIdentification1Dto.setSchmeNm(financialIdentificationSchemeName1ChoiceDto);
-      dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setOthr(genericFinancialIdentification1Dto);
+      dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto.setOthr(
+          genericFinancialIdentification1Dto);
     }
 
     var dbtBranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto = new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto()
@@ -127,8 +162,8 @@ public class SepaRequestToPayMapper {
         .instdAmt(rtp.amount().movePointLeft(2));
 
     var financialIdentificationSchemeName1ChoiceDto = new FinancialIdentificationSchemeName1ChoiceDto()
-      .cd("BOID");// FIXED
-      
+        .cd("BOID");// FIXED
+
     var genericFinancialIdentification1Dto = new GenericFinancialIdentification1Dto()
         .id(rtp.serviceProviderCreditor())
         .schmeNm(financialIdentificationSchemeName1ChoiceDto);
@@ -196,7 +231,8 @@ public class SepaRequestToPayMapper {
         .rmtInf(remittanceInformation21EPC25922V30DS02Dto);
 
     var lCreditTransferTransaction57EPC25922V30DS02Dtos = new ArrayList<CreditTransferTransaction57EPC25922V30DS02Dto>();
-    lCreditTransferTransaction57EPC25922V30DS02Dtos.add(creditTransferTransaction57EPC25922V30DS02Dto);
+    lCreditTransferTransaction57EPC25922V30DS02Dtos.add(
+        creditTransferTransaction57EPC25922V30DS02Dto);
 
     var paymentInstruction42EPC25922V30DS02Dto = new PaymentInstruction42EPC25922V30DS02Dto()
         .pmtInfId(rtp.noticeNumber())
@@ -211,18 +247,144 @@ public class SepaRequestToPayMapper {
     listPaymentInstruction42EPC25922V30DS02Dto.add(paymentInstruction42EPC25922V30DS02Dto);
 
     var creditorPaymentActivationRequestV10EPC25922V30DS02Dto = new CreditorPaymentActivationRequestV10EPC25922V30DS02Dto();
-    creditorPaymentActivationRequestV10EPC25922V30DS02Dto.setGrpHdr(groupHeader105EPC25922V30DS02Dto);
+    creditorPaymentActivationRequestV10EPC25922V30DS02Dto.setGrpHdr(
+        groupHeader105EPC25922V30DS02Dto);
     creditorPaymentActivationRequestV10EPC25922V30DS02Dto
         .setPmtInf(listPaymentInstruction42EPC25922V30DS02Dto);
 
     var documentEPC25922V30DS02Dto = new DocumentEPC25922V30DS02Dto()
         .cdtrPmtActvtnReq(creditorPaymentActivationRequestV10EPC25922V30DS02Dto);
 
-    sepaRequestToPayRequestResourceDto.setCallbackUrl(URI.create(this.callbackProperties.url().send()));
+    sepaRequestToPayRequestResourceDto.setCallbackUrl(
+        URI.create(this.callbackProperties.url().send()));
     sepaRequestToPayRequestResourceDto.setResourceId(rtp.resourceID().getId().toString());
     sepaRequestToPayRequestResourceDto.document(documentEPC25922V30DS02Dto);
 
     return sepaRequestToPayRequestResourceDto;
+  }
+
+
+  @NonNull
+  public SepaRequestToPayCancellationRequestResourceDto toEpcRequestToCancel(
+      @NonNull final Rtp rtp) {
+
+    final var organisationIdentificationSchemeName1Choice = new OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04bDto() //SchmeNm
+        .cd(ExternalOrganisationIdentification1CodeIIDto.BOID);
+
+    final var genericOrganisationIdentification = new GenericOrganisationIdentification1EPC25922V30DS04bDto()  //Othr
+        .id("15376371009")  //TODO: retrieve this value (pagopa fiscal code) from application.yaml
+        .schmeNm(organisationIdentificationSchemeName1Choice);
+
+    final var organisationIdentification = new OrganisationIdentification29EPC25922V30DS04bDto() //OrgId
+        .othr(genericOrganisationIdentification);
+
+    final var party38Choice = new Party38ChoiceEPC25922V30DS04bDto() //ID
+        .orgId(organisationIdentification);
+
+    final var partyIdentification = new PartyIdentification135EPC25922V30DS04bDto()  //Pty assigner
+        .id(party38Choice);
+
+    final var party40ChoiceAssigner = new Party40ChoiceEPC25922V30DS11Dto()  //Assgnr
+        .pty(partyIdentification);
+
+    final var financialInstitutionIdentification = new FinancialInstitutionIdentification18EPC25922V30DS02Dto()  //FinInstnId
+        .BICFI(rtp.serviceProviderDebtor());  //TODO: check if it's true
+
+    final var branchAndFinancialInstitutionIdentification = new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto() //Agt
+        .finInstnId(financialInstitutionIdentification);
+
+    final var party40ChoiceAssignee = new Party40ChoiceEPC25922V30DS11Dto()  //Assgne
+        .agt(branchAndFinancialInstitutionIdentification);
+
+    final var caseAssignment = new CaseAssignment5EPC25922V30DS11Dto() //Assgnmt
+        .id(UUID.randomUUID()
+            .toString())   //TODO: check if it's needed to get this value as a function parameter
+        .assgnr(party40ChoiceAssigner)
+        .assgne(party40ChoiceAssignee)
+        .creDtTm(rtp.savingDateTime().toString());
+
+    final var organisationIdentification29EPC25922V30DS112Dto = new OrganisationIdentification29EPC25922V30DS112Dto() //OrgId
+        .othr(new GenericOrganisationIdentification1EPC25922V30DS112Dto()
+            .id("02438750586")    //TODO: understand what this value is
+            .schmeNm(new OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04b2Dto()
+                .cd(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID)));
+
+    final var PartyIdentification135EPC25922V30DS113Dto = new PartyIdentification135EPC25922V30DS113Dto() //Orgtr
+        .nm(rtp.payeeName())
+        .id(new Party38ChoiceEPC25922V30DS113Dto()
+            .orgId(organisationIdentification29EPC25922V30DS112Dto));
+
+    final var PaymentCancellationReason5EPC25922V30DS11Dto = new ArrayList<String>();  //TODO: understand what this value is
+
+    final var paymentCancellationReason = new PaymentCancellationReason5EPC25922V30DS11Dto()  //CxlRsnInf
+        .orgtr(PartyIdentification135EPC25922V30DS113Dto)
+        .rsn(new CancellationReason33ChoiceEPC25922V30DS11Dto()
+            .cd(ExternalCancellationReason1CodeDto.PAID))   //TODO: get this value as a function parameter
+        .addtlInf(PaymentCancellationReason5EPC25922V30DS11Dto);
+
+    final var paymentTypeInformation27EPC25922V30DS15RTPDto = new PaymentTypeInformation27EPC25922V30DS15RTPDto()
+        .svcLvl(new ServiceLevel8ChoiceDto()
+            .cd(ExternalServiceLevel1CodeDto.SRTP))
+        .lclInstrm(new LocalInstrument2ChoiceDto()
+            .prtry("PAGOPA"));
+
+    final var branchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto = new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto() //CdtrAgt
+        .finInstnId(new FinancialInstitutionIdentification18EPC25922V30DS02Dto()
+            .othr(new GenericFinancialIdentification1Dto()
+                .id("15376371009")  //TODO: check what this value is
+                .schmeNm(new FinancialIdentificationSchemeName1ChoiceDto()
+                    .cd("BOID")
+                )));
+
+    final var originalTransactionReference28EPC25922V30DS11Dto = new OriginalTransactionReference28EPC25922V30DS11Dto() //OrgnlTxRef
+        .amt(new AmountType4ChoiceEPC25922V30DS02Dto()
+            .instdAmt(rtp.amount()))
+        .reqdExctnDt(new DateAndDateTime2ChoiceEPC25922V30DS02Dto()
+            .dt(String.valueOf(rtp.savingDateTime()))) //TODO: check the date
+        .pmtTpInf(paymentTypeInformation27EPC25922V30DS15RTPDto)
+        .rmtInf(new RemittanceInformation16EPC25922V30DS04bDto()
+            .ustrd(rtp.subject()))
+        .dbtrAgt(new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto()
+            .finInstnId(new FinancialInstitutionIdentification18EPC25922V30DS02Dto()
+                .BICFI(rtp.serviceProviderDebtor())))
+        .cdtrAgt(branchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto)
+        .cdtr(
+            new Party40ChoiceEPC25922V30DS113Dto()) //TODO: check why this class doesn't have all fields
+        .cdtrAcct(new CashAccount38Dto()
+            .id(new AccountIdentification4ChoiceDto()
+                .IBAN(IBAN)));
+
+    final var paymentTransaction = List.of(new PaymentTransaction109EPC25922V30DS11Dto()  //TxInf
+        .cxlId(UUID.randomUUID().toString())    //TODO: understand what this value is
+        .orgnlInstrId(UUID.randomUUID().toString())  //TODO: understand what this value is
+        .orgnlEndToEndId(rtp.noticeNumber())
+        .cxlRsnInf(paymentCancellationReason)
+        .orgnlTxRef(originalTransactionReference28EPC25922V30DS11Dto));
+
+    final var originalPaymentInstruction = new OriginalPaymentInstruction34EPC25922V30DS11Dto() //OrgnlPmtInfAndCxl
+        .pmtCxlId(UUID.randomUUID().toString()) //TODO: understand what this value is
+        .orgnlPmtInfId(rtp.resourceID().getId().toString())
+        .orgnlGrpInf(new OriginalGroupInformation29EPC25922V30DS15RTPDto()
+            .orgnlMsgId("ab85fbb7a48a4a669b5436ee5b497036") //TODO: understand what this value is
+            .orgnlMsgNmId("pain.013.001.10")
+            .orgnlCreDtTm(rtp.savingDateTime().toString()))
+        .txInf(paymentTransaction); //TODO: understand what this value is
+
+    final var underlyingTransaction = new UnderlyingTransaction24EPC25922V30DS11Dto()  //Undrlyg
+        .orgnlPmtInfAndCxl(List.of(originalPaymentInstruction));
+
+    final var customerPaymentCancellationRequest = new CustomerPaymentCancellationRequestV08EPC25922V30DS11Dto() //CstmrPmtCxlReq
+        .assgnmt(caseAssignment)
+        .undrlyg(underlyingTransaction);
+
+    final var document = new DocumentEPC25922V30DS11Dto()  //Document
+        .cstmrPmtCxlReq(customerPaymentCancellationRequest);
+
+    return new SepaRequestToPayCancellationRequestResourceDto()
+        .resourceId(rtp.resourceID().getId().toString())
+        .document(document)
+        .callbackUrl(URI.create(this.callbackProperties.url().cancel()));
+
   }
 
 }

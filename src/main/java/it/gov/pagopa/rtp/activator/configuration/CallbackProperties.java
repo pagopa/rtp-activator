@@ -12,6 +12,8 @@ public record CallbackProperties(
     @NotNull UrlProperties url
 ) {
 
-  public record UrlProperties(@NotBlank String send) {}
+  public record UrlProperties(
+      @NotBlank String send,
+      @NotBlank String cancel) {}
 }
 

@@ -28,7 +28,8 @@ class SepaRequestToPayMapperTest {
   @BeforeEach
   void setUp() {
     callbackProperties = new CallbackProperties(
-        new CallbackProperties.UrlProperties("https://spsrtp.api.cstar.pagopa.it/send")
+        new CallbackProperties.UrlProperties("https://spsrtp.api.cstar.pagopa.it/send",
+            "https://spsrtp.api.cstar.pagopa.it/send")
     );
     sepaRequestToPayMapper = new SepaRequestToPayMapper(callbackProperties);
   }
