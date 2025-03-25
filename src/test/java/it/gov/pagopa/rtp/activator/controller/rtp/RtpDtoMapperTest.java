@@ -13,7 +13,10 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RtpDtoMapperTest {
-    private RtpDtoMapper rtpDtoMapper;
+
+  private static final String IBAN = "IT96K999999999900SRTPPAGOPA";
+
+  private RtpDtoMapper rtpDtoMapper;
 
     @BeforeEach
     void setUp() {
@@ -54,7 +57,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
-    assertThat(rtp.iban()).isEqualTo("iban");
+    assertThat(rtp.iban()).isEqualTo(IBAN);
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
   }
@@ -96,7 +99,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
-    assertThat(rtp.iban()).isEqualTo("iban");
+    assertThat(rtp.iban()).isEqualTo(IBAN);
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
     assertThat(rtp.serviceProviderCreditor()).isEqualTo(subject);
