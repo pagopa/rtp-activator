@@ -10,6 +10,10 @@ import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 
 @Component
 public class RtpDtoMapper {
+
+  private static final String IBAN = "IT96K999999999900SRTPPAGOPA";
+
+
   public Rtp toRtp(CreateRtpDto createRtpDto) {
 
     return Rtp.builder().noticeNumber(createRtpDto.getPaymentNotice().getNoticeNumber())
@@ -19,7 +23,7 @@ public class RtpDtoMapper {
         .savingDateTime(LocalDateTime.now())
         .payerName(createRtpDto.getPayer().getName())
         .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
-        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban("iban")
+        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban(IBAN)
         .subject(createRtpDto.getPaymentNotice().getSubject())
         .payTrxRef(createRtpDto.getPayee().getPayTrxRef()).flgConf("flgConf").build();
   }
@@ -32,7 +36,7 @@ public class RtpDtoMapper {
         .savingDateTime(LocalDateTime.now())
         .payerName(createRtpDto.getPayer().getName())
         .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
-        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban("iban")
+        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban(IBAN)
         .subject(createRtpDto.getPaymentNotice().getSubject())
         .serviceProviderCreditor(tokenSub)
         .payTrxRef(createRtpDto.getPayee().getPayTrxRef()).flgConf("flgConf").build();
