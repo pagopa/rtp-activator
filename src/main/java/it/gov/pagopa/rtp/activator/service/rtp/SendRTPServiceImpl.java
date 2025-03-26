@@ -3,7 +3,6 @@ package it.gov.pagopa.rtp.activator.service.rtp;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -29,6 +28,7 @@ import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResour
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import it.gov.pagopa.rtp.activator.service.rtp.handler.SendRtpProcessor;
 
+import it.gov.pagopa.rtp.activator.utils.LoggingUtils;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
@@ -91,7 +91,8 @@ public class SendRTPServiceImpl implements SendRTPService {
         .map(rtp::toRtpWithActivationInfo)
         .doOnSuccess(rtpWithActivationInfo -> log.info("Saving Rtp to be sent: {}", rtpWithActivationInfo))
         .flatMap(rtpRepository::save)
-        .flatMap(this::logRtpAsJson)
+        .doOnNext(savedRtp -> LoggingUtils.logAsJson(
+            () -> sepaRequestToPayMapper.toEpcRequestToPay(savedRtp), objectMapper))
         .doOnSuccess(rtpSaved -> log.info("Rtp to be sent saved with id: {}", rtpSaved.resourceID().getId()))
         .doOnError(error -> log.error("Error saving Rtp to be sent: {}", error.getMessage(), error));
 
@@ -121,6 +122,8 @@ public class SendRTPServiceImpl implements SendRTPService {
         .doOnError(error -> log.error("Error retrieving RTP: {}", error.getMessage(), error))
         .filter(rtp -> rtp.status().equals(RtpStatus.CREATED))
         .switchIfEmpty(Mono.error(() -> new IllegalStateException("Cannot cancel RTP with id " + rtpId.getId())))
+        .doOnNext(rtp -> LoggingUtils.logAsJson(
+            () -> sepaRequestToPayMapper.toEpcRequestToPay(rtp), objectMapper))
         .flatMap(this.sendRtpProcessor::sendRtpCancellationToServiceProviderDebtor)
         .doOnNext(rtp -> log.debug("Setting status of RTP with id {} to {}", rtp.resourceID().getId(), RtpStatus.CANCELLED))
         .map(rtp -> rtp.withStatus(RtpStatus.CANCELLED))
@@ -135,21 +138,6 @@ public class SendRTPServiceImpl implements SendRTPService {
       case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAsString());
       default -> new RuntimeException("Internal Server Error");
     };
-  }
-
-  private Mono<Rtp> logRtpAsJson(Rtp rtp) {
-    log.info(rtpToJson(rtp));
-    return Mono.just(rtp);
-  }
-
-  private String rtpToJson(Rtp rtpToLog) {
-    try {
-      return objectMapper.writeValueAsString(
-          sepaRequestToPayMapper.toEpcRequestToPay(rtpToLog));
-    } catch (JsonProcessingException e) {
-      log.error("Problem while serializing SepaRequestToPayRequestResourceDto object", e);
-      return "";
-    }
   }
 
   private RetryBackoffSpec sendRetryPolicy() {
