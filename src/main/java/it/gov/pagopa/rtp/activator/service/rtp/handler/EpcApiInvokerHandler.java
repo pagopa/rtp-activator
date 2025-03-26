@@ -48,7 +48,7 @@ public abstract class EpcApiInvokerHandler implements RequestHandler<EpcRequest>
    * @param sepaRequestToPayMapper Mapper for converting RTP requests into EPC-compliant format.
    * @param serviceProviderConfig  Configuration settings for the service provider.
    */
-  public EpcApiInvokerHandler(@NonNull final WebClientFactory webClientFactory,
+  protected EpcApiInvokerHandler(@NonNull final WebClientFactory webClientFactory,
       @NonNull final OpenAPIClientFactory<DefaultApi> epcClientFactory,
       @NonNull final SepaRequestToPayMapper sepaRequestToPayMapper,
       @NonNull final ServiceProviderConfig serviceProviderConfig) {

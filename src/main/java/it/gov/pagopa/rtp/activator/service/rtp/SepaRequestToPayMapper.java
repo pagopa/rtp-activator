@@ -79,7 +79,6 @@ import org.springframework.stereotype.Component;
 public class SepaRequestToPayMapper {
 
   private static final String BIC_REGEX = "^([A-Z0-9]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?)$";
-  private static final String IBAN = "IT81E0300203280398564542723";
 
   private final CallbackProperties callbackProperties;
 
@@ -309,18 +308,18 @@ public class SepaRequestToPayMapper {
             .schmeNm(new OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04b2Dto()
                 .cd(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID)));
 
-    final var PartyIdentification135EPC25922V30DS113Dto = new PartyIdentification135EPC25922V30DS113Dto() //Orgtr
+    final var partyIdentification135EPC25922V30DS113Dto = new PartyIdentification135EPC25922V30DS113Dto() //Orgtr
         .nm(rtp.payeeName())
         .id(new Party38ChoiceEPC25922V30DS113Dto()
             .orgId(organisationIdentification29EPC25922V30DS112Dto));
 
-    final var PaymentCancellationReason5EPC25922V30DS11Dto = new ArrayList<String>();  //TODO: understand what this value is
+    final var paymentCancellationReason5EPC25922V30DS11Dto = new ArrayList<String>();  //TODO: understand what this value is
 
     final var paymentCancellationReason = new PaymentCancellationReason5EPC25922V30DS11Dto()  //CxlRsnInf
-        .orgtr(PartyIdentification135EPC25922V30DS113Dto)
+        .orgtr(partyIdentification135EPC25922V30DS113Dto)
         .rsn(new CancellationReason33ChoiceEPC25922V30DS11Dto()
             .cd(ExternalCancellationReason1CodeDto.PAID))   //TODO: get this value as a function parameter
-        .addtlInf(PaymentCancellationReason5EPC25922V30DS11Dto);
+        .addtlInf(paymentCancellationReason5EPC25922V30DS11Dto);
 
     final var paymentTypeInformation27EPC25922V30DS15RTPDto = new PaymentTypeInformation27EPC25922V30DS15RTPDto()
         .svcLvl(new ServiceLevel8ChoiceDto()
