@@ -3,6 +3,7 @@ package it.gov.pagopa.rtp.activator.service.rtp;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.activateClient.model.PayerDto;
@@ -53,6 +54,8 @@ class SendRTPServiceTest {
   @Mock
   private RtpRepository rtpRepository;
   @Mock
+  private ObjectMapper objectMapper;
+  @Mock
   private SendRtpProcessor sendRtpProcessor;
 
   private SendRTPServiceImpl sendRTPService;
@@ -77,7 +80,7 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, sendRtpProcessor);
+        serviceProviderConfig, rtpRepository, objectMapper,sendRtpProcessor);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
