@@ -1,10 +1,11 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
 import java.util.Objects;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -66,14 +67,8 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
     return Mono.just(rtpToSend)
         .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()))
         .doOnNext(rtp -> log.debug("Creating EPC request."))
-        .map(EpcRequest::of)
-        .doOnNext(epcRequest -> log.debug("EPC request created: {}", epcRequest))
-        .doOnNext(epcRequest -> log.debug("Calling registry data handler."))
-        .flatMap(this.registryDataHandler::handle)
-        .doOnNext(data -> log.debug("Successfully called registry data handler."))
-        .doOnNext(epcRequest -> log.debug("Calling OAuth2 handler."))
-        .flatMap(this.oauth2Handler::handle)
-        .doOnNext(data -> log.debug("Successfully called OAuth2 handler."))
+        .map(rtp -> EpcRequest.of(rtp, SynchronousSepaRequestToPayCreationResponseDto.class))
+        .flatMap(this::handleIntermediateSteps)
         .doOnNext(epcRequest -> log.debug("Calling send RTP handler."))
         .flatMap(this.sendRtpHandler::handle)
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
@@ -84,4 +79,33 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
         .doOnError(error -> log.error("Error sending RTP to {}: {}",
             rtpToSend.serviceProviderDebtor(), error.getMessage()));
   }
+
+  /**
+   * Handles intermediate processing steps for the EPC request.
+   *
+   * <p>This method performs the following actions:
+   * <ul>
+   *   <li>Logs EPC request creation.</li>
+   *   <li>Calls the registry data handler.</li>
+   *   <li>Calls the OAuth2 handler for authentication.</li>
+   * </ul>
+   *
+   * @param epcRequest The EPC request to be processed.
+   * @return A {@link Mono} emitting the processed EPC request.
+   * @throws NullPointerException if {@code epcRequest} is {@code null}.
+   */
+  @NonNull
+  private Mono<EpcRequest> handleIntermediateSteps(@NonNull final EpcRequest epcRequest) {
+    Objects.requireNonNull(epcRequest);
+
+    return Mono.just(epcRequest)
+        .doOnNext(request -> log.debug("EPC request created: {}", request))
+        .doOnNext(request -> log.debug("Calling registry data handler."))
+        .flatMap(this.registryDataHandler::handle)
+        .doOnNext(data -> log.debug("Successfully called registry data handler."))
+        .doOnNext(request -> log.debug("Calling OAuth2 handler."))
+        .flatMap(this.oauth2Handler::handle)
+        .doOnNext(data -> log.debug("Successfully called OAuth2 handler."));
+  }
 }
+
