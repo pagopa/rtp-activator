@@ -39,16 +39,17 @@ class SendRtpProcessorImplTest {
     final var spId = "spId";
     final var token = "token";
     final var resourceId = ResourceID.createNew();
+    final var responseClass = SynchronousSepaRequestToPayCreationResponseDto.class;
     final var rtpToSend = mock(Rtp.class);
     final var oauth2Data = mock(OAuth2.class);
-    final var response = mock(SynchronousSepaRequestToPayCreationResponseDto.class);
+    final var response = mock(responseClass);
     final var tspData = new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret",
         oauth2Data, false);
     final var serviceProviderData = new ServiceProviderFullData(spId, "spName", tspData);
-    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null);
-    final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null);
-    final var epcRequestWithToken = new EpcRequest(rtpToSend, serviceProviderData, token, null);
-    final var epcRequestWithResponse = new EpcRequest(rtpToSend, serviceProviderData, token, response);
+    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null, responseClass);
+    final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null, responseClass);
+    final var epcRequestWithToken = new EpcRequest(rtpToSend, serviceProviderData, token, null, responseClass);
+    final var epcRequestWithResponse = new EpcRequest(rtpToSend, serviceProviderData, token, response, responseClass);
 
     when(rtpToSend.resourceID())
         .thenReturn(resourceId);
@@ -75,7 +76,7 @@ class SendRtpProcessorImplTest {
   @Test
   void givenErrorInRegistryDataHandler_whenSendRtpToServiceProviderDebtor_thenHandleErrorGracefully() {
     final var rtpToSend = mock(Rtp.class);
-    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null);
+    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null, SynchronousSepaRequestToPayCreationResponseDto.class);
     final var exception = new RuntimeException("Registry error");
 
     when(registryDataHandler.handle(inputEpcRequest)).thenReturn(Mono.error(exception));
@@ -93,13 +94,14 @@ class SendRtpProcessorImplTest {
   @Test
   void givenErrorInOauth2Handler_whenSendRtpToServiceProviderDebtor_thenHandleErrorGracefully() {
     final var spId = "spId";
+    final var responseClass = SynchronousSepaRequestToPayCreationResponseDto.class;
     final var rtpToSend = mock(Rtp.class);
     final var oauth2Data = mock(OAuth2.class);
     final var tspData = new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret",
         oauth2Data, false);
     final var serviceProviderData = new ServiceProviderFullData(spId, "spName", tspData);
-    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null);
-    final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null);
+    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null, responseClass);
+    final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null, responseClass);
     final var exception = new RuntimeException("OAuth2 error");
 
     when(registryDataHandler.handle(inputEpcRequest))
@@ -122,14 +124,15 @@ class SendRtpProcessorImplTest {
   void givenErrorInSendRtpHandler_whenSendRtpToServiceProviderDebtor_thenHandleErrorGracefully() {
     final var spId = "spId";
     final var token = "token";
+    final var responseClass = SynchronousSepaRequestToPayCreationResponseDto.class;
     final var rtpToSend = mock(Rtp.class);
     final var oauth2Data = mock(OAuth2.class);
     final var tspData = new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret",
         oauth2Data, false);
     final var serviceProviderData = new ServiceProviderFullData(spId, "spName", tspData);
-    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null);
-    final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null);
-    final var epcRequestWithToken = new EpcRequest(rtpToSend, serviceProviderData, token, null);
+    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null, responseClass);
+    final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null, responseClass);
+    final var epcRequestWithToken = new EpcRequest(rtpToSend, serviceProviderData, token, null, responseClass);
     final var exception = new RuntimeException("Send RTP error");
 
     when(registryDataHandler.handle(inputEpcRequest))
@@ -154,15 +157,16 @@ class SendRtpProcessorImplTest {
   void givenEmptyResponseFromSendRtpHandler_whenSendRtpToServiceProviderDebtor_thenReturnOriginalRtp() {
     final var spId = "spId";
     final var token = "token";
+    final var responseClass = SynchronousSepaRequestToPayCreationResponseDto.class;
     final var resourceId = ResourceID.createNew();
     final var rtpToSend = mock(Rtp.class);
     final var oauth2Data = mock(OAuth2.class);
     final var tspData = new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret",
         oauth2Data, false);
     final var serviceProviderData = new ServiceProviderFullData(spId, "spName", tspData);
-    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null);
-    final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null);
-    final var epcRequestWithToken = new EpcRequest(rtpToSend, serviceProviderData, token, null);
+    final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null, responseClass);
+    final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null, responseClass);
+    final var epcRequestWithToken = new EpcRequest(rtpToSend, serviceProviderData, token, null, responseClass);
 
     when(rtpToSend.resourceID())
         .thenReturn(resourceId);
