@@ -65,12 +65,13 @@ public class SendRTPServiceImpl implements SendRTPService {
   private final SendRtpProcessor sendRtpProcessor;
 
   public SendRTPServiceImpl(SepaRequestToPayMapper sepaRequestToPayMapper, ReadApi activationApi,
-      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository, SendRtpProcessor sendRtpProcessor) {
+      ServiceProviderConfig serviceProviderConfig, RtpRepository rtpRepository,
+      ObjectMapper objectMapper, SendRtpProcessor sendRtpProcessor) {
     this.sepaRequestToPayMapper = sepaRequestToPayMapper;
     this.activationApi = activationApi;
     this.serviceProviderConfig = serviceProviderConfig;
     this.rtpRepository = rtpRepository;
-    this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    this.objectMapper = objectMapper;
     this.sendRtpProcessor = sendRtpProcessor;
   }
 

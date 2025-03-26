@@ -1,5 +1,9 @@
 package it.gov.pagopa.rtp.activator.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.invoker.ApiClient;
 import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
@@ -12,6 +16,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class ApplicationConfig {
+
+  @Bean("objectMapper")
+  public ObjectMapper objectMapper() {
+    return JsonMapper.builder()
+        .enable(SerializationFeature.INDENT_OUTPUT)
+        .addModule(new JavaTimeModule())
+        .build();
+  }
+
 
   @Bean("webClient")
   @Primary
