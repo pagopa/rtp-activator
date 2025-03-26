@@ -45,8 +45,8 @@ public class SendAPIControllerImpl implements RtpsApi {
         .flatMap(rtpDto -> TokenInfo.getTokenSubject()
             .map(sub -> rtpDtoMapper.toRtpWithServiceProviderCreditor(rtpDto, sub)))
         .flatMap(sendRTPService::send)
-        .doOnSuccess(rtpSaved -> MDC.put("service_provider_debtor", rtpSaved.serviceProviderDebtor()))
-        .doOnSuccess(rtpSaved -> MDC.put("service_provider_creditor", rtpSaved.serviceProviderCreditor()))
+        .doOnSuccess(rtpSaved -> MDC.put("debtor_service_provider", rtpSaved.serviceProviderDebtor()))
+        .doOnSuccess(rtpSaved -> MDC.put("creditor_service_provider", rtpSaved.serviceProviderCreditor()))
         .doOnSuccess(rtpSaved -> MDC.put("payee_name", rtpSaved.payeeName()))
         .doOnSuccess(rtpSaved -> log.info("RTP sent with id: {}", rtpSaved.resourceID().getId()))
         .<ResponseEntity<Void>>map(rtp -> ResponseEntity
