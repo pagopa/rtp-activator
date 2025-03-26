@@ -121,7 +121,8 @@ public class SendRTPServiceImpl implements SendRTPService {
         .doOnError(error -> log.error("Error retrieving RTP: {}", error.getMessage(), error))
         .filter(rtp -> rtp.status().equals(RtpStatus.CREATED))
         .switchIfEmpty(Mono.error(() -> new IllegalStateException("Cannot cancel RTP with id " + rtpId.getId())))
-        .doOnNext(rtp -> log.debug("Setting status of RTP with id {} to CANCELLED", rtp.resourceID().getId()))
+        .flatMap(this.sendRtpProcessor::sendRtpCancellationToServiceProviderDebtor)
+        .doOnNext(rtp -> log.debug("Setting status of RTP with id {} to {}", rtp.resourceID().getId(), RtpStatus.CANCELLED))
         .map(rtp -> rtp.withStatus(RtpStatus.CANCELLED))
         .doOnNext(rtp -> log.info("Saving {} RTP with id {}", rtp.status(), rtp.resourceID().getId()))
         .flatMap(this.rtpRepository::save);
