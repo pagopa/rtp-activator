@@ -15,16 +15,20 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManagerFactory;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-
 /**
- * Factory class for creating an {@link SslContext} instance using a PKCS12 keystore.
+ * Factory class for creating an {@link SslContext} instance using a PKCS12
+ * keystore.
  * <p>
- * This class loads SSL configuration from {@link SslContextProps}, decodes the PFX file,
- * initializes the keystore, and sets up a key manager factory for secure SSL connections.
+ * This class loads SSL configuration from {@link SslContextProps}, decodes the
+ * PFX file,
+ * initializes the keystore, and sets up a key manager factory for secure SSL
+ * connections.
  * </p>
  */
 @Component("sslContextFactory")
@@ -41,7 +45,8 @@ public class DefaultSslContextFactory implements SslContextFactory {
    * {@link SslContextPropsProvider}.
    *
    * @param sslContextPropsProvider the provider for SSL context properties.
-   * @throws SslContextCreationException if SSL context properties cannot be retrieved.
+   * @throws SslContextCreationException if SSL context properties cannot be
+   *                                     retrieved.
    */
   public DefaultSslContextFactory(
       @NonNull final SslContextPropsProvider sslContextPropsProvider) {
@@ -54,30 +59,35 @@ public class DefaultSslContextFactory implements SslContextFactory {
    * Creates and returns an {@link SslContext} instance.
    *
    * @return an initialized {@link SslContext}.
-   * @throws SslContextCreationException if there is an error during SSL context creation.
+   * @throws SslContextCreationException if there is an error during SSL context
+   *                                     creation.
    */
   @NonNull
   @Override
   public SslContext getSslContext() {
-    return Optional.of(this.initKeyStore())
+    KeyManagerFactory keyManagerFactory = Optional.of(this.initKeyStore())
         .map(this::initKeyManagerFactory)
-        .map(this::initSSLContext)
-        .orElseThrow(() -> new SslContextCreationException("Error creating SSL context"));
+        .orElseThrow(() -> new SslContextCreationException("Error creating key manager factory"));
+
+    TrustManagerFactory trustManagerFactory = Optional.of(this.initTrustStore()).map(this::initTrustManagerFactory)
+        .orElseThrow(() -> new SslContextCreationException("Error creating trust manager factory"));
+
+    return this.initSSLContext(keyManagerFactory, trustManagerFactory);
   }
 
   /**
-   * Converts a Base64-encoded PFX file into an {@link InputStream}.
+   * Converts a Base64-encoded file into an {@link InputStream}.
    *
-   * @param base64PfxFile the Base64-encoded PFX file.
-   * @return an {@link InputStream} representing the decoded PFX file.
+   * @param base64PfxFile the Base64-encoded file.
+   * @return an {@link InputStream} representing the decoded file.
    * @throws SslContextCreationException if decoding fails.
    */
   @NonNull
-  private InputStream convertPfxFileToInputStream(@NonNull final String base64PfxFile) {
-    return Optional.of(base64PfxFile)
+  private InputStream convertBase64FileToInputStream(@NonNull final String base64File) {
+    return Optional.of(base64File)
         .map(Base64.getMimeDecoder()::decode)
         .map(ByteArrayInputStream::new)
-        .orElseThrow(() -> new SslContextCreationException("Error decoding PFX file"));
+        .orElseThrow(() -> new SslContextCreationException("Error decoding base64 file on JKS process"));
   }
 
   /**
@@ -89,7 +99,7 @@ public class DefaultSslContextFactory implements SslContextFactory {
   @NonNull
   private KeyStore initKeyStore() {
 
-    try (final var keyStoreInputStream = this.convertPfxFileToInputStream(
+    try (final var keyStoreInputStream = this.convertBase64FileToInputStream(
         this.sslContextProps.pfxFile())) {
 
       final var keyStore = KeyStore.getInstance(this.sslContextProps.pfxType());
@@ -100,6 +110,30 @@ public class DefaultSslContextFactory implements SslContextFactory {
 
     } catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException e) {
       log.error("Error loading keystore", e);
+      throw new SslContextCreationException(e);
+    }
+  }
+
+  /**
+   * Initializes a {@link KeyStore} instance from the PFX file.
+   *
+   * @return an initialized {@link KeyStore}.
+   * @throws SslContextCreationException if keystore loading fails.
+   */
+  @NonNull
+  private KeyStore initTrustStore() {
+
+    try (final var keyStoreInputStream = this.convertBase64FileToInputStream(
+        this.sslContextProps.trustStoreCertificate())) {
+
+      final var keyStore = KeyStore.getInstance(this.sslContextProps.trustStoreType());
+      final var password = this.sslContextProps.trustStorePassword().toCharArray();
+
+      keyStore.load(keyStoreInputStream, password);
+      return keyStore;
+
+    } catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException e) {
+      log.error("Error loading trust store", e);
       throw new SslContextCreationException(e);
     }
   }
@@ -130,6 +164,30 @@ public class DefaultSslContextFactory implements SslContextFactory {
   }
 
   /**
+   * Initializes a {@link TrustManagerFactory} using the provided keystore.
+   *
+   * @param keyStore the initialized {@link KeyStore}.
+   * @return an initialized {@link TrustManagerFactory}.
+   * @throws SslContextCreationException if trust manager initialization fails.
+   */
+  @NonNull
+  private TrustManagerFactory initTrustManagerFactory(@NonNull final KeyStore keyStore) {
+    Objects.requireNonNull(keyStore, "Key store cannot be null");
+
+    try {
+      final TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(
+          TrustManagerFactory.getDefaultAlgorithm());
+
+      trustManagerFactory.init(keyStore);
+      return trustManagerFactory;
+
+    } catch (NoSuchAlgorithmException | KeyStoreException e) {
+      log.error("Error creating trust manager factory", e);
+      throw new SslContextCreationException(e);
+    }
+  }
+
+  /**
    * Initializes and returns an {@link SslContext} using the given key managers.
    *
    * @param keyManagerFactory an array of {@link KeyManagerFactory} instances.
@@ -137,13 +195,16 @@ public class DefaultSslContextFactory implements SslContextFactory {
    * @throws SslContextCreationException if SSL context initialization fails.
    */
   @NonNull
-  private SslContext initSSLContext(@NonNull final KeyManagerFactory keyManagerFactory) {
+  private SslContext initSSLContext(@NonNull final KeyManagerFactory keyManagerFactory,
+      @NonNull final TrustManagerFactory trustManagerFactory) {
     Objects.requireNonNull(keyManagerFactory, "Key manager factory cannot be null");
+    Objects.requireNonNull(trustManagerFactory, "Trust manager factory cannot be null");
 
     try {
       return SslContextBuilder.forClient()
           .keyManager(keyManagerFactory)
-          .protocols("TLSv1.2","TLSv1.3")
+          .trustManager(trustManagerFactory)
+          .protocols("TLSv1.2", "TLSv1.3")
           .build();
 
     } catch (SSLException e) {
@@ -152,4 +213,3 @@ public class DefaultSslContextFactory implements SslContextFactory {
     }
   }
 }
-
