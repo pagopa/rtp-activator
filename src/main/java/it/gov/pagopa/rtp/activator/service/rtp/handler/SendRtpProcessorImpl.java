@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousRequestToPayCancellationResponseDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
 import java.util.Objects;
@@ -28,6 +29,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
   private final Oauth2Handler oauth2Handler;
   private final SendRtpHandler sendRtpHandler;
 
+
   /**
    * Constructs a {@code SendRtpProcessorImpl} with the necessary handlers.
    *
@@ -45,6 +47,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
     this.oauth2Handler = Objects.requireNonNull(oauth2Handler);
     this.sendRtpHandler = Objects.requireNonNull(sendRtpHandler);
   }
+
 
   /**
    * Processes and sends an RTP request to the service provider debtor.
@@ -79,6 +82,42 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
         .doOnError(error -> log.error("Error sending RTP to {}: {}",
             rtpToSend.serviceProviderDebtor(), error.getMessage()));
   }
+
+
+  /**
+   * Processes and sends an RTP (Request to Pay) cancellation request to the service provider debtor.
+   *
+   * <p>The processing follows these steps:
+   * <ol>
+   *   <li>Wraps the RTP cancellation request in an {@link EpcRequest}.</li>
+   *   <li>Fetches registry data.</li>
+   *   <li>Handles OAuth2 authentication if required.</li>
+   *   <li>Sends the RTP cancellation request.</li>
+   *   <li>Handles errors gracefully and logs success or failure.</li>
+   * </ol>
+   *
+   * @param rtpToSend The RTP cancellation request to be sent.
+   * @return A {@link Mono} emitting the sent RTP cancellation request or an error if the process fails.
+   */
+  @NonNull
+  @Override
+  public Mono<Rtp> sendRtpCancellationToServiceProviderDebtor(@NonNull final Rtp rtpToSend) {
+    return Mono.just(rtpToSend)
+        .doFirst(() -> log.info("Sending RTP cancellation to {}", rtpToSend.serviceProviderDebtor()))
+        .doOnNext(rtp -> log.debug("Creating EPC request for cancellation."))
+        .map(rtp -> EpcRequest.of(rtp, SynchronousRequestToPayCancellationResponseDto.class))
+        .flatMap(this::handleIntermediateSteps)
+        .doOnNext(epcRequest -> log.debug("Calling send RTP cancellation handler."))
+        .flatMap(this.sendRtpHandler::handle)
+        .onErrorMap(ExceptionUtils::gracefullyHandleError)
+        .map(response -> rtpToSend)
+        .defaultIfEmpty(rtpToSend)
+        .doOnSuccess(rtpSent -> log.info("RTP cancellation sent to {} with id: {}",
+            rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()))
+        .doOnError(error -> log.error("Error sending RTP cancellation to {}: {}",
+            rtpToSend.serviceProviderDebtor(), error.getMessage()));
+  }
+
 
   /**
    * Handles intermediate processing steps for the EPC request.
