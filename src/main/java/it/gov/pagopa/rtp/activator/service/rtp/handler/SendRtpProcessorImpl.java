@@ -28,6 +28,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
   private final RegistryDataHandler registryDataHandler;
   private final Oauth2Handler oauth2Handler;
   private final SendRtpHandler sendRtpHandler;
+  private final CancelRtpHandler cancelRtpHandler;
 
 
   /**
@@ -36,16 +37,19 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
    * @param registryDataHandler The handler responsible for fetching registry data.
    * @param oauth2Handler The handler responsible for OAuth2 authentication.
    * @param sendRtpHandler The handler responsible for sending the RTP request.
+   * @param cancelRtpHandler The handler responsible for sending the RTP cancellation request.
    * @throws NullPointerException if any of the provided handlers are {@code null}.
    */
   public SendRtpProcessorImpl(
       @NonNull final RegistryDataHandler registryDataHandler,
       @NonNull final Oauth2Handler oauth2Handler,
-      @NonNull final SendRtpHandler sendRtpHandler) {
+      @NonNull final SendRtpHandler sendRtpHandler,
+      @NonNull final CancelRtpHandler cancelRtpHandler) {
 
     this.registryDataHandler = Objects.requireNonNull(registryDataHandler);
     this.oauth2Handler = Objects.requireNonNull(oauth2Handler);
     this.sendRtpHandler = Objects.requireNonNull(sendRtpHandler);
+    this.cancelRtpHandler = Objects.requireNonNull(cancelRtpHandler);
   }
 
 
@@ -108,7 +112,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
         .map(rtp -> EpcRequest.of(rtp, SynchronousRequestToPayCancellationResponseDto.class))
         .flatMap(this::handleIntermediateSteps)
         .doOnNext(epcRequest -> log.debug("Calling send RTP cancellation handler."))
-        .flatMap(this.sendRtpHandler::handle)
+        .flatMap(this.cancelRtpHandler::handle)
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
         .map(response -> rtpToSend)
         .defaultIfEmpty(rtpToSend)
