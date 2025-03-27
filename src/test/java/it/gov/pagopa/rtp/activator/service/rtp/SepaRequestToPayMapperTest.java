@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import it.gov.pagopa.rtp.activator.configuration.CallbackProperties;
+import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SepaRequestToPayMapperTest {
 
   private CallbackProperties callbackProperties;
+  private PagoPaConfigProperties pagoPaConfigProperties;
 
   private SepaRequestToPayMapper sepaRequestToPayMapper;
 
@@ -29,9 +31,14 @@ class SepaRequestToPayMapperTest {
   void setUp() {
     callbackProperties = new CallbackProperties(
         new CallbackProperties.UrlProperties("https://spsrtp.api.cstar.pagopa.it/send",
-            "https://spsrtp.api.cstar.pagopa.it/send")
+            "https://spsrtp.api.cstar.pagopa.it/cancel")
     );
-    sepaRequestToPayMapper = new SepaRequestToPayMapper(callbackProperties);
+
+    pagoPaConfigProperties = new PagoPaConfigProperties(
+        new PagoPaConfigProperties.Anag("iban", "fiscalCode")
+    );
+
+    sepaRequestToPayMapper = new SepaRequestToPayMapper(callbackProperties, pagoPaConfigProperties);
   }
 
 
