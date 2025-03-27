@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.controller.rtp;
 
+import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
@@ -8,19 +9,28 @@ import it.gov.pagopa.rtp.activator.model.generated.send.PaymentNoticeDto;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class RtpDtoMapperTest {
 
-  private static final String IBAN = "IT96K999999999900SRTPPAGOPA";
+  @Mock
+  private PagoPaConfigProperties config;
 
+  @InjectMocks
   private RtpDtoMapper rtpDtoMapper;
 
     @BeforeEach
     void setUp() {
-        rtpDtoMapper = new RtpDtoMapper();
+        when(this.config.getAnag())
+                .thenReturn(new PagoPaConfigProperties.Anag("iban"));
     }
 
   @Test
@@ -57,7 +67,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
-    assertThat(rtp.iban()).isEqualTo(IBAN);
+    assertThat(rtp.iban()).isEqualTo(config.getAnag().iban());
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
   }
@@ -99,7 +109,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
-    assertThat(rtp.iban()).isEqualTo(IBAN);
+    assertThat(rtp.iban()).isEqualTo(config.getAnag().iban());
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
     assertThat(rtp.serviceProviderCreditor()).isEqualTo(subject);

@@ -2,6 +2,7 @@ package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import java.time.LocalDateTime;
 
+import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties;
 import org.springframework.stereotype.Component;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
@@ -11,10 +12,13 @@ import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 @Component
 public class RtpDtoMapper {
 
-  private static final String IBAN = "IT96K999999999900SRTPPAGOPA";
+  private final PagoPaConfigProperties config;
 
+  public RtpDtoMapper(PagoPaConfigProperties config) {
+    this.config = config;
+  }
 
-  public Rtp toRtp(CreateRtpDto createRtpDto) {
+    public Rtp toRtp(CreateRtpDto createRtpDto) {
 
     return Rtp.builder().noticeNumber(createRtpDto.getPaymentNotice().getNoticeNumber())
         .amount(createRtpDto.getPaymentNotice().getAmount()).resourceID(ResourceID.createNew())
@@ -23,7 +27,7 @@ public class RtpDtoMapper {
         .savingDateTime(LocalDateTime.now())
         .payerName(createRtpDto.getPayer().getName())
         .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
-        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban(IBAN)
+        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban(config.getAnag().iban())
         .subject(createRtpDto.getPaymentNotice().getSubject())
         .payTrxRef(createRtpDto.getPayee().getPayTrxRef()).flgConf("flgConf").build();
   }
@@ -36,7 +40,7 @@ public class RtpDtoMapper {
         .savingDateTime(LocalDateTime.now())
         .payerName(createRtpDto.getPayer().getName())
         .payerId(createRtpDto.getPayer().getPayerId()).payeeName(createRtpDto.getPayee().getName())
-        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban(IBAN)
+        .payeeId(createRtpDto.getPayee().getPayeeId()).serviceProviderDebtor("serviceProviderDebtor").iban(config.getAnag().iban())
         .subject(createRtpDto.getPaymentNotice().getSubject())
         .serviceProviderCreditor(tokenSub)
         .payTrxRef(createRtpDto.getPayee().getPayTrxRef()).flgConf("flgConf").build();

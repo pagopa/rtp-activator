@@ -15,6 +15,10 @@ spring:
 
 activation.base-url: ${BASE_URL:http://localhost}
 
+pagopa:
+  anag:
+    iban: IT96K999999999900SRTPPAGOPA
+
 # enable spring boot actuator health endpoint
 management:
   endpoints:
