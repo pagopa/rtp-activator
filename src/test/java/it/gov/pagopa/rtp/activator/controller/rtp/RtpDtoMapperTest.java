@@ -29,8 +29,8 @@ class RtpDtoMapperTest {
 
     @BeforeEach
     void setUp() {
-        when(this.config.getAnag())
-                .thenReturn(new PagoPaConfigProperties.Anag("iban"));
+        when(this.config.anag())
+                .thenReturn(new PagoPaConfigProperties.Anag("iban", "fiscalCode"));
     }
 
   @Test
@@ -67,7 +67,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
-    assertThat(rtp.iban()).isEqualTo(config.getAnag().iban());
+    assertThat(rtp.iban()).isEqualTo(config.anag().iban());
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
   }
@@ -109,7 +109,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
-    assertThat(rtp.iban()).isEqualTo(config.getAnag().iban());
+    assertThat(rtp.iban()).isEqualTo(config.anag().iban());
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
     assertThat(rtp.serviceProviderCreditor()).isEqualTo(subject);
