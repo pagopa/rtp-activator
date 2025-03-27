@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.service.rtp;
 
 import it.gov.pagopa.rtp.activator.configuration.CallbackProperties;
+import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.epcClient.model.AccountIdentification4ChoiceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.AmountType4ChoiceEPC25922V30DS02Dto;
@@ -81,10 +82,16 @@ public class SepaRequestToPayMapper {
   private static final String BIC_REGEX = "^([A-Z0-9]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?)$";
 
   private final CallbackProperties callbackProperties;
+  private final PagoPaConfigProperties pagoPaConfigProperties;
 
-  public SepaRequestToPayMapper(@NonNull final CallbackProperties callbackProperties) {
+  public SepaRequestToPayMapper(
+      @NonNull final CallbackProperties callbackProperties,
+      @NonNull final PagoPaConfigProperties pagoPaConfigProperties) {
+
     this.callbackProperties = Objects.requireNonNull(callbackProperties,
         "Callback properties cannot be null");
+    this.pagoPaConfigProperties = Objects.requireNonNull(pagoPaConfigProperties,
+        "PagoPa config properties cannot be null");
   }
 
 
@@ -271,7 +278,7 @@ public class SepaRequestToPayMapper {
         .cd(ExternalOrganisationIdentification1CodeIIDto.BOID);
 
     final var genericOrganisationIdentification = new GenericOrganisationIdentification1EPC25922V30DS04bDto()  //Othr
-        .id("15376371009")  //TODO: retrieve this value (pagopa fiscal code) from application.yaml
+        .id(this.pagoPaConfigProperties.anag().fiscalCode())
         .schmeNm(organisationIdentificationSchemeName1Choice);
 
     final var organisationIdentification = new OrganisationIdentification29EPC25922V30DS04bDto() //OrgId
@@ -330,7 +337,7 @@ public class SepaRequestToPayMapper {
     final var branchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto = new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto() //CdtrAgt
         .finInstnId(new FinancialInstitutionIdentification18EPC25922V30DS02Dto()
             .othr(new GenericFinancialIdentification1Dto()
-                .id("15376371009")  //TODO: check what this value is
+                .id(this.pagoPaConfigProperties.anag().fiscalCode())
                 .schmeNm(new FinancialIdentificationSchemeName1ChoiceDto()
                     .cd("BOID")
                 )));
