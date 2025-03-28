@@ -4,10 +4,12 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
+import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.service.rtp.SendRTPService;
 import it.gov.pagopa.rtp.activator.utils.TokenInfo;
 import java.net.URI;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +35,7 @@ public class SendAPIControllerImpl implements RtpsApi {
     this.serviceProviderConfig = serviceProviderConfig;
   }
 
+
   @Override
   @PreAuthorize("hasRole('write_rtp_send')")
   public Mono<ResponseEntity<Void>> createRtp(Mono<CreateRtpDto> createRtpDto,
@@ -50,6 +53,14 @@ public class SendAPIControllerImpl implements RtpsApi {
         .onErrorReturn(ServiceProviderNotFoundException.class,
             ResponseEntity.unprocessableEntity().build())
         .doOnError(a -> log.error("Error creating RTP {}", a.getMessage()));
+  }
+
+
+  @Override
+  @PreAuthorize("hasRole('write_rtp_send')")
+  public Mono<ResponseEntity<Void>> cancelRtp(UUID requestId, UUID rtpId, String version,
+      ServerWebExchange exchange) {
+    return Mono.just(ResponseEntity.noContent().build());
   }
 
 }
