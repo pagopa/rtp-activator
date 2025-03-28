@@ -100,7 +100,7 @@ class SepaRequestToPayMapperTest {
 
     // Verify creditor information
     assertEquals(nRtp.payeeName(), cdtTrfTx.getCdtr().getNm());
-    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(nRtp.iban()));
+    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(pagoPaConfigProperties.anag().iban()));
 
     // Verify remittance information
     var rmtInf = cdtTrfTx.getRmtInf();
@@ -181,7 +181,7 @@ class SepaRequestToPayMapperTest {
 
     // Verify creditor information
     assertEquals(nRtp.payeeName(), cdtTrfTx.getCdtr().getNm());
-    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(nRtp.iban()));
+    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(pagoPaConfigProperties.anag().iban()));
 
     // Verify remittance information
     var rmtInf = cdtTrfTx.getRmtInf();
