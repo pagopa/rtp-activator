@@ -202,7 +202,7 @@ public class SepaRequestToPayMapper {
         .id(party38ChoiceEPC25922V30DS022Dto);
 
     var accountIdentification4ChoiceDto = new AccountIdentification4ChoiceDto();
-    accountIdentification4ChoiceDto.setIBAN(rtp.iban());
+    accountIdentification4ChoiceDto.setIBAN(this.pagoPaConfigProperties.anag().iban());
 
     var cashAccount40EPC25922V30DS022Dto = new CashAccount40EPC25922V30DS022Dto();
     cashAccount40EPC25922V30DS022Dto.setId(accountIdentification4ChoiceDto);
@@ -358,7 +358,7 @@ public class SepaRequestToPayMapper {
             new Party40ChoiceEPC25922V30DS113Dto()) //TODO: check why this class doesn't have all fields
         .cdtrAcct(new CashAccount38Dto()
             .id(new AccountIdentification4ChoiceDto()
-                .IBAN(rtp.iban())));
+                .IBAN(this.pagoPaConfigProperties.anag().iban())));
 
     final var paymentTransaction = List.of(new PaymentTransaction109EPC25922V30DS11Dto()  //TxInf
         .cxlId(UUID.randomUUID().toString())    //TODO: understand what this value is
