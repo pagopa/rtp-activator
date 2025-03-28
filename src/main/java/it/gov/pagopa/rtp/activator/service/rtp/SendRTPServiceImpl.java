@@ -4,7 +4,6 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
@@ -124,7 +123,7 @@ public class SendRTPServiceImpl implements SendRTPService {
         .filter(rtp -> rtp.status().equals(RtpStatus.CREATED))
         .switchIfEmpty(Mono.error(() -> new IllegalStateException("Cannot cancel RTP with id " + rtpId.getId())))
         .doOnNext(rtp -> LoggingUtils.logAsJson(
-            () -> sepaRequestToPayMapper.toEpcRequestToPay(rtp), objectMapper))
+            () -> sepaRequestToPayMapper.toEpcRequestToCancel(rtp), objectMapper))
         .flatMap(this.sendRtpProcessor::sendRtpCancellationToServiceProviderDebtor)
         .doOnNext(rtp -> log.debug("Setting status of RTP with id {} to {}", rtp.resourceID().getId(), RtpStatus.CANCELLED))
         .map(rtp -> rtp.withStatus(RtpStatus.CANCELLED))
