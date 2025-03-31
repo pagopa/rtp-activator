@@ -319,7 +319,7 @@ public class SepaRequestToPayMapper {
         .id(new Party38ChoiceEPC25922V30DS113Dto()
             .orgId(organisationIdentification29EPC25922V30DS112Dto));
 
-    final var paymentCancellationReason5EPC25922V30DS11Dto = new ArrayList<String>();  //TODO:  "ATS005/ 2024-12-10" expiry date of RTP
+    final var paymentCancellationReason5EPC25922V30DS11Dto = List.of("ATS005/ " + rtp.expiryDate());
 
     final var paymentCancellationReason = new PaymentCancellationReason5EPC25922V30DS11Dto()  //CxlRsnInf
         .orgtr(partyIdentification135EPC25922V30DS113Dto)
