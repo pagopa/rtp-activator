@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.IllegalRtpStateException;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
+import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
@@ -84,17 +86,22 @@ public class SendRTPServiceImpl implements SendRTPService {
             serviceProviderConfig.activation().apiVersion())
         .doFirst(() -> log.info("Finding activation data for payerId: {}", rtp.payerId()))
         .doOnSuccess(act -> log.info("Activation data found for payerId: {}", rtp.payerId()))
-        .doOnError(error -> log.error("Error finding activation data for payerId: {}", rtp.payerId(), error))
+        .doOnError(
+            error -> log.error("Error finding activation data for payerId: {}", rtp.payerId(),
+                error))
         .onErrorMap(WebClientResponseException.class, this::mapActivationResponseToException);
 
     final var rtpToSend = activationData.map(act -> act.getPayer().getRtpSpId())
         .map(rtp::toRtpWithActivationInfo)
-        .doOnSuccess(rtpWithActivationInfo -> log.info("Saving Rtp to be sent: {}", rtpWithActivationInfo))
+        .doOnSuccess(
+            rtpWithActivationInfo -> log.info("Saving Rtp to be sent: {}", rtpWithActivationInfo))
         .flatMap(rtpRepository::save)
         .doOnNext(savedRtp -> LoggingUtils.logAsJson(
             () -> sepaRequestToPayMapper.toEpcRequestToPay(savedRtp), objectMapper))
-        .doOnSuccess(rtpSaved -> log.info("Rtp to be sent saved with id: {}", rtpSaved.resourceID().getId()))
-        .doOnError(error -> log.error("Error saving Rtp to be sent: {}", error.getMessage(), error));
+        .doOnSuccess(
+            rtpSaved -> log.info("Rtp to be sent saved with id: {}", rtpSaved.resourceID().getId()))
+        .doOnError(
+            error -> log.error("Error saving Rtp to be sent: {}", error.getMessage(), error));
 
     final var sentRtp = rtpToSend.flatMap(this.sendRtpProcessor::sendRtpToServiceProviderDebtor)
         .map(rtp::toRtpSent)
@@ -116,18 +123,32 @@ public class SendRTPServiceImpl implements SendRTPService {
   @NonNull
   @Override
   public Mono<Rtp> cancelRtp(@NonNull final ResourceID rtpId) {
-    return this.rtpRepository.findById(rtpId)
+    final var rtpToCancel = this.rtpRepository
+        .findById(rtpId)
         .doFirst(() -> log.info("Retrieving RTP with id {}", rtpId.getId()))
-        .doOnSuccess(rtp -> log.info("RTP retrieved with id {} and status {}", rtp.resourceID().getId(), rtp.status()))
-        .doOnError(error -> log.error("Error retrieving RTP: {}", error.getMessage(), error))
-        .filter(rtp -> rtp.status().equals(RtpStatus.CREATED))
-        .switchIfEmpty(Mono.error(() -> new IllegalStateException("Cannot cancel RTP with id " + rtpId.getId())))
+        .switchIfEmpty(Mono.error(() -> new RtpNotFoundException(rtpId.getId())))
+        .doOnSuccess(
+            rtp -> log.info("RTP retrieved with id {} and status {}", rtp.resourceID().getId(),
+                rtp.status()))
+        .doOnError(error -> log.error("Error retrieving RTP: {}", error.getMessage(), error));
+
+    final var cancellationRequest = rtpToCancel
+        .flatMap(rtp -> Mono.just(rtp)
+            .filter(r -> r.status().equals(RtpStatus.CREATED))
+            .switchIfEmpty(Mono.error(() -> new IllegalRtpStateException(
+                rtp.status(), "Cannot cancel RTP with id " + rtp.resourceID().getId()))))
+        .doOnError(error -> log.error(error.getMessage(), error))
         .doOnNext(rtp -> LoggingUtils.logAsJson(
             () -> sepaRequestToPayMapper.toEpcRequestToCancel(rtp), objectMapper))
-        .flatMap(this.sendRtpProcessor::sendRtpCancellationToServiceProviderDebtor)
-        .doOnNext(rtp -> log.debug("Setting status of RTP with id {} to {}", rtp.resourceID().getId(), RtpStatus.CANCELLED))
+        .flatMap(this.sendRtpProcessor::sendRtpCancellationToServiceProviderDebtor);
+
+    return cancellationRequest
+        .doOnNext(
+            rtp -> log.debug("Setting status of RTP with id {} to {}", rtp.resourceID().getId(),
+                RtpStatus.CANCELLED))
         .map(rtp -> rtp.withStatus(RtpStatus.CANCELLED))
-        .doOnNext(rtp -> log.info("Saving {} RTP with id {}", rtp.status(), rtp.resourceID().getId()))
+        .doOnNext(
+            rtp -> log.info("Saving {} RTP with id {}", rtp.status(), rtp.resourceID().getId()))
         .flatMap(this.rtpRepository::save);
   }
 

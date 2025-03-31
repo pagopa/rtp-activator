@@ -3,7 +3,9 @@ package it.gov.pagopa.rtp.activator.controller.rtp;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
+import it.gov.pagopa.rtp.activator.domain.errors.IllegalRtpStateException;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
+import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
@@ -65,9 +67,18 @@ public class SendAPIControllerImpl implements RtpsApi {
 
   @Override
   @PreAuthorize("hasRole('write_rtp_send')")
-  public Mono<ResponseEntity<Void>> cancelRtp(UUID requestId, UUID rtpId, String version,
+  public Mono<ResponseEntity<Void>> cancelRtp(
+      UUID requestId, UUID rtpId, String version,
       ServerWebExchange exchange) {
-    return Mono.just(ResponseEntity.noContent().build());
+
+    return this.sendRTPService.cancelRtp(new ResourceID(rtpId))
+        .<ResponseEntity<Void>>map(rtp -> ResponseEntity
+            .noContent().build())
+        .onErrorReturn(RtpNotFoundException.class,
+            ResponseEntity.notFound().build())
+        .onErrorReturn(IllegalRtpStateException.class,
+            ResponseEntity.badRequest().build())  //TODO: check whether to return 409 CONFLICT
+        .doOnError(a -> log.error("Error cancelling RTP {}", a.getMessage()));
   }
 
 }
