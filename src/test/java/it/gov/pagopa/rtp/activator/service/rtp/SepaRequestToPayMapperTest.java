@@ -66,7 +66,7 @@ class SepaRequestToPayMapperTest {
     assertNotNull(result);
     assertEquals(resourceId.getId().toString(), result.getResourceId());
     assertEquals(this.callbackProperties.url().send(), result.getCallbackUrl().toString());
-    assertEquals(resourceId.getId().toString(),
+    assertEquals(resourceId.getId().toString().replace("-",""),
         result.getDocument().getCdtrPmtActvtnReq().getGrpHdr().getMsgId());
     assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0)
         .getRmtInf()
@@ -74,7 +74,7 @@ class SepaRequestToPayMapperTest {
 
     // Verify group header
     var grpHdr = result.getDocument().getCdtrPmtActvtnReq().getGrpHdr();
-    assertEquals(nRtp.resourceID().getId().toString(), grpHdr.getMsgId());
+    assertEquals(nRtp.resourceID().getId().toString().replace("-",""), grpHdr.getMsgId());
     assertEquals(nRtp.savingDateTime().toString(), grpHdr.getCreDtTm());
 
     // Verify payment information
@@ -146,7 +146,7 @@ class SepaRequestToPayMapperTest {
     assertNotNull(result);
     assertEquals(resourceId.getId().toString(), result.getResourceId());
     assertEquals(this.callbackProperties.url().send(), result.getCallbackUrl().toString());
-    assertEquals(resourceId.getId().toString(),
+    assertEquals(resourceId.getId().toString().replace("-",""),
         result.getDocument().getCdtrPmtActvtnReq().getGrpHdr().getMsgId());
     assertTrue(result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0).getCdtTrfTx().get(0)
         .getRmtInf()
@@ -154,7 +154,7 @@ class SepaRequestToPayMapperTest {
 
     // Verify group header
     var grpHdr = result.getDocument().getCdtrPmtActvtnReq().getGrpHdr();
-    assertEquals(nRtp.resourceID().getId().toString(), grpHdr.getMsgId());
+    assertEquals(nRtp.resourceID().getId().toString().replace("-",""), grpHdr.getMsgId());
     assertEquals(nRtp.savingDateTime().toString(), grpHdr.getCreDtTm());
 
     // Verify payment information
