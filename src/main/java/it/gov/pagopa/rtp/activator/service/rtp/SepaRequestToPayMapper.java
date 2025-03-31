@@ -294,7 +294,7 @@ public class SepaRequestToPayMapper {
         .pty(partyIdentification);
 
     final var financialInstitutionIdentification = new FinancialInstitutionIdentification18EPC25922V30DS02Dto()  //FinInstnId
-        .BICFI(rtp.serviceProviderDebtor());  //TODO: check if it's true
+        .BICFI(rtp.serviceProviderDebtor());
 
     final var branchAndFinancialInstitutionIdentification = new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto() //Agt
         .finInstnId(financialInstitutionIdentification);
@@ -303,15 +303,14 @@ public class SepaRequestToPayMapper {
         .agt(branchAndFinancialInstitutionIdentification);
 
     final var caseAssignment = new CaseAssignment5EPC25922V30DS11Dto() //Assgnmt
-        .id(UUID.randomUUID()
-            .toString())   //TODO: check if it's needed to get this value as a function parameter
+        .id(rtp.resourceID().getId().toString())
         .assgnr(party40ChoiceAssigner)
         .assgne(party40ChoiceAssignee)
         .creDtTm(rtp.savingDateTime().toString());
 
     final var organisationIdentification29EPC25922V30DS112Dto = new OrganisationIdentification29EPC25922V30DS112Dto() //OrgId
         .othr(new GenericOrganisationIdentification1EPC25922V30DS112Dto()
-            .id("02438750586")    //TODO: understand what this value is
+            .id(this.pagoPaConfigProperties.anag().fiscalCode())
             .schmeNm(new OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04b2Dto()
                 .cd(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID)));
 
@@ -320,12 +319,12 @@ public class SepaRequestToPayMapper {
         .id(new Party38ChoiceEPC25922V30DS113Dto()
             .orgId(organisationIdentification29EPC25922V30DS112Dto));
 
-    final var paymentCancellationReason5EPC25922V30DS11Dto = new ArrayList<String>();  //TODO: understand what this value is
+    final var paymentCancellationReason5EPC25922V30DS11Dto = new ArrayList<String>();  //TODO:  "ATS005/ 2024-12-10" expiry date of RTP
 
     final var paymentCancellationReason = new PaymentCancellationReason5EPC25922V30DS11Dto()  //CxlRsnInf
         .orgtr(partyIdentification135EPC25922V30DS113Dto)
         .rsn(new CancellationReason33ChoiceEPC25922V30DS11Dto()
-            .cd(ExternalCancellationReason1CodeDto.PAID))   //TODO: get this value as a function parameter
+            .cd(ExternalCancellationReason1CodeDto.PAID))
         .addtlInf(paymentCancellationReason5EPC25922V30DS11Dto);
 
     final var paymentTypeInformation27EPC25922V30DS15RTPDto = new PaymentTypeInformation27EPC25922V30DS15RTPDto()
@@ -346,7 +345,7 @@ public class SepaRequestToPayMapper {
         .amt(new AmountType4ChoiceEPC25922V30DS02Dto()
             .instdAmt(rtp.amount()))
         .reqdExctnDt(new DateAndDateTime2ChoiceEPC25922V30DS02Dto()
-            .dt(String.valueOf(rtp.savingDateTime()))) //TODO: check the date
+            .dt(String.valueOf(rtp.expiryDate())))
         .pmtTpInf(paymentTypeInformation27EPC25922V30DS15RTPDto)
         .rmtInf(new RemittanceInformation16EPC25922V30DS04bDto()
             .ustrd(rtp.subject()))
@@ -355,26 +354,26 @@ public class SepaRequestToPayMapper {
                 .BICFI(rtp.serviceProviderDebtor())))
         .cdtrAgt(branchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto)
         .cdtr(
-            new Party40ChoiceEPC25922V30DS113Dto()) //TODO: check why this class doesn't have all fields
+            new Party40ChoiceEPC25922V30DS113Dto())
         .cdtrAcct(new CashAccount38Dto()
             .id(new AccountIdentification4ChoiceDto()
                 .IBAN(this.pagoPaConfigProperties.anag().iban())));
 
     final var paymentTransaction = List.of(new PaymentTransaction109EPC25922V30DS11Dto()  //TxInf
-        .cxlId(UUID.randomUUID().toString())    //TODO: understand what this value is
-        .orgnlInstrId(UUID.randomUUID().toString())  //TODO: understand what this value is
+        .cxlId(rtp.resourceID().getId().toString())
+        .orgnlInstrId(UUID.randomUUID().toString())
         .orgnlEndToEndId(rtp.noticeNumber())
         .cxlRsnInf(paymentCancellationReason)
         .orgnlTxRef(originalTransactionReference28EPC25922V30DS11Dto));
 
     final var originalPaymentInstruction = new OriginalPaymentInstruction34EPC25922V30DS11Dto() //OrgnlPmtInfAndCxl
-        .pmtCxlId(UUID.randomUUID().toString()) //TODO: understand what this value is
+        .pmtCxlId(rtp.resourceID().getId().toString())
         .orgnlPmtInfId(rtp.resourceID().getId().toString())
         .orgnlGrpInf(new OriginalGroupInformation29EPC25922V30DS15RTPDto()
-            .orgnlMsgId("ab85fbb7a48a4a669b5436ee5b497036") //TODO: understand what this value is
+            .orgnlMsgId("ab85fbb7a48a4a669b5436ee5b497036") //TODO: get this as an input parameter
             .orgnlMsgNmId("pain.013.001.10")
             .orgnlCreDtTm(rtp.savingDateTime().toString()))
-        .txInf(paymentTransaction); //TODO: understand what this value is
+        .txInf(paymentTransaction);
 
     final var underlyingTransaction = new UnderlyingTransaction24EPC25922V30DS11Dto()  //Undrlyg
         .orgnlPmtInfAndCxl(List.of(originalPaymentInstruction));
