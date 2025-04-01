@@ -65,7 +65,7 @@ public class SepaRequestToPayMapper {
     partyIdentification135EPC25922V30DS02Dto.setNm("PagoPA");// FIXED
 
     var groupHeader105EPC25922V30DS02Dto = new GroupHeader105EPC25922V30DS02Dto()
-        .msgId(rtp.resourceID().getId().toString())
+        .msgId(rtp.resourceID().getId().toString().replace("-",""))
         .creDtTm(rtp.savingDateTime().toString())
         .nbOfTxs("1")// FIXED
         .initgPty(partyIdentification135EPC25922V30DS02Dto);
@@ -110,7 +110,7 @@ public class SepaRequestToPayMapper {
         .finInstnId(dbtFinancialInstitutionIdentification18EPC25922V30DS02Dto);
 
     var paymentIdentification6EPC25922V30DS02Dto = new PaymentIdentification6EPC25922V30DS02Dto()
-        .instrId(rtp.resourceID().getId().toString())
+        .instrId(rtp.resourceID().getId().toString().replace("-",""))
         .endToEndId(rtp.noticeNumber());
 
     var serviceLevel8ChoiceDto = new ServiceLevel8ChoiceDto()
