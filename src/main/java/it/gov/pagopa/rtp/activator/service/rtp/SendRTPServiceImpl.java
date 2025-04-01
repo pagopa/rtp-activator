@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -127,6 +128,9 @@ public class SendRTPServiceImpl implements SendRTPService {
         .findById(rtpId)
         .doFirst(() -> log.info("Retrieving RTP with id {}", rtpId.getId()))
         .switchIfEmpty(Mono.error(() -> new RtpNotFoundException(rtpId.getId())))
+        .doOnSuccess(rtp -> MDC.put("debtor_service_provider", rtp.serviceProviderDebtor()))
+        .doOnSuccess(rtp -> MDC.put("creditor_service_provider", rtp.serviceProviderCreditor()))
+        .doOnSuccess(rtp -> MDC.put("payee_name", rtp.payeeName()))
         .doOnSuccess(
             rtp -> log.info("RTP retrieved with id {} and status {}", rtp.resourceID().getId(),
                 rtp.status()))
@@ -149,7 +153,8 @@ public class SendRTPServiceImpl implements SendRTPService {
         .map(rtp -> rtp.withStatus(RtpStatus.CANCELLED))
         .doOnNext(
             rtp -> log.info("Saving {} RTP with id {}", rtp.status(), rtp.resourceID().getId()))
-        .flatMap(this.rtpRepository::save);
+        .flatMap(this.rtpRepository::save)
+        .doFinally(f -> MDC.clear());
   }
 
 
