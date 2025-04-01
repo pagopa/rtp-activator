@@ -126,10 +126,10 @@ public class DefaultSslContextFactory implements SslContextFactory {
   private KeyStore initTrustStore() {
 
     try (final var keyStoreInputStream = this.convertBase64FileToInputStream(
-        this.sslContextProps.trustStoreCertificate())) {
+        this.sslContextProps.jksTrustStore())) {
 
-      final var keyStore = KeyStore.getInstance(this.sslContextProps.trustStoreType());
-      final var password = this.sslContextProps.trustStorePassword().toCharArray();
+      final var keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+      final var password = this.sslContextProps.jksTrustStorePassword().toCharArray();
 
       keyStore.load(keyStoreInputStream, password);
       return keyStore;

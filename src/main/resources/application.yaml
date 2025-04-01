@@ -74,9 +74,8 @@ client:
     pfx-file: ${CLIENT_CERTIFICATE}
     pfx-password: ${CLIENT_CERTIFICATE_PASSWORD:}
     pfx-type: PKCS12
-    trust-store-certificate: ${TRUST_STORE_CERTIFICATE:}
-    trust-store-password: ${TRUST_STORE_PASSWORD:}
-    trust-store-type:
+    jks-trust-store: ${TRUST_STORE_CERTIFICATE:}
+    jks-trust-store-password: ${TRUST_STORE_PASSWORD:}
 
 callback:
   url:
