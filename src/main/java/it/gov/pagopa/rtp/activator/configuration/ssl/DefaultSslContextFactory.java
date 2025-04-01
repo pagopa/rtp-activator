@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
  * keystore.
  * <p>
  * This class loads SSL configuration from {@link SslContextProps}, decodes the
- * PFX file, decodes the trust store certificate, and initializes the keystore
+ * PFX file, decodes the trust store jks, and initializes the keystore
  * and trust store. It then sets up a key manager factory and trust manager
  * factory for secure SSL connections.
  * </p>
@@ -37,7 +37,7 @@ public class DefaultSslContextFactory implements SslContextFactory {
 
   /**
    * Holds SSL context configuration properties such as the PFX file, PFX
-   * password, trust store certificate and password.
+   * password, trust store jks and password.
    */
   private final SslContextProps sslContextProps;
 
@@ -117,7 +117,7 @@ public class DefaultSslContextFactory implements SslContextFactory {
   }
 
   /**
-   * Initializes a {@link KeyStore} instance from the trust store certificate.
+   * Initializes a {@link KeyStore} instance from the trust store jks.
    *
    * @return an initialized {@link KeyStore}.
    * @throws SslContextCreationException if keystore loading fails.
