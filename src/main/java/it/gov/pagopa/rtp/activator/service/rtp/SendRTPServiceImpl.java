@@ -24,6 +24,7 @@ import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import it.gov.pagopa.rtp.activator.service.rtp.handler.SendRtpProcessor;
 
 import java.time.Duration;
@@ -49,7 +50,8 @@ import reactor.util.retry.RetryBackoffSpec;
     OrganisationIdentification29EPC25922V30DS022WrapperDto.class,
     ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto.class,
     IBAN2007IdentifierWrapperDto.class,
-    ActivationDto.class
+    ActivationDto.class,
+    SynchronousSepaRequestToPayCreationResponseDto.class
 })
 public class SendRTPServiceImpl implements SendRTPService {
 
