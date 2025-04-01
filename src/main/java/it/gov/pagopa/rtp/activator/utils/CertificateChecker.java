@@ -48,7 +48,7 @@ public class CertificateChecker {
         .flatMap(provider -> {
           String certificateServiceNumberRegistry = provider.tsp().certificateSerialNumber();
           if (certificateServiceNumberRegistry.equals(certificateSerialNumber)) {
-              log.info("Certificate Serial Number from caller: {} and from registry {}", certificateSerialNumber, certificateServiceNumberRegistry);
+              log.info("Certificate verified successfully. Serial Number: {}", certificateSerialNumber);
               return Mono.just(requestBody);
           }
           log.warn("Certificate mismatch: expected {}, received {}", certificateServiceNumberRegistry, certificateSerialNumber);
