@@ -88,6 +88,8 @@ class CancelRtpHandlerTest {
         .thenReturn(rtpToCancel);
     when(request.serviceProviderFullData())
         .thenReturn(providerData);
+    when(request.token())
+        .thenReturn("token");
     when(providerData.tsp())
         .thenReturn(tsp);
     when(tsp.serviceEndpoint())
