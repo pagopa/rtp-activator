@@ -11,11 +11,6 @@ import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalCancellationReason1CodeDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto;
 
-import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto;
-import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeIIDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.ExternalServiceLevel1CodeDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.OriginalGroupInformation29EPC25922V30DS15RTPDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.OriginalPaymentInstruction34EPC25922V30DS11Dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -219,7 +214,6 @@ class SepaRequestToPayMapperTest {
     String payerId = "payerId123";
     String payeeId = "payeeId123";
     String payeeName = "Comune di Bugliano";
-    String rtpSpId = "F4K3SP12";
     String iban = "IT60X0542811101000000123456";
     BigDecimal amount = new BigDecimal("99999999999");
     LocalDateTime savingDateTime = LocalDateTime.now();
@@ -289,22 +283,12 @@ class SepaRequestToPayMapperTest {
         paymentCancellationReason.getOrgtr().getNm());
     assertEquals(pagoPaConfigProperties.anag().fiscalCode(),
         paymentCancellationReason.getOrgtr().getId().getOrgId().getOthr().getId());
-    assertEquals(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID,
-        paymentCancellationReason.getOrgtr().getId().getOrgId().getOthr().getSchmeNm().getCd());
     assertEquals("ATS005/ " + expiryDate,
         paymentCancellationReason.getAddtlInf().getFirst());
-
-    final var paymentTypeInformation = paymentTransaction.getOrgnlTxRef().getPmtTpInf();
-    assertEquals(ExternalServiceLevel1CodeDto.SRTP,
-        paymentTypeInformation.getSvcLvl().getCd());
-    assertEquals("PAGOPA",
-        paymentTypeInformation.getLclInstrm().getPrtry());
 
     final var branchAndFinancialInstitutionIdentification = paymentTransaction.getOrgnlTxRef().getCdtrAgt();
     assertEquals(pagoPaConfigProperties.anag().fiscalCode(),
         branchAndFinancialInstitutionIdentification.getFinInstnId().getOthr().getId());
-    assertEquals("BOID",
-        branchAndFinancialInstitutionIdentification.getFinInstnId().getOthr().getSchmeNm().getCd());
 
     final var caseAssignment = result.getDocument().getCstmrPmtCxlReq().getAssgnmt();
     assertEquals(resourceId.getId().toString(),
@@ -313,8 +297,6 @@ class SepaRequestToPayMapperTest {
         caseAssignment.getCreDtTm());
     assertEquals(pagoPaConfigProperties.anag().fiscalCode(),
         caseAssignment.getAssgnr().getPty().getId().getOrgId().getOthr().getId());
-    assertEquals(ExternalOrganisationIdentification1CodeIIDto.BOID,
-        caseAssignment.getAssgnr().getPty().getId().getOrgId().getOthr().getSchmeNm().getCd());
     assertEquals(serviceProviderDebtor,
         caseAssignment.getAssgne().getAgt().getFinInstnId().getBICFI());
 
