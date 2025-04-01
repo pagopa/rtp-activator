@@ -137,10 +137,7 @@ public class SendRTPServiceImpl implements SendRTPService {
         .doOnError(error -> log.error("Error retrieving RTP: {}", error.getMessage(), error));
 
     final var cancellationRequest = rtpToCancel
-        .flatMap(rtp -> Mono.just(rtp)
-            .filter(r -> r.status().equals(RtpStatus.CREATED))
-            .switchIfEmpty(Mono.error(() -> new IllegalRtpStateException(
-                rtp.status(), "Cannot cancel RTP with id " + rtp.resourceID().getId()))))
+        .flatMap(SendRTPServiceImpl::validateRtpStatus)
         .doOnError(error -> log.error(error.getMessage(), error))
         .doOnNext(rtp -> LoggingUtils.logAsJson(
             () -> sepaRequestToPayMapper.toEpcRequestToCancel(rtp), objectMapper))
@@ -155,6 +152,15 @@ public class SendRTPServiceImpl implements SendRTPService {
             rtp -> log.info("Saving {} RTP with id {}", rtp.status(), rtp.resourceID().getId()))
         .flatMap(this.rtpRepository::save)
         .doFinally(f -> MDC.clear());
+  }
+
+
+  @NonNull
+  private static Mono<Rtp> validateRtpStatus(@NonNull final Rtp rtp) {
+    return Mono.just(rtp)
+        .filter(r -> r.status().equals(RtpStatus.CREATED))
+        .switchIfEmpty(Mono.error(() -> new IllegalRtpStateException(
+            rtp.status(), "Cannot cancel RTP with id " + rtp.resourceID().getId())));
   }
 
 
