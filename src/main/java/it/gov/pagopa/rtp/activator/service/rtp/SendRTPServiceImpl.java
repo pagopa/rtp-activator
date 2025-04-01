@@ -25,7 +25,9 @@ import it.gov.pagopa.rtp.activator.epcClient.model.ISODateWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.Max35TextWrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.PersonIdentification13EPC25922V30DS02WrapperDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayCancellationRequestResourceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousRequestToPayCancellationResponseDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import it.gov.pagopa.rtp.activator.service.rtp.handler.SendRtpProcessor;
 
@@ -55,7 +57,9 @@ import reactor.util.retry.RetryBackoffSpec;
     ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto.class,
     IBAN2007IdentifierWrapperDto.class,
     ActivationDto.class,
-    SynchronousSepaRequestToPayCreationResponseDto.class
+    SynchronousSepaRequestToPayCreationResponseDto.class,
+    SepaRequestToPayCancellationRequestResourceDto.class,
+    SynchronousRequestToPayCancellationResponseDto.class
 })
 public class SendRTPServiceImpl implements SendRTPService {
 
