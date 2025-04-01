@@ -2,6 +2,7 @@ package it.gov.pagopa.rtp.activator.configuration.ssl;
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -143,6 +144,7 @@ public class DefaultSslContextFactory implements SslContextFactory {
     try {
       return SslContextBuilder.forClient()
           .keyManager(keyManagerFactory)
+          .trustManager(InsecureTrustManagerFactory.INSTANCE)
           .protocols("TLSv1.2","TLSv1.3")
           .build();
 
