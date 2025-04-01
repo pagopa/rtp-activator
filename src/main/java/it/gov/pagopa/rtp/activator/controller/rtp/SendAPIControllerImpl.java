@@ -71,7 +71,9 @@ public class SendAPIControllerImpl implements RtpsApi {
       UUID requestId, UUID rtpId, String version,
       ServerWebExchange exchange) {
 
-    return this.sendRTPService.cancelRtp(new ResourceID(rtpId))
+    return Mono.just(rtpId)
+        .map(ResourceID::new)
+        .flatMap(sendRTPService::cancelRtp)
         .<ResponseEntity<Void>>map(rtp -> ResponseEntity
             .noContent().build())
         .onErrorReturn(RtpNotFoundException.class,
