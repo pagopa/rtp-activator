@@ -274,33 +274,19 @@ public class SepaRequestToPayMapper {
   public SepaRequestToPayCancellationRequestResourceDto toEpcRequestToCancel(
       @NonNull final Rtp rtp) {
 
-    final var organisationIdentificationSchemeName1Choice = new OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04bDto() //SchmeNm
-        .cd(ExternalOrganisationIdentification1CodeIIDto.BOID);
-
-    final var genericOrganisationIdentification = new GenericOrganisationIdentification1EPC25922V30DS04bDto()  //Othr
-        .id(this.pagoPaConfigProperties.anag().fiscalCode())
-        .schmeNm(organisationIdentificationSchemeName1Choice);
-
-    final var organisationIdentification = new OrganisationIdentification29EPC25922V30DS04bDto() //OrgId
-        .othr(genericOrganisationIdentification);
-
-    final var party38Choice = new Party38ChoiceEPC25922V30DS04bDto() //ID
-        .orgId(organisationIdentification);
-
-    final var partyIdentification = new PartyIdentification135EPC25922V30DS04bDto()  //Pty assigner
-        .id(party38Choice);
-
     final var party40ChoiceAssigner = new Party40ChoiceEPC25922V30DS11Dto()  //Assgnr
-        .pty(partyIdentification);
-
-    final var financialInstitutionIdentification = new FinancialInstitutionIdentification18EPC25922V30DS02Dto()  //FinInstnId
-        .BICFI(rtp.serviceProviderDebtor());
-
-    final var branchAndFinancialInstitutionIdentification = new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto() //Agt
-        .finInstnId(financialInstitutionIdentification);
+        .pty(new PartyIdentification135EPC25922V30DS04bDto()
+            .id(new Party38ChoiceEPC25922V30DS04bDto()
+                .orgId(new OrganisationIdentification29EPC25922V30DS04bDto()
+                    .othr(new GenericOrganisationIdentification1EPC25922V30DS04bDto()
+                        .id(this.pagoPaConfigProperties.anag().fiscalCode())
+                        .schmeNm(new OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04bDto()
+                            .cd(ExternalOrganisationIdentification1CodeIIDto.BOID))))));
 
     final var party40ChoiceAssignee = new Party40ChoiceEPC25922V30DS11Dto()  //Assgne
-        .agt(branchAndFinancialInstitutionIdentification);
+        .agt(new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto()
+            .finInstnId(new FinancialInstitutionIdentification18EPC25922V30DS02Dto()
+                .BICFI(rtp.serviceProviderDebtor())));
 
     final var caseAssignment = new CaseAssignment5EPC25922V30DS11Dto() //Assgnmt
         .id(rtp.resourceID().getId().toString())
