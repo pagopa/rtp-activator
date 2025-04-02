@@ -79,7 +79,7 @@ public class SendAPIControllerImpl implements RtpsApi {
         .onErrorReturn(RtpNotFoundException.class,
             ResponseEntity.notFound().build())
         .onErrorReturn(IllegalRtpStateException.class,
-            ResponseEntity.badRequest().build())  //TODO: check whether to return 409 CONFLICT
+            ResponseEntity.unprocessableEntity().build())
         .doOnError(a -> log.error("Error cancelling RTP {}", a.getMessage()));
   }
 

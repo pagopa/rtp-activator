@@ -312,7 +312,7 @@ class SendAPIControllerImplTest {
 
   @Test
   @RtpSenderWriter
-  void givenInvalidRtpState_whenCancelRtp_thenReturnBadRequest() {
+  void givenInvalidRtpState_whenCancelRtp_thenReturnUnprocessableEntity() {
     final var rtpId = UUID.randomUUID();
 
     when(sendRTPService.cancelRtp(any(ResourceID.class)))
@@ -323,7 +323,7 @@ class SendAPIControllerImplTest {
         .header("RequestId", UUID.randomUUID().toString())
         .contentType(MediaType.APPLICATION_JSON)
         .exchange()
-        .expectStatus().isBadRequest();
+        .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
   }
 
 
