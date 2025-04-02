@@ -77,6 +77,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import it.gov.pagopa.rtp.activator.utils.DateUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -125,7 +126,7 @@ public class SepaRequestToPayMapper {
 
     var groupHeader105EPC25922V30DS02Dto = new GroupHeader105EPC25922V30DS02Dto()
         .msgId(rtp.resourceID().getId().toString().replace("-",""))
-        .creDtTm(rtp.savingDateTime().toString())
+        .creDtTm(DateUtils.savingLocalDateTimeToZulu(rtp.savingDateTime()))
         .nbOfTxs("1")// FIXED
         .initgPty(partyIdentification135EPC25922V30DS02Dto);
 
