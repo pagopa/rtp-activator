@@ -356,7 +356,7 @@ public class SepaRequestToPayMapper {
         .pmtCxlId(rtp.resourceID().getId().toString())
         .orgnlPmtInfId(rtp.resourceID().getId().toString())
         .orgnlGrpInf(new OriginalGroupInformation29EPC25922V30DS15RTPDto()
-            .orgnlMsgId(rtp.resourceID().getId().toString().replace("-","")) //FIXME: shouldn't need replace
+            .orgnlMsgId(rtp.resourceID().getId().toString().replace("-",""))
             .orgnlMsgNmId("pain.013.001.10")
             .orgnlCreDtTm(rtp.savingDateTime().toString()))
         .txInf(paymentTransaction);
