@@ -25,5 +25,6 @@ public interface SendRtpProcessor {
    *         or an error if the sending process fails
    */
   Mono<Rtp> sendRtpToServiceProviderDebtor(@NonNull final Rtp rtpToSend);
+  Mono<Rtp> sendRtpCancellationToServiceProviderDebtor(@NonNull final Rtp rtpToSend);
 }
 

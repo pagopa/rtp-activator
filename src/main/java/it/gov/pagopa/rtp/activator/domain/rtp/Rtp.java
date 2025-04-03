@@ -4,7 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Builder;
+import lombok.With;
 
+
+@With
 @Builder
 public record Rtp(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate,
     String payerId, String payerName, String payeeName, String payeeId, ResourceID resourceID,

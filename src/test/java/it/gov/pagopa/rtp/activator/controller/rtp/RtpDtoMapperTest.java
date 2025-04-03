@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.controller.rtp;
 
 import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties;
+import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties.Details;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.PayeeDto;
@@ -29,8 +30,8 @@ class RtpDtoMapperTest {
 
     @BeforeEach
     void setUp() {
-        when(this.config.getAnag())
-                .thenReturn(new PagoPaConfigProperties.Anag("iban"));
+        when(this.config.details())
+                .thenReturn(new Details("iban", "fiscalCode"));
     }
 
   @Test
@@ -67,7 +68,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
-    assertThat(rtp.iban()).isEqualTo(config.getAnag().iban());
+    assertThat(rtp.iban()).isEqualTo(config.details().iban());
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
   }
@@ -109,7 +110,7 @@ class RtpDtoMapperTest {
     assertThat(rtp.payeeName()).isEqualTo(createRtpDto.getPayee().getName());
     assertThat(rtp.payeeId()).isEqualTo(createRtpDto.getPayee().getPayeeId());
     assertThat(rtp.serviceProviderDebtor()).isEqualTo("serviceProviderDebtor");
-    assertThat(rtp.iban()).isEqualTo(config.getAnag().iban());
+    assertThat(rtp.iban()).isEqualTo(config.details().iban());
     assertThat(rtp.payTrxRef()).isEqualTo(createRtpDto.getPayee().getPayTrxRef());
     assertThat(rtp.flgConf()).isEqualTo("flgConf");
     assertThat(rtp.serviceProviderCreditor()).isEqualTo(subject);

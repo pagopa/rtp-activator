@@ -13,36 +13,39 @@ import reactor.core.publisher.Mono;
 
 
 /**
- * Handles the process of sending a Request-to-Pay (RTP) request to an external service provider.
- * This class interacts with web clients and API clients to send RTP requests, ensuring secure communication
- * using mutual TLS (mTLS) and OAuth2 authentication when required.
+ * Handles the cancellation of a Request-to-Pay (RTP) request.
+ * This class extends {@link EpcApiInvokerHandler} to interact with the EPC API,
+ * sending RTP cancellation requests to the external service provider.
+ * It ensures secure communication using mTLS and OAuth2 authentication when required.
  */
-@Component("sendRtpHandler")
+@Component("cancelRtpHandler")
 @Slf4j
-public class SendRtpHandler extends EpcApiInvokerHandler implements RequestHandler<EpcRequest> {
+public class CancelRtpHandler extends EpcApiInvokerHandler implements RequestHandler<EpcRequest> {
 
   /**
-   * Constructs a {@code SendRtpHandler} with required dependencies.
+   * Constructs a {@code CancelRtpHandler} with required dependencies.
    *
-   * @param webClientFactory        Factory for creating web clients (with or without mTLS).
-   * @param epcClientFactory        Factory for creating API clients for EPC (European Payments Council) communication.
-   * @param sepaRequestToPayMapper  Mapper for converting RTP requests into EPC-compliant format.
-   * @param serviceProviderConfig   Configuration settings for the service provider.
+   * @param webClientFactory       Factory for creating web clients (with or without mTLS).
+   * @param epcClientFactory       Factory for creating API clients for EPC (European Payments
+   *                               Council) communication.
+   * @param sepaRequestToPayMapper Mapper for converting RTP cancellation requests into EPC-compliant format.
+   * @param serviceProviderConfig  Configuration settings for the service provider.
    */
-  public SendRtpHandler(
+  public CancelRtpHandler(
       @NonNull final WebClientFactory webClientFactory,
       @NonNull final OpenAPIClientFactory<DefaultApi> epcClientFactory,
       @NonNull final SepaRequestToPayMapper sepaRequestToPayMapper,
       @NonNull final ServiceProviderConfig serviceProviderConfig) {
+
     super(webClientFactory, epcClientFactory, sepaRequestToPayMapper, serviceProviderConfig);
   }
 
   /**
-   * Handles an incoming EPC request by sending an RTP request to the external service provider.
-   * The request goes through multiple steps, including choosing the appropriate web client (mTLS or simple),
-   * setting API credentials, and handling retries in case of failures.
+   * Handles an incoming EPC request by sending an RTP cancellation request to the external service provider.
+   * The request follows multiple steps, including creating an EPC API client, setting API credentials,
+   * and handling retries in case of failures.
    *
-   * @param request The EPC request containing RTP details.
+   * @param request The EPC request containing RTP cancellation details.
    * @return A {@code Mono} containing the updated EPC request with response data.
    */
   @NonNull
@@ -52,17 +55,18 @@ public class SendRtpHandler extends EpcApiInvokerHandler implements RequestHandl
         .doOnNext(epcClient -> log.debug("Successfully created EPC client"))
         .flatMap(epcClient -> {
           final var rtpToSend = request.rtpToSend();
-          final var sepaRequest = this.sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend);
+          final var sepaRequest = this.sepaRequestToPayMapper.toEpcRequestToCancel(rtpToSend);
           final var basePath = request.serviceProviderFullData().tsp().serviceEndpoint();
 
           epcClient.getApiClient().setBasePath(basePath);
           this.injectTokenIntoEpcRequest(epcClient, request);
 
-          return Mono.defer(() -> epcClient.postRequestToPayRequests(
+          return Mono.defer(() -> epcClient.postRequestToPayCancellationRequest(
                   request.rtpToSend().resourceID().getId(),
                   UUID.randomUUID().toString(),
+                  request.rtpToSend().resourceID().getId().toString(),
                   sepaRequest))
-              .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()))
+              .doFirst(() -> log.info("Sending RTP cancellation request to {}", rtpToSend.serviceProviderDebtor()))
               .retryWhen(sendRetryPolicy());
         })
         .map(request::withResponse);

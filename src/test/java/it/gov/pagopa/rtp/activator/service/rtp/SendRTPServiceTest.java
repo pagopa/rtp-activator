@@ -1,8 +1,10 @@
 package it.gov.pagopa.rtp.activator.service.rtp;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.activateClient.model.PayerDto;
@@ -12,6 +14,7 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
+import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
@@ -53,6 +56,8 @@ class SendRTPServiceTest {
   @Mock
   private RtpRepository rtpRepository;
   @Mock
+  private ObjectMapper objectMapper;
+  @Mock
   private SendRtpProcessor sendRtpProcessor;
 
   private SendRTPServiceImpl sendRTPService;
@@ -77,7 +82,7 @@ class SendRTPServiceTest {
   @BeforeEach
   void setUp() {
     sendRTPService = new SendRTPServiceImpl(sepaRequestToPayMapper, readApi,
-        serviceProviderConfig, rtpRepository, sendRtpProcessor);
+        serviceProviderConfig, rtpRepository, objectMapper,sendRtpProcessor);
     inputRtp = Rtp.builder().noticeNumber(noticeNumber).amount(amount).description(description)
         .expiryDate(expiryDate)
         .payerId(payerId).payeeName(payeeName).payeeId(payeeId)
@@ -268,6 +273,48 @@ class SendRTPServiceTest {
         .verify();
 
     verify(rtpRepository, times(2)).save(any());
+  }
+
+
+  @Test
+  void givenExistingCreatedRtp_whenCancelRtp_thenShouldSetCancelledStatusAndSave() {
+    final var rtpId = ResourceID.createNew();
+    final var createdRtp = mockRtp(RtpStatus.CREATED, rtpId, LocalDateTime.now());
+
+    when(rtpRepository.findById(rtpId)).thenReturn(Mono.just(createdRtp));
+    when(sendRtpProcessor.sendRtpCancellationToServiceProviderDebtor(createdRtp))
+        .thenReturn(Mono.just(createdRtp));
+    when(rtpRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+    final var result = sendRTPService.cancelRtp(rtpId);
+
+    StepVerifier.create(result)
+        .assertNext(rtp -> {
+          assertEquals(RtpStatus.CANCELLED, rtp.status());
+          assertEquals(rtpId, rtp.resourceID());
+        })
+        .verifyComplete();
+
+    verify(rtpRepository).findById(rtpId);
+    verify(sendRtpProcessor).sendRtpCancellationToServiceProviderDebtor(createdRtp);
+    verify(rtpRepository).save(any(Rtp.class));
+  }
+
+  @Test
+  void givenNonExistingRtp_whenCancelRtp_thenShouldThrowRtpNotFoundException() {
+    final var rtpId = ResourceID.createNew();
+
+    when(rtpRepository.findById(rtpId)).thenReturn(Mono.empty());
+
+    final var result = sendRTPService.cancelRtp(rtpId);
+
+    StepVerifier.create(result)
+        .expectError(RtpNotFoundException.class)
+        .verify();
+
+    verify(rtpRepository).findById(rtpId);
+    verifyNoInteractions(sendRtpProcessor);
+    verifyNoMoreInteractions(rtpRepository);
   }
 
 

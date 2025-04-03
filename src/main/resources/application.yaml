@@ -8,6 +8,7 @@ spring:
     mongodb:
       uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
       database: ${DB_NAME:rtp}
+  
   cloud:
     azure:
       monitor:
@@ -16,8 +17,9 @@ spring:
 activation.base-url: ${BASE_URL:http://localhost}
 
 pagopa:
-  anag:
+  details:
     iban: IT96K999999999900SRTPPAGOPA
+    fiscal-code: 15376371009
 
 # enable spring boot actuator health endpoint
 management:
@@ -80,3 +82,4 @@ client:
 callback:
   url:
     send: ${CALLBACK_BASE_URL:https://spsrtp.api.cstar.pagopa.it}/send
+    cancel: ${CALLBACK_BASE_URL:https://spsrtp.api.cstar.pagopa.it}/cancel

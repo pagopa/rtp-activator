@@ -9,6 +9,7 @@ import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -100,4 +101,99 @@ class RtpDBRepositoryTest {
         })
         .verifyComplete();
   }
+
+
+  @Test
+  void givenValidId_whenFindById_thenReturnRtp() {
+    final var rtpId = UUID.randomUUID();
+    final var resourceID = new ResourceID(rtpId);
+
+    final var rtpEntity = RtpEntity.builder()
+        .resourceID(rtpId)
+        .noticeNumber("12345")
+        .amount(BigDecimal.valueOf(100.50))
+        .description("Test Description")
+        .expiryDate(Instant.now())
+        .payerId("payer123")
+        .payerName("Payer Name")
+        .payeeId("payee123")
+        .payeeName("Payee Name")
+        .subject("subject")
+        .savingDateTime(Instant.now())
+        .serviceProviderDebtor("serviceProviderDebtor")
+        .iban("iban123")
+        .payTrxRef("ABC/124")
+        .flgConf("Y")
+        .status(RtpStatus.CREATED.name())
+        .serviceProviderCreditor("PagoPA")
+        .build();
+
+    final var expectedRtp = Rtp.builder()
+        .resourceID(resourceID)
+        .noticeNumber(rtpEntity.getNoticeNumber())
+        .amount(rtpEntity.getAmount())
+        .description(rtpEntity.getDescription())
+        .expiryDate(LocalDate.ofInstant(rtpEntity.getExpiryDate(), ZoneOffset.UTC))
+        .payerId(rtpEntity.getPayerId())
+        .payerName(rtpEntity.getPayerName())
+        .payeeId(rtpEntity.getPayeeId())
+        .payeeName(rtpEntity.getPayeeName())
+        .subject(rtpEntity.getSubject())
+        .savingDateTime(LocalDateTime.ofInstant(rtpEntity.getSavingDateTime(), ZoneOffset.UTC))
+        .serviceProviderDebtor(rtpEntity.getServiceProviderDebtor())
+        .iban(rtpEntity.getIban())
+        .payTrxRef(rtpEntity.getPayTrxRef())
+        .flgConf(rtpEntity.getFlgConf())
+        .status(RtpStatus.valueOf(rtpEntity.getStatus()))
+        .serviceProviderCreditor(rtpEntity.getServiceProviderCreditor())
+        .build();
+
+    when(rtpDB.findById(rtpId)).thenReturn(Mono.just(rtpEntity));
+
+    StepVerifier.create(rtpDbRepository.findById(resourceID))
+        .assertNext(actualRtp -> {
+          assertEquals(expectedRtp.noticeNumber(), actualRtp.noticeNumber());
+          assertEquals(expectedRtp.amount(), actualRtp.amount());
+          assertEquals(expectedRtp.description(), actualRtp.description());
+          assertEquals(expectedRtp.expiryDate(), actualRtp.expiryDate());
+          assertEquals(expectedRtp.payerId(), actualRtp.payerId());
+          assertEquals(expectedRtp.payerName(), actualRtp.payerName());
+          assertEquals(expectedRtp.payeeId(), actualRtp.payeeId());
+          assertEquals(expectedRtp.payeeName(), actualRtp.payeeName());
+          assertEquals(expectedRtp.subject(), actualRtp.subject());
+          assertEquals(expectedRtp.savingDateTime(), actualRtp.savingDateTime());
+          assertEquals(expectedRtp.serviceProviderDebtor(), actualRtp.serviceProviderDebtor());
+          assertEquals(expectedRtp.iban(), actualRtp.iban());
+          assertEquals(expectedRtp.payTrxRef(), actualRtp.payTrxRef());
+          assertEquals(expectedRtp.flgConf(), actualRtp.flgConf());
+          assertEquals(expectedRtp.status(), actualRtp.status());
+          assertEquals(expectedRtp.serviceProviderCreditor(), actualRtp.serviceProviderCreditor());
+          assertEquals(resourceID.getId(), actualRtp.resourceID().getId());
+        })
+        .verifyComplete();
+  }
+
+  @Test
+  void givenInvalidId_whenFindById_thenReturnEmpty() {
+    final var rtpId = UUID.randomUUID();
+    final var resourceID = new ResourceID(rtpId);
+
+    when(rtpDB.findById(rtpId)).thenReturn(Mono.empty());
+
+    StepVerifier.create(rtpDbRepository.findById(resourceID))
+        .verifyComplete();
+  }
+
+  @Test
+  void givenDbError_whenFindById_thenThrowException() {
+    final var rtpId = UUID.randomUUID();
+    final var resourceID = new ResourceID(rtpId);
+
+    when(rtpDB.findById(rtpId)).thenReturn(Mono.error(new RuntimeException("DB Error")));
+
+    StepVerifier.create(rtpDbRepository.findById(resourceID))
+        .expectErrorMatches(throwable -> throwable instanceof RuntimeException && throwable.getMessage().equals("DB Error"))
+        .verify();
+  }
+
 }
