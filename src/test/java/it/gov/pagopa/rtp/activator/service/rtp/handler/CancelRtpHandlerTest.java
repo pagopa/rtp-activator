@@ -72,7 +72,7 @@ class CancelRtpHandlerTest {
   }
 
   @Test
-  void givenValidRequest_whenHandleRtpCancellation_thenSendRtp() {
+  void givenValidRequest_whenHandleRtpCancellation_thenCancelRtp() {
     final var resourceId = ResourceID.createNew();
     final var request = mock(EpcRequest.class);
     final var rtpToCancel = mock(Rtp.class);
