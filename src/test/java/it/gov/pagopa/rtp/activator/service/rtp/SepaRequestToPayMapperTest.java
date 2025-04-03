@@ -5,8 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import it.gov.pagopa.rtp.activator.configuration.CallbackProperties;
+import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties;
+import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties.Details;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.epcClient.model.ExternalCancellationReason1CodeDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS022Dto;
 
 import java.math.BigDecimal;
@@ -21,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SepaRequestToPayMapperTest {
 
   private CallbackProperties callbackProperties;
+  private PagoPaConfigProperties pagoPaConfigProperties;
 
   private SepaRequestToPayMapper sepaRequestToPayMapper;
 
@@ -28,9 +32,15 @@ class SepaRequestToPayMapperTest {
   @BeforeEach
   void setUp() {
     callbackProperties = new CallbackProperties(
-        new CallbackProperties.UrlProperties("https://spsrtp.api.cstar.pagopa.it/send")
+        new CallbackProperties.UrlProperties("https://spsrtp.api.cstar.pagopa.it/send",
+            "https://spsrtp.api.cstar.pagopa.it/cancel")
     );
-    sepaRequestToPayMapper = new SepaRequestToPayMapper(callbackProperties);
+
+    pagoPaConfigProperties = new PagoPaConfigProperties(
+        new Details("iban", "fiscalCode")
+    );
+
+    sepaRequestToPayMapper = new SepaRequestToPayMapper(callbackProperties, pagoPaConfigProperties);
   }
 
 
@@ -92,7 +102,7 @@ class SepaRequestToPayMapperTest {
 
     // Verify creditor information
     assertEquals(nRtp.payeeName(), cdtTrfTx.getCdtr().getNm());
-    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(nRtp.iban()));
+    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(pagoPaConfigProperties.details().iban()));
 
     // Verify remittance information
     var rmtInf = cdtTrfTx.getRmtInf();
@@ -173,7 +183,7 @@ class SepaRequestToPayMapperTest {
 
     // Verify creditor information
     assertEquals(nRtp.payeeName(), cdtTrfTx.getCdtr().getNm());
-    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(nRtp.iban()));
+    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(pagoPaConfigProperties.details().iban()));
 
     // Verify remittance information
     var rmtInf = cdtTrfTx.getRmtInf();
@@ -196,5 +206,102 @@ class SepaRequestToPayMapperTest {
     
     // Verify callback URL
     assertEquals(this.callbackProperties.url().send(), result.getCallbackUrl().toString());
+  }
+
+
+  @Test
+  void testToEpcRequestToCancel() {
+    ResourceID resourceId = ResourceID.createNew();
+    String payerId = "payerId123";
+    String payeeId = "payeeId123";
+    String payeeName = "Comune di Bugliano";
+    String iban = "IT60X0542811101000000123456";
+    BigDecimal amount = new BigDecimal("99999999999");
+    LocalDateTime savingDateTime = LocalDateTime.now();
+    LocalDate expiryDate = LocalDate.now().plusDays(5);
+    String description = "Pagamento TARI";
+    String noticeNumber = "123456";
+    String payTrxRef = "ABC/124";
+    String flgConf = "flgConf123";
+    String payerName = "John Doe";
+    String subject = "subject";
+    String serviceProviderCreditor = "serviceProviderCreditor";
+    String serviceProviderDebtor = "serviceProviderDebtor";
+
+    final var nRtp = Rtp.builder()
+        .resourceID(resourceId)
+        .payerId(payerId)
+        .payerName(payerName)
+        .payeeId(payeeId)
+        .payeeName(payeeName)
+        .serviceProviderDebtor(serviceProviderDebtor)
+        .iban(iban)
+        .amount(amount)
+        .savingDateTime(savingDateTime)
+        .expiryDate(expiryDate)
+        .description(description)
+        .subject(subject)
+        .noticeNumber(noticeNumber)
+        .payTrxRef(payTrxRef)
+        .flgConf(flgConf)
+        .serviceProviderCreditor(serviceProviderCreditor)
+        .build();
+
+    final var result = sepaRequestToPayMapper.toEpcRequestToCancel(nRtp);
+
+    assertNotNull(result);
+    assertEquals(resourceId.getId().toString(), result.getResourceId());
+
+    final var originalPaymentInstruction = result.getDocument().getCstmrPmtCxlReq().getUndrlyg().getOrgnlPmtInfAndCxl().getFirst();
+    assertEquals(resourceId.getId().toString(),
+        originalPaymentInstruction.getPmtCxlId());
+    assertEquals(resourceId.getId().toString(),
+        originalPaymentInstruction.getOrgnlPmtInfId());
+    assertEquals(resourceId.getId().toString().replace("-",""),
+        originalPaymentInstruction.getOrgnlGrpInf().getOrgnlMsgId());
+    assertEquals(savingDateTime.toString(),
+        originalPaymentInstruction.getOrgnlGrpInf().getOrgnlCreDtTm());
+
+    final var paymentTransaction = originalPaymentInstruction.getTxInf().getFirst();
+    assertEquals(resourceId.getId().toString(),
+        paymentTransaction.getCxlId());
+    assertEquals(noticeNumber, paymentTransaction.getOrgnlEndToEndId());
+    assertEquals(amount,
+        paymentTransaction.getOrgnlTxRef().getAmt().getInstdAmt());
+    assertEquals(String.valueOf(expiryDate),
+        paymentTransaction.getOrgnlTxRef().getReqdExctnDt().getDt());
+    assertEquals(subject,
+        paymentTransaction.getOrgnlTxRef().getRmtInf().getUstrd());
+    assertEquals(serviceProviderDebtor,
+        paymentTransaction.getOrgnlTxRef().getDbtrAgt().getFinInstnId().getBICFI());
+    assertEquals(pagoPaConfigProperties.details().iban(),
+        paymentTransaction.getOrgnlTxRef().getCdtrAcct().getId().getIBAN());
+
+    final var paymentCancellationReason = paymentTransaction.getCxlRsnInf();
+    assertEquals(ExternalCancellationReason1CodeDto.PAID,
+        paymentCancellationReason.getRsn().getCd());
+    assertEquals(payeeName,
+        paymentCancellationReason.getOrgtr().getNm());
+    assertEquals(pagoPaConfigProperties.details().fiscalCode(),
+        paymentCancellationReason.getOrgtr().getId().getOrgId().getOthr().getId());
+    assertEquals("ATS005/ " + expiryDate,
+        paymentCancellationReason.getAddtlInf().getFirst());
+
+    final var branchAndFinancialInstitutionIdentification = paymentTransaction.getOrgnlTxRef().getCdtrAgt();
+    assertEquals(pagoPaConfigProperties.details().fiscalCode(),
+        branchAndFinancialInstitutionIdentification.getFinInstnId().getOthr().getId());
+
+    final var caseAssignment = result.getDocument().getCstmrPmtCxlReq().getAssgnmt();
+    assertEquals(resourceId.getId().toString(),
+        caseAssignment.getId());
+    assertEquals(savingDateTime.toString(),
+        caseAssignment.getCreDtTm());
+    assertEquals(pagoPaConfigProperties.details().fiscalCode(),
+        caseAssignment.getAssgnr().getPty().getId().getOrgId().getOthr().getId());
+    assertEquals(serviceProviderDebtor,
+        caseAssignment.getAssgne().getAgt().getFinInstnId().getBICFI());
+
+    assertEquals(this.callbackProperties.url().cancel(), result.getCallbackUrl().toString());
+
   }
 }

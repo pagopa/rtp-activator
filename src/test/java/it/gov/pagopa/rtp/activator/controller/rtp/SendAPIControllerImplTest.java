@@ -12,8 +12,10 @@ import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
+import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import it.gov.pagopa.rtp.activator.model.generated.send.CreateRtpDto;
@@ -25,6 +27,7 @@ import it.gov.pagopa.rtp.activator.utils.Users.RtpSenderWriter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -265,6 +268,63 @@ class SendAPIControllerImplTest {
     verify(rtpDtoMapper, times(0)).toRtpWithServiceProviderCreditor(any(), (any()));
 
   }
+
+
+  @Test
+  @RtpSenderWriter
+  void givenValidRtpId_whenCancelRtp_thenReturnNoContent() {
+    final var rtpId = UUID.randomUUID();
+
+    final var cancelledRtp = Rtp.builder()
+        .resourceID(new ResourceID(rtpId))
+        .status(RtpStatus.CANCELLED)
+        .build();
+
+    when(sendRTPService.cancelRtp(any(ResourceID.class)))
+        .thenReturn(Mono.just(cancelledRtp));
+
+    webTestClient.post()
+        .uri("/rtps//{rtpId}/cancel", rtpId)
+        .header("RequestId", UUID.randomUUID().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isNoContent();
+  }
+
+
+  @Test
+  @RtpSenderWriter
+  void givenNonExistingRtpId_whenCancelRtp_thenReturnNotFound() {
+    final var rtpId = UUID.randomUUID();
+
+    when(sendRTPService.cancelRtp(any(ResourceID.class)))
+        .thenReturn(Mono.error(new RtpNotFoundException(rtpId)));
+
+    webTestClient.post()
+        .uri("/rtps/{rtpId}/cancel", rtpId)
+        .header("RequestId", UUID.randomUUID().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isNotFound();
+  }
+
+
+  @Test
+  @RtpSenderWriter
+  void givenUnexpectedError_whenCancelRtp_thenReturnInternalServerError() {
+    final var rtpId = UUID.randomUUID();
+
+    when(sendRTPService.cancelRtp(any(ResourceID.class)))
+        .thenReturn(Mono.error(new RuntimeException("Unexpected error")));
+
+    webTestClient.post()
+        .uri("/rtps/{rtpId}/cancel", rtpId)
+        .header("RequestId", UUID.randomUUID().toString())
+        .contentType(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().is5xxServerError();
+  }
+
 
   private CreateRtpDto generateSendRequest() {
 
