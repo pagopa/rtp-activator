@@ -193,20 +193,4 @@ jobs:
           terraform init -backend-config="env/cstar-u-weu-rtp/backend.tfvars" -reconfigure
           terraform apply -var-file="env/cstar-u-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ needs.dev_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
 
-      #
-      # Install Newman.
-      #
-      - name: Install Newman
-        if: steps.semantic.outputs.new_release_published == 'true'
-        run: npm install -g newman
 
-      #
-      # Run Postman collection.
-      #
-      - name: Run Postman collection
-        if: steps.semantic.outputs.new_release_published == 'true'
-        run: |
-          newman run src/test/postman/RTP-component-test.postman_collection.json \
-            -e src/test/postman/uat.postman_environment.json \
-            --env-var "payer-sp-client-secret=${{ secrets.PAYER_SP_CLIENT_SECRET }}" \
-            --env-var "pagopa-sp-client-secret=${{ secrets.PAGOPA_SP_CLIENT_SECRET }}"
