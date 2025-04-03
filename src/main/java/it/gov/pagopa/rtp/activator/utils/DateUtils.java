@@ -11,7 +11,7 @@ import java.util.Optional;
 @Component
 public class DateUtils {
 
-    public static String savingLocalDateTimeToZulu(LocalDateTime localDateTime) {
+    public static String LocalDateTimeToZulu(LocalDateTime localDateTime) {
         return Optional.of(localDateTime)
             .map(sdt-> sdt.toInstant(ZoneOffset.UTC))
             .map(sdt -> sdt.with(ChronoField.NANO_OF_SECOND, 0))
