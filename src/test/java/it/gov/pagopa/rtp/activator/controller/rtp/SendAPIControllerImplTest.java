@@ -10,7 +10,6 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
-import it.gov.pagopa.rtp.activator.domain.errors.IllegalRtpStateException;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
@@ -307,23 +306,6 @@ class SendAPIControllerImplTest {
         .contentType(MediaType.APPLICATION_JSON)
         .exchange()
         .expectStatus().isNotFound();
-  }
-
-
-  @Test
-  @RtpSenderWriter
-  void givenInvalidRtpState_whenCancelRtp_thenReturnUnprocessableEntity() {
-    final var rtpId = UUID.randomUUID();
-
-    when(sendRTPService.cancelRtp(any(ResourceID.class)))
-        .thenReturn(Mono.error(new IllegalRtpStateException(RtpStatus.SENT, "Cannot cancel")));
-
-    webTestClient.post()
-        .uri("/rtps/{rtpId}/cancel", rtpId)
-        .header("RequestId", UUID.randomUUID().toString())
-        .contentType(MediaType.APPLICATION_JSON)
-        .exchange()
-        .expectStatus().isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
   }
 
 

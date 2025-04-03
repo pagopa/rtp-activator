@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.model.ActivationDto;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
-import it.gov.pagopa.rtp.activator.domain.errors.IllegalRtpStateException;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
@@ -141,7 +140,6 @@ public class SendRTPServiceImpl implements SendRTPService {
         .doOnError(error -> log.error("Error retrieving RTP: {}", error.getMessage(), error));
 
     final var cancellationRequest = rtpToCancel
-        .flatMap(SendRTPServiceImpl::validateRtpStatus)
         .doOnError(error -> log.error(error.getMessage(), error))
         .doOnNext(rtp -> LoggingUtils.logAsJson(
             () -> sepaRequestToPayMapper.toEpcRequestToCancel(rtp), objectMapper))
@@ -156,15 +154,6 @@ public class SendRTPServiceImpl implements SendRTPService {
             rtp -> log.info("Saving {} RTP with id {}", rtp.status(), rtp.resourceID().getId()))
         .flatMap(this.rtpRepository::save)
         .doFinally(f -> MDC.clear());
-  }
-
-
-  @NonNull
-  private static Mono<Rtp> validateRtpStatus(@NonNull final Rtp rtp) {
-    return Mono.just(rtp)
-        .filter(r -> r.status().equals(RtpStatus.CREATED))
-        .switchIfEmpty(Mono.error(() -> new IllegalRtpStateException(
-            rtp.status(), "Cannot cancel RTP with id " + rtp.resourceID().getId())));
   }
 
 

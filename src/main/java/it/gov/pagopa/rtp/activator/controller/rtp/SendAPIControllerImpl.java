@@ -3,7 +3,6 @@ package it.gov.pagopa.rtp.activator.controller.rtp;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.send.RtpsApi;
-import it.gov.pagopa.rtp.activator.domain.errors.IllegalRtpStateException;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
@@ -78,8 +77,6 @@ public class SendAPIControllerImpl implements RtpsApi {
             .noContent().build())
         .onErrorReturn(RtpNotFoundException.class,
             ResponseEntity.notFound().build())
-        .onErrorReturn(IllegalRtpStateException.class,
-            ResponseEntity.unprocessableEntity().build())
         .doOnError(a -> log.error("Error cancelling RTP {}", a.getMessage()));
   }
 

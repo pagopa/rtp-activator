@@ -82,9 +82,6 @@ paths:
         "406":
           #description: Not acceptable. Did you require application/json?
           $ref: '#/components/responses/Error'
-        "422":
-          #description: Unprocessable entity.
-          $ref: '#/components/responses/Error'
         "429":
           #description: Too many request
           $ref: '#/components/responses/Error'

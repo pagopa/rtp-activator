@@ -12,7 +12,6 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Activation;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
-import it.gov.pagopa.rtp.activator.domain.errors.IllegalRtpStateException;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
@@ -282,16 +281,13 @@ class SendRTPServiceTest {
     final var rtpId = ResourceID.createNew();
     final var createdRtp = mockRtp(RtpStatus.CREATED, rtpId, LocalDateTime.now());
 
-    // Given
     when(rtpRepository.findById(rtpId)).thenReturn(Mono.just(createdRtp));
     when(sendRtpProcessor.sendRtpCancellationToServiceProviderDebtor(createdRtp))
         .thenReturn(Mono.just(createdRtp));
     when(rtpRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
-    // When
-    Mono<Rtp> result = sendRTPService.cancelRtp(rtpId);
+    final var result = sendRTPService.cancelRtp(rtpId);
 
-    // Then
     StepVerifier.create(result)
         .assertNext(rtp -> {
           assertEquals(RtpStatus.CANCELLED, rtp.status());
@@ -308,36 +304,12 @@ class SendRTPServiceTest {
   void givenNonExistingRtp_whenCancelRtp_thenShouldThrowRtpNotFoundException() {
     final var rtpId = ResourceID.createNew();
 
-    // Given
     when(rtpRepository.findById(rtpId)).thenReturn(Mono.empty());
 
-    // When
-    Mono<Rtp> result = sendRTPService.cancelRtp(rtpId);
+    final var result = sendRTPService.cancelRtp(rtpId);
 
-    // Then
     StepVerifier.create(result)
         .expectError(RtpNotFoundException.class)
-        .verify();
-
-    verify(rtpRepository).findById(rtpId);
-    verifyNoInteractions(sendRtpProcessor);
-    verifyNoMoreInteractions(rtpRepository);
-  }
-
-  @Test
-  void givenSentRtp_whenCancelRtp_thenShouldThrowIllegalRtpStateException() {
-    final var rtpId = ResourceID.createNew();
-    final var sentRtp = mockRtp(RtpStatus.SENT, rtpId, LocalDateTime.now());
-
-    // Given
-    when(rtpRepository.findById(rtpId)).thenReturn(Mono.just(sentRtp));
-
-    // When
-    Mono<Rtp> result = sendRTPService.cancelRtp(rtpId);
-
-    // Then
-    StepVerifier.create(result)
-        .expectError(IllegalRtpStateException.class)
         .verify();
 
     verify(rtpRepository).findById(rtpId);
