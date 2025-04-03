@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "ea10c157-b059-4569-a582-e5379011d2d8",
-		"name": "RTP component test",
+		"_postman_id": "5c073595-fef1-403f-9ddb-7c1814f9ef39",
+		"name": "RTP Component test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "40899591"
+		"_exporter_id": "40899591",
+		"_collection_link": "https://memento-team-6092.postman.co/workspace/Memento-Team-Workspace~c1ccbcd8-e5f9-430a-8410-4705776d94d5/collection/40899591-5c073595-fef1-403f-9ddb-7c1814f9ef39?action=share&source=collection_link&creator=40899591"
 	},
 	"item": [
 		{
@@ -283,7 +284,7 @@
 							"response": []
 						},
 						{
-							"name": "Activate Copy",
+							"name": "Activate",
 							"event": [
 								{
 									"listen": "prerequest",
@@ -441,7 +442,19 @@
 										"exec": [
 											"pm.test(\"Status code is 201\", function () {",
 											"  pm.response.to.have.status(201);",
-											"});"
+											"});",
+											"",
+											"const locationUrl = pm.response.headers.get(\"Location\");",
+											"console.log(\"locationUrl:\", locationUrl);",
+											"",
+											"const urlParts = locationUrl.split('/');",
+											"const uuid = urlParts[urlParts.length - 1];",
+											"if (uuid && uuid.length > 0 && uuid.includes('-')) {",
+											"    pm.collectionVariables.set(\"resourceId\", uuid);",
+											"    console.log(\"Extracted UUID (resource ID):\", uuid);",
+											"} else {",
+											"    console.log(\"No valid UUID found in the request URL\");",
+											"}"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -495,6 +508,94 @@
 									"raw": "{{rtp-api-url}}{{send}}",
 									"host": [
 										"{{rtp-api-url}}{{send}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel RTP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {",
+											"  pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "v1",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{rtp-api-url}}{{send}}/:rtpId/cancel",
+									"host": [
+										"{{rtp-api-url}}{{send}}"
+									],
+									"path": [
+										":rtpId",
+										"cancel"
+									],
+									"variable": [
+										{
+											"key": "rtpId",
+											"value": "{{resourceId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Callback Send",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-certificate-client-Serial",
+										"value": "99999999999999999",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"resourceId\": \"456789123-rtp-response-001\",\n  \"AsynchronousSepaRequestToPayResponse\": {\n    \"CdtrPmtActvtnReqStsRpt\": {\n      \"GrpHdr\": {\n        \"MsgId\": \"RESPONSE-MSG-001\",\n        \"CreDtTm\": \"2025-03-21T10:15:30\",\n        \"InitgPty\": {\n          \"Id\": {\n            \"OrgId\": {\n              \"AnyBIC\": \"MOCKSP04\"\n            }\n          }\n        }\n      },\n      \"OrgnlGrpInfAndSts\": {\n        \"OrgnlMsgId\": \"ORIGINAL-REQ-001\",\n        \"OrgnlMsgNmId\": \"pain.013.001.08\",\n        \"OrgnlCreDtTm\": \"2025-03-20T14:30:00\"\n      }\n    }\n  },\n  \"_links\": {\n    \"initialSepaRequestToPayUri\": {\n      \"href\": \"https://api-rtp-cb.cstar.pagopa.it/rtp/cb/requests/123456789-original-req-001\",\n      \"templated\": false\n    }\n  }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{cb-url}}{{callback}}",
+									"host": [
+										"{{cb-url}}{{callback}}"
 									]
 								}
 							},
@@ -872,7 +973,7 @@
 					]
 				},
 				{
-					"name": "Non-existing debtor",
+					"name": "Not found",
 					"item": [
 						{
 							"name": "GET token Debtor SP",
@@ -989,6 +1090,122 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "GET token Creditor SP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{pagopa-sp-client-id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{pagopa-sp-client-secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{mcshared-api-url}}/auth/token",
+									"host": [
+										"{{mcshared-api-url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel RTP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 404\", function () {",
+											"  pm.response.to.have.status(404);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "v1",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{rtp-api-url}}{{send}}/:rtpId/cancel",
+									"host": [
+										"{{rtp-api-url}}{{send}}"
+									],
+									"path": [
+										":rtpId",
+										"cancel"
+									],
+									"variable": [
+										{
+											"key": "rtpId",
+											"value": "00000000-0000-0000-0000-000000000000"
+										}
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
@@ -1036,6 +1253,10 @@
 			"key": "send_rtp_api_version",
 			"value": "v1",
 			"type": "string"
+		},
+		{
+			"key": "resourceId",
+			"value": ""
 		}
 	]
 }
