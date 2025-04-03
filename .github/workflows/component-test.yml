@@ -2,9 +2,6 @@ name: Component test
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - SRTP-*
 
 jobs:
   component-test:
