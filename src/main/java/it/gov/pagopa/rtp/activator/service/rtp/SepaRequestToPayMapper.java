@@ -202,7 +202,7 @@ public class SepaRequestToPayMapper {
         .id(party38ChoiceEPC25922V30DS022Dto);
 
     var accountIdentification4ChoiceDto = new AccountIdentification4ChoiceDto();
-    accountIdentification4ChoiceDto.setIBAN(this.pagoPaConfigProperties.anag().iban());
+    accountIdentification4ChoiceDto.setIBAN(this.pagoPaConfigProperties.details().iban());
 
     var cashAccount40EPC25922V30DS022Dto = new CashAccount40EPC25922V30DS022Dto();
     cashAccount40EPC25922V30DS022Dto.setId(accountIdentification4ChoiceDto);
@@ -279,7 +279,7 @@ public class SepaRequestToPayMapper {
             .id(new Party38ChoiceEPC25922V30DS04bDto()
                 .orgId(new OrganisationIdentification29EPC25922V30DS04bDto()
                     .othr(new GenericOrganisationIdentification1EPC25922V30DS04bDto()
-                        .id(this.pagoPaConfigProperties.anag().fiscalCode())
+                        .id(this.pagoPaConfigProperties.details().fiscalCode())
                         .schmeNm(new OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04bDto()
                             .cd(ExternalOrganisationIdentification1CodeIIDto.BOID))))));
 
@@ -296,7 +296,7 @@ public class SepaRequestToPayMapper {
 
     final var organisationIdentification29EPC25922V30DS112Dto = new OrganisationIdentification29EPC25922V30DS112Dto() //OrgId
         .othr(new GenericOrganisationIdentification1EPC25922V30DS112Dto()
-            .id(this.pagoPaConfigProperties.anag().fiscalCode())
+            .id(this.pagoPaConfigProperties.details().fiscalCode())
             .schmeNm(new OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04b2Dto()
                 .cd(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID)));
 
@@ -322,7 +322,7 @@ public class SepaRequestToPayMapper {
     final var branchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto = new BranchAndFinancialInstitutionIdentification6EPC25922V30DS02Dto() //CdtrAgt
         .finInstnId(new FinancialInstitutionIdentification18EPC25922V30DS02Dto()
             .othr(new GenericFinancialIdentification1Dto()
-                .id(this.pagoPaConfigProperties.anag().fiscalCode())
+                .id(this.pagoPaConfigProperties.details().fiscalCode())
                 .schmeNm(new FinancialIdentificationSchemeName1ChoiceDto()
                     .cd("BOID")
                 )));
@@ -343,7 +343,7 @@ public class SepaRequestToPayMapper {
             new Party40ChoiceEPC25922V30DS113Dto())
         .cdtrAcct(new CashAccount38Dto()
             .id(new AccountIdentification4ChoiceDto()
-                .IBAN(this.pagoPaConfigProperties.anag().iban())));
+                .IBAN(this.pagoPaConfigProperties.details().iban())));
 
     final var paymentTransaction = List.of(new PaymentTransaction109EPC25922V30DS11Dto()  //TxInf
         .cxlId(rtp.resourceID().getId().toString())

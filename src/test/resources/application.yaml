@@ -49,6 +49,6 @@ callback:
     send: https://spsrtp.api.cstar.pagopa.it/send
 
 pagopa:
-  anag:
+  details:
     iban: iban
     fiscal-code: fiscal_code

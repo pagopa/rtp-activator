@@ -9,10 +9,10 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties(prefix = "pagopa")
 public record PagoPaConfigProperties(
-    @NotNull Anag anag
+    @NotNull Details details
 ) {
 
-    public record Anag(
+    public record Details(
         @NotBlank String iban,
         @NotBlank String fiscalCode) {}
 }

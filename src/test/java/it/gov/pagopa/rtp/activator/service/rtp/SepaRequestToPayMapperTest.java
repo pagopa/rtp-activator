@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import it.gov.pagopa.rtp.activator.configuration.CallbackProperties;
 import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties;
+import it.gov.pagopa.rtp.activator.configuration.PagoPaConfigProperties.Details;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalCancellationReason1CodeDto;
@@ -36,7 +37,7 @@ class SepaRequestToPayMapperTest {
     );
 
     pagoPaConfigProperties = new PagoPaConfigProperties(
-        new PagoPaConfigProperties.Anag("iban", "fiscalCode")
+        new Details("iban", "fiscalCode")
     );
 
     sepaRequestToPayMapper = new SepaRequestToPayMapper(callbackProperties, pagoPaConfigProperties);
@@ -101,7 +102,7 @@ class SepaRequestToPayMapperTest {
 
     // Verify creditor information
     assertEquals(nRtp.payeeName(), cdtTrfTx.getCdtr().getNm());
-    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(pagoPaConfigProperties.anag().iban()));
+    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(pagoPaConfigProperties.details().iban()));
 
     // Verify remittance information
     var rmtInf = cdtTrfTx.getRmtInf();
@@ -182,7 +183,7 @@ class SepaRequestToPayMapperTest {
 
     // Verify creditor information
     assertEquals(nRtp.payeeName(), cdtTrfTx.getCdtr().getNm());
-    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(pagoPaConfigProperties.anag().iban()));
+    assertTrue(cdtTrfTx.getCdtrAcct().getId().toString().contains(pagoPaConfigProperties.details().iban()));
 
     // Verify remittance information
     var rmtInf = cdtTrfTx.getRmtInf();
@@ -273,7 +274,7 @@ class SepaRequestToPayMapperTest {
         paymentTransaction.getOrgnlTxRef().getRmtInf().getUstrd());
     assertEquals(serviceProviderDebtor,
         paymentTransaction.getOrgnlTxRef().getDbtrAgt().getFinInstnId().getBICFI());
-    assertEquals(pagoPaConfigProperties.anag().iban(),
+    assertEquals(pagoPaConfigProperties.details().iban(),
         paymentTransaction.getOrgnlTxRef().getCdtrAcct().getId().getIBAN());
 
     final var paymentCancellationReason = paymentTransaction.getCxlRsnInf();
@@ -281,13 +282,13 @@ class SepaRequestToPayMapperTest {
         paymentCancellationReason.getRsn().getCd());
     assertEquals(payeeName,
         paymentCancellationReason.getOrgtr().getNm());
-    assertEquals(pagoPaConfigProperties.anag().fiscalCode(),
+    assertEquals(pagoPaConfigProperties.details().fiscalCode(),
         paymentCancellationReason.getOrgtr().getId().getOrgId().getOthr().getId());
     assertEquals("ATS005/ " + expiryDate,
         paymentCancellationReason.getAddtlInf().getFirst());
 
     final var branchAndFinancialInstitutionIdentification = paymentTransaction.getOrgnlTxRef().getCdtrAgt();
-    assertEquals(pagoPaConfigProperties.anag().fiscalCode(),
+    assertEquals(pagoPaConfigProperties.details().fiscalCode(),
         branchAndFinancialInstitutionIdentification.getFinInstnId().getOthr().getId());
 
     final var caseAssignment = result.getDocument().getCstmrPmtCxlReq().getAssgnmt();
@@ -295,7 +296,7 @@ class SepaRequestToPayMapperTest {
         caseAssignment.getId());
     assertEquals(savingDateTime.toString(),
         caseAssignment.getCreDtTm());
-    assertEquals(pagoPaConfigProperties.anag().fiscalCode(),
+    assertEquals(pagoPaConfigProperties.details().fiscalCode(),
         caseAssignment.getAssgnr().getPty().getId().getOrgId().getOthr().getId());
     assertEquals(serviceProviderDebtor,
         caseAssignment.getAssgne().getAgt().getFinInstnId().getBICFI());

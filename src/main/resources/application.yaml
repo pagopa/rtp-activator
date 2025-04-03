@@ -17,7 +17,7 @@ spring:
 activation.base-url: ${BASE_URL:http://localhost}
 
 pagopa:
-  anag:
+  details:
     iban: IT96K999999999900SRTPPAGOPA
     fiscal-code: 15376371009
 
