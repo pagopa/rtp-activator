@@ -72,6 +72,12 @@ resource "azurerm_container_app" "rtp-activator" {
           secret_name = replace(lower(env.key), "_", "-")
         }
       }
+      
+       volume_mounts {
+        name    = "jks-volume"
+        path    = "/mnt/jks"
+      }
+
     }
 
     volume {

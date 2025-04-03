@@ -2,8 +2,9 @@ package it.gov.pagopa.rtp.activator.configuration.ssl;
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
@@ -19,6 +20,8 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -126,19 +129,26 @@ public class DefaultSslContextFactory implements SslContextFactory {
   @NonNull
   private KeyStore initTrustStore() {
 
-    try (final var keyStoreInputStream = this.convertBase64FileToInputStream(
-        this.sslContextProps.jksTrustStore())) {
+    File jksFile = new FileSystemResource(this.sslContextProps.jksTrustStorePath()).getFile();
 
-      final var keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-      final var password = this.sslContextProps.jksTrustStorePassword().toCharArray();
+    if (!jksFile.exists()) {
+      log.error("JKS file not found at path: {}", this.sslContextProps.jksTrustStorePath());
+      throw new SslContextCreationException("JKS file not found at path: " + this.sslContextProps.jksTrustStorePath());
+    }
 
-      keyStore.load(keyStoreInputStream, password);
+    log.info("JKS file found with size: {} bytes", jksFile.length());
+
+    try (FileInputStream fis = new FileInputStream(jksFile)) {
+      KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+
+      keyStore.load(fis, this.sslContextProps.jksTrustStorePassword().toCharArray());
+      log.info("Successfully loaded keystore with type: {}", keyStore.getType());
       return keyStore;
-
     } catch (IOException | NoSuchAlgorithmException | CertificateException | KeyStoreException e) {
       log.error("Error loading trust store", e);
       throw new SslContextCreationException(e);
     }
+
   }
 
   /**
