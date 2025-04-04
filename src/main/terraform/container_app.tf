@@ -83,7 +83,7 @@ resource "azurerm_container_app" "rtp-activator" {
     volume {
       name         = "jks-volume"
       storage_type = "AzureFile"
-      storage_name = data.azurerm_storage_share.rtp_jks_file_share.name
+      storage_name = data.azurerm_container_app_environment_storage.rtp_file_share_storage.name    
     }
 
     max_replicas = var.rtp_activator_max_replicas
