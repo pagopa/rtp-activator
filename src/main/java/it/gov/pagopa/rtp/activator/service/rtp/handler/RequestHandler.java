@@ -1,5 +1,7 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
+import org.springframework.lang.NonNull;
+
 import reactor.core.publisher.Mono;
 
 /**
@@ -23,5 +25,5 @@ public interface RequestHandler<T> {
    * @return a {@link Mono} emitting the processed request or an error
    *         if processing fails
    */
-  Mono<T> handle(T request);
+  Mono<T> handle(@NonNull T request);
 }

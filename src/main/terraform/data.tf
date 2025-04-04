@@ -23,3 +23,12 @@ data "azurerm_key_vault" "rtp-kv" {
   resource_group_name = local.rtp_kv_resource_group_name
 }
 
+data "azurerm_storage_account" "rtp_files_storage_account"{
+  name = local.rtp_files_storage_account_name
+  resource_group_name = local.rtp_resource_group_storage_share_name
+}
+
+data "azurerm_storage_share" "rtp_jks_file_share" {
+  name = local.rtp_jks_file_share_name
+  storage_account_name = local.rtp_files_storage_account_name
+}

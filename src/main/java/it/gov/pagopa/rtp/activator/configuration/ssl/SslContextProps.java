@@ -20,6 +20,12 @@ public record SslContextProps(
     String pfxPassword,
 
     @NotBlank
-    String pfxType
+    String pfxType,
+
+    @NonNull
+    String jksTrustStorePath,
+
+    @DefaultValue("")
+    String jksTrustStorePassword
 
 ) {}
