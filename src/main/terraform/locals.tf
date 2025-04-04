@@ -8,7 +8,7 @@ locals {
   rtp_kv_resource_group_name = "${var.prefix}-${var.env_short}-${var.location_short}-${var.domain}-sec-rg"
 
   rtp_resource_group_storage_share_name = "${var.prefix}-${var.env_short}-${var.location_short}-${var.domain}-storage-share-rg"
-
-  rtp_jks_fss = "${var.prefix}-${var.env_short}-${var.location_short}-${var.domain}-jks-fss"
+  rtp_files_storage_account_name = "${var.prefix}${var.env_short}${var.location_short}${var.domain}storageshare"
+  rtp_jks_file_share_name = "${var.prefix}-${var.env_short}-${var.location_short}-${var.domain}-jks-file-share"
 }
 
