@@ -139,7 +139,7 @@ public class DefaultSslContextFactory implements SslContextFactory {
     log.info("JKS file found with size: {} bytes", jksFile.length());
 
     try (FileInputStream fis = new FileInputStream(jksFile)) {
-      KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+      KeyStore keyStore = KeyStore.getInstance("JKS");
 
       keyStore.load(fis, this.sslContextProps.jksTrustStorePassword().toCharArray());
       log.info("Successfully loaded keystore with type: {}", keyStore.getType());
