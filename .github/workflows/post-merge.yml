@@ -194,4 +194,4 @@ jobs:
           terraform apply -var-file="env/cstar-u-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ needs.dev_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
 
       - name: Component_test
-        uses: ./.github/workflows/extract_allure_fail_rate.yml
+        uses: ./.github/workflows/component-test.yml
