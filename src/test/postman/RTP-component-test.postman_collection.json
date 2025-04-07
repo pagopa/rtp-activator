@@ -1,0 +1,1261 @@
+{
+	"info": {
+		"_postman_id": "5c073595-fef1-403f-9ddb-7c1814f9ef39",
+		"name": "RTP Component test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40899591"
+	},
+	"item": [
+		{
+			"name": "Happy Path",
+			"item": [
+				{
+					"name": "Debtor SP",
+					"item": [
+						{
+							"name": "GET token Debtor SP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{payer-sp-client-id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{payer-sp-client-secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{mcshared-api-url}}/auth/token",
+									"host": [
+										"{{mcshared-api-url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Activate",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function getRandomChar() {",
+											"    const chars = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";",
+											"    return chars.charAt(Math.floor(Math.random() * chars.length));",
+											"}",
+											"",
+											"function getRandomDigit() {",
+											"    return Math.floor(Math.random() * 10).toString();",
+											"}",
+											"",
+											"function generateFakeFiscalCode() {",
+											"    let fiscalCode = \"\";",
+											"    for (let i = 0; i < 6; i++) {",
+											"        fiscalCode += getRandomChar();",
+											"    }",
+											"    fiscalCode += getRandomDigit() + getRandomDigit();",
+											"    fiscalCode += getRandomChar();",
+											"    fiscalCode += getRandomDigit() + getRandomDigit();",
+											"    fiscalCode += \"X000\";",
+											"    fiscalCode += getRandomChar();",
+											"    return fiscalCode;",
+											"}",
+											"",
+											"const fakeFiscalCode = generateFakeFiscalCode();",
+											"console.log(\"Generated Fiscal Code:\", fakeFiscalCode);",
+											"",
+											"pm.environment.set(\"fakeFiscalCode\", fakeFiscalCode);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {",
+											"  pm.response.to.have.status(201);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "{{activation_api_version}}",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"payer\": {\n        \"fiscalCode\": \"{{fakeFiscalCode}}\",\n        \"rtpSpId\": \"{{rtpSpId}}\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{rtp-api-url}}{{activation}}",
+									"host": [
+										"{{rtp-api-url}}{{activation}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Find RTP by payer id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Version",
+										"value": "{{get_payer_api_version}}",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									},
+									{
+										"key": "PayerId",
+										"value": "{{fakeFiscalCode}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{rtp-api-url}}/rtp/activation/activations/payer",
+									"host": [
+										"{{rtp-api-url}}"
+									],
+									"path": [
+										"rtp",
+										"activation",
+										"activations",
+										"payer"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Creditor SP",
+					"item": [
+						{
+							"name": "GET token Debtor SP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{payer-sp-client-id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{payer-sp-client-secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{mcshared-api-url}}/auth/token",
+									"host": [
+										"{{mcshared-api-url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Activate",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function getRandomChar() {",
+											"    const chars = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\";",
+											"    return chars.charAt(Math.floor(Math.random() * chars.length));",
+											"}",
+											"",
+											"function getRandomDigit() {",
+											"    return Math.floor(Math.random() * 10).toString();",
+											"}",
+											"",
+											"function generateFakeFiscalCode() {",
+											"    let fiscalCode = \"\";",
+											"    for (let i = 0; i < 6; i++) {",
+											"        fiscalCode += getRandomChar();",
+											"    }",
+											"    fiscalCode += getRandomDigit() + getRandomDigit();",
+											"    fiscalCode += getRandomChar();",
+											"    fiscalCode += getRandomDigit() + getRandomDigit();",
+											"    fiscalCode += \"X000\";",
+											"    fiscalCode += getRandomChar();",
+											"    return fiscalCode;",
+											"}",
+											"",
+											"const fakeFiscalCode = generateFakeFiscalCode();",
+											"console.log(\"Generated Fiscal Code:\", fakeFiscalCode);",
+											"",
+											"pm.environment.set(\"fakeFiscalCode\", fakeFiscalCode);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {",
+											"  pm.response.to.have.status(201);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "{{activation_api_version}}",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"payer\": {\n        \"fiscalCode\": \"{{fakeFiscalCode}}\",\n        \"rtpSpId\": \"{{rtpSpId}}\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{rtp-api-url}}{{activation}}",
+									"host": [
+										"{{rtp-api-url}}{{activation}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET token Creditor SP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{pagopa-sp-client-id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{pagopa-sp-client-secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{mcshared-api-url}}/auth/token",
+									"host": [
+										"{{mcshared-api-url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Send RTP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {",
+											"  pm.response.to.have.status(201);",
+											"});",
+											"",
+											"const locationUrl = pm.response.headers.get(\"Location\");",
+											"console.log(\"locationUrl:\", locationUrl);",
+											"",
+											"const urlParts = locationUrl.split('/');",
+											"const uuid = urlParts[urlParts.length - 1];",
+											"if (uuid && uuid.length > 0 && uuid.includes('-')) {",
+											"    pm.collectionVariables.set(\"resourceId\", uuid);",
+											"    console.log(\"Extracted UUID (resource ID):\", uuid);",
+											"} else {",
+											"    console.log(\"No valid UUID found in the request URL\");",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "{{send_rtp_api_version}}",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"payee\": {\n        \"name\": \"Comune di Smartino\",\n        \"payeeId\": \"77777777777\",\n        \"payTrxRef\": \"ABC/124\"\n    },\n    \"payer\": {\n        \"name\": \"Pigrolo\",\n        \"payerId\": \"{{fakeFiscalCode}}\"\n    },\n    \"paymentNotice\": {\n        \"noticeNumber\": \"311111111112222129\",\n        \"description\": \"Paga questo avviso\",\n        \"subject\": \"TARI 2025\",\n        \"amount\": 40,\n        \"expiryDate\": \"2025-12-31\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{rtp-api-url}}{{send}}",
+									"host": [
+										"{{rtp-api-url}}{{send}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel RTP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {",
+											"  pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "v1",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{rtp-api-url}}{{send}}/:rtpId/cancel",
+									"host": [
+										"{{rtp-api-url}}{{send}}"
+									],
+									"path": [
+										":rtpId",
+										"cancel"
+									],
+									"variable": [
+										{
+											"key": "rtpId",
+											"value": "{{resourceId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Callback Send",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-certificate-client-Serial",
+										"value": "99999999999999999",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"resourceId\": \"456789123-rtp-response-001\",\n  \"AsynchronousSepaRequestToPayResponse\": {\n    \"CdtrPmtActvtnReqStsRpt\": {\n      \"GrpHdr\": {\n        \"MsgId\": \"RESPONSE-MSG-001\",\n        \"CreDtTm\": \"2025-03-21T10:15:30\",\n        \"InitgPty\": {\n          \"Id\": {\n            \"OrgId\": {\n              \"AnyBIC\": \"MOCKSP04\"\n            }\n          }\n        }\n      },\n      \"OrgnlGrpInfAndSts\": {\n        \"OrgnlMsgId\": \"ORIGINAL-REQ-001\",\n        \"OrgnlMsgNmId\": \"pain.013.001.08\",\n        \"OrgnlCreDtTm\": \"2025-03-20T14:30:00\"\n      }\n    }\n  },\n  \"_links\": {\n    \"initialSepaRequestToPayUri\": {\n      \"href\": \"https://api-rtp-cb.cstar.pagopa.it/rtp/cb/requests/123456789-original-req-001\",\n      \"templated\": false\n    }\n  }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{cb-url}}{{callback}}",
+									"host": [
+										"{{cb-url}}{{callback}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Unhappy Path",
+			"item": [
+				{
+					"name": "Unauthenticated",
+					"item": [
+						{
+							"name": "GET token Creditor SP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{pagopa-sp-client-id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{pagopa-sp-client-secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{mcshared-api-url}}/auth/token",
+									"host": [
+										"{{mcshared-api-url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Activation unauthenticated",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 403\", function () {",
+											"  pm.response.to.have.status(403);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "{{activation_api_version}}",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"payer\": {\n        \"fiscalCode\": \"AAAAAA00A00X000A\",\n        \"rtpSpId\": \"{{rtpSpId}}\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{rtp-api-url}}{{activation}}",
+									"host": [
+										"{{rtp-api-url}}{{activation}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET token Debtor SP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{payer-sp-client-id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{payer-sp-client-secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{mcshared-api-url}}/auth/token",
+									"host": [
+										"{{mcshared-api-url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Send RTP unauthenticated",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 403\", function () {",
+											"  pm.response.to.have.status(403);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "{{send_rtp_api_version}}",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"payee\": {\n        \"name\": \"Comune di Smartino\",\n        \"payeeId\": \"77777777777\",\n        \"payTrxRef\": \"ABC/124\"\n    },\n    \"payer\": {\n        \"name\": \"Pigrolo\",\n        \"payerId\": \"AAAAAA00A00X000A\"\n    },\n    \"paymentNotice\": {\n        \"noticeNumber\": \"311111111112222129\",\n        \"description\": \"Paga questo avviso\",\n        \"subject\": \"TARI 2025\",\n        \"amount\": 40,\n        \"expiryDate\": \"2025-12-31\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{rtp-api-url}}{{send}}",
+									"host": [
+										"{{rtp-api-url}}{{send}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Unactivated",
+					"item": [
+						{
+							"name": "GET token Creditor SP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{pagopa-sp-client-id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{pagopa-sp-client-secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{mcshared-api-url}}/auth/token",
+									"host": [
+										"{{mcshared-api-url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Send RTP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", function () {",
+											"  pm.response.to.have.status(422);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "{{send_rtp_api_version}}",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"payee\": {\n        \"name\": \"Comune di Smartino\",\n        \"payeeId\": \"77777777777\",\n        \"payTrxRef\": \"ABC/124\"\n    },\n    \"payer\": {\n        \"name\": \"Pigrolo\",\n        \"payerId\": \"AAAAAA00A00X000A\"\n    },\n    \"paymentNotice\": {\n        \"noticeNumber\": \"311111111112222129\",\n        \"description\": \"Paga questo avviso\",\n        \"subject\": \"TARI 2025\",\n        \"amount\": 40,\n        \"expiryDate\": \"2025-12-31\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{rtp-api-url}}{{send}}",
+									"host": [
+										"{{rtp-api-url}}{{send}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Not found",
+					"item": [
+						{
+							"name": "GET token Debtor SP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{payer-sp-client-id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{payer-sp-client-secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{mcshared-api-url}}/auth/token",
+									"host": [
+										"{{mcshared-api-url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Find RTP by non-existing payer id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 404\", function () {",
+											"  pm.response.to.have.status(404);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Version",
+										"value": "{{get_payer_api_version}}",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									},
+									{
+										"key": "PayerId",
+										"value": "AAAAAA00A00X000A",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{rtp-api-url}}/rtp/activation/activations/payer",
+									"host": [
+										"{{rtp-api-url}}"
+									],
+									"path": [
+										"rtp",
+										"activation",
+										"activations",
+										"payer"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GET token Creditor SP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"  pm.response.to.have.status(200);",
+											"});",
+											"pm.collectionVariables.set(\"token\", pm.response.json()[\"access_token\"]);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "client_credentials",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{pagopa-sp-client-id}}",
+											"type": "text"
+										},
+										{
+											"key": "client_secret",
+											"value": "{{pagopa-sp-client-secret}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{mcshared-api-url}}/auth/token",
+									"host": [
+										"{{mcshared-api-url}}"
+									],
+									"path": [
+										"auth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel RTP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 404\", function () {",
+											"  pm.response.to.have.status(404);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "v1",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{rtp-api-url}}{{send}}/:rtpId/cancel",
+									"host": [
+										"{{rtp-api-url}}{{send}}"
+									],
+									"path": [
+										":rtpId",
+										"cancel"
+									],
+									"variable": [
+										{
+											"key": "rtpId",
+											"value": "00000000-0000-0000-0000-000000000000"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "activation_api_version",
+			"value": "v1",
+			"type": "string"
+		},
+		{
+			"key": "get_payer_api_version",
+			"value": "v1",
+			"type": "string"
+		},
+		{
+			"key": "send_rtp_api_version",
+			"value": "v1",
+			"type": "string"
+		},
+		{
+			"key": "resourceId",
+			"value": ""
+		}
+	]
+}
