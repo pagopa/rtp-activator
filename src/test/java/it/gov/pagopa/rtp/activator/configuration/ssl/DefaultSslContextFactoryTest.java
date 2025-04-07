@@ -8,17 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.lang.NonNull;
 
-
 @SpringBootTest
 class DefaultSslContextFactoryTest {
 
   private final SslContextProps sslContextProps;
 
-
   @Autowired
   public DefaultSslContextFactoryTest(
-      @NonNull final SslContextProps sslContextProps
-  ) {
+      @NonNull final SslContextProps sslContextProps) {
     this.sslContextProps = sslContextProps;
   }
 
@@ -31,7 +28,6 @@ class DefaultSslContextFactoryTest {
     assertNotNull(sslContext);
   }
 
-
   @Test
   void givenInvalidPfx_whenGetSslContext_thenThrowIllegalArgumentException() {
     final var inputSslContextProps = this.sslContextProps.withPfxFile("invalid-base64");
@@ -40,7 +36,6 @@ class DefaultSslContextFactoryTest {
 
     assertThrows(IllegalArgumentException.class, sslContextFactory::getSslContext);
   }
-
 
   @Test
   void givenInvalidPassword_whenGetSslContext_thenThrowException() {
@@ -51,7 +46,6 @@ class DefaultSslContextFactoryTest {
     assertThrows(SslContextCreationException.class, sslContextFactory::getSslContext);
   }
 
-
   @Test
   void givenNullPfxPassword_whenGetSslContext_thenThrowNullPointerException() {
     final var inputSslContextProps = this.sslContextProps.withPfxPassword(null);
@@ -61,11 +55,28 @@ class DefaultSslContextFactoryTest {
     assertThrows(NullPointerException.class, sslContextFactory::getSslContext);
   }
 
-
   @Test
   void givenInvalidPfxType_whenGetSslContext_thenSslContextCreationException() {
     final var inputSslContextProps = this.sslContextProps.withPfxType("invalid-pfx-type");
 
+    final var sslContextFactory = new DefaultSslContextFactory(() -> inputSslContextProps);
+
+    assertThrows(SslContextCreationException.class, sslContextFactory::getSslContext);
+  }
+
+  @Test
+  void givenInvalidJksPath_whenGetSslContext_thenThrowSslContextCreationException() {
+    final var inputSslContextProps = this.sslContextProps.withJksTrustStorePath("/non/existent/path/test.jks");
+    final var sslContextFactory = new DefaultSslContextFactory(() -> inputSslContextProps);
+
+    SslContextCreationException exception = assertThrows(SslContextCreationException.class,
+        sslContextFactory::getSslContext);
+    assertTrue(exception.getMessage().contains("JKS file not found"));
+  }
+
+  @Test
+  void givenInvalidJksPassword_whenGetSslContext_thenThrowSslContextCreationException() {
+    final var inputSslContextProps = this.sslContextProps.withJksTrustStorePassword("wrong-password");
     final var sslContextFactory = new DefaultSslContextFactory(() -> inputSslContextProps);
 
     assertThrows(SslContextCreationException.class, sslContextFactory::getSslContext);
