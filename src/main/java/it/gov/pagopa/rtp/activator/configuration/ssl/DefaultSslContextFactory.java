@@ -89,11 +89,11 @@ public class DefaultSslContextFactory implements SslContextFactory {
    * @throws SslContextCreationException if decoding fails.
    */
   @NonNull
-  private InputStream convertBase64FileToInputStream(@NonNull final String base64File) {
-    return Optional.of(base64File)
+  private InputStream convertPfxFileToInputStream(@NonNull final String base64PfxFile) {
+    return Optional.of(base64PfxFile)
         .map(Base64.getMimeDecoder()::decode)
         .map(ByteArrayInputStream::new)
-        .orElseThrow(() -> new SslContextCreationException("Error decoding base64 file on JKS process"));
+        .orElseThrow(() -> new SslContextCreationException("Error decoding PFX file"));
   }
 
   /**
@@ -105,7 +105,7 @@ public class DefaultSslContextFactory implements SslContextFactory {
   @NonNull
   private KeyStore initKeyStore() {
 
-    try (final var keyStoreInputStream = this.convertBase64FileToInputStream(
+    try (final var keyStoreInputStream = this.convertPfxFileToInputStream(
         this.sslContextProps.pfxFile())) {
 
       final var keyStore = KeyStore.getInstance(this.sslContextProps.pfxType());
