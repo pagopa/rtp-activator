@@ -126,7 +126,7 @@ public class SepaRequestToPayMapper {
 
     var groupHeader105EPC25922V30DS02Dto = new GroupHeader105EPC25922V30DS02Dto()
         .msgId(rtp.resourceID().getId().toString().replace("-",""))
-        .creDtTm(DateUtils.LocalDateTimeToZulu(rtp.savingDateTime()))
+        .creDtTm(DateUtils.localDateTimeToZulu(rtp.savingDateTime()))
         .nbOfTxs("1")// FIXED
         .initgPty(partyIdentification135EPC25922V30DS02Dto);
 
