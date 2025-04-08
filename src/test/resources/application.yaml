@@ -43,7 +43,8 @@ client:
     pfx-password: test
     pfx-type: PKCS12
     protocol: TLS
-
+    jks-trust-store-path: ./src/test/resources/test.jks
+    jks-trust-store-password: testpass
 callback:
   url:
     send: https://spsrtp.api.cstar.pagopa.it/send
