@@ -1,7 +1,10 @@
 package it.gov.pagopa.rtp.activator.configuration.mtlswebclient;
 
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import java.time.Duration;
+import it.gov.pagopa.rtp.activator.telemetry.OpenTelemetryWebClientFilter;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.lang.NonNull;
 import org.springframework.security.oauth2.server.resource.web.reactive.function.client.ServerBearerExchangeFilterFunction;
@@ -23,7 +26,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
 
   private final SslContextFactory sslContextFactory;
   private final ServiceProviderConfig serviceProviderConfig;
-
+  private final Tracer tracer;
   /**
    * Constructs an instance of {@code DefaultWebClientFactory}.
    *
@@ -33,9 +36,11 @@ public class DefaultWebClientFactory implements WebClientFactory {
    *                                including timeout configurations
    */
   public DefaultWebClientFactory(SslContextFactory sslContextFactory,
-      ServiceProviderConfig serviceProviderConfig) {
+                                 ServiceProviderConfig serviceProviderConfig,
+                                 OpenTelemetry openTelemetry) {
     this.sslContextFactory = sslContextFactory;
     this.serviceProviderConfig = serviceProviderConfig;
+    this.tracer = openTelemetry.getTracer("default-webclient");
   }
 
   /**
@@ -56,6 +61,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
     return WebClient.builder()
         .clientConnector(new ReactorClientHttpConnector(httpClient))
         .filter(new ServerBearerExchangeFilterFunction())
+        .filter(OpenTelemetryWebClientFilter.create(tracer))
         .build();
   }
 
@@ -77,6 +83,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
 
     return WebClient.builder()
         .clientConnector(new ReactorClientHttpConnector(httpClient))
+        .filter(OpenTelemetryWebClientFilter.create(tracer))
         .build();
   }
 }
