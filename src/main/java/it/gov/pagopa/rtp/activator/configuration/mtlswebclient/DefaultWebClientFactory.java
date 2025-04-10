@@ -1,7 +1,5 @@
 package it.gov.pagopa.rtp.activator.configuration.mtlswebclient;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.trace.Tracer;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import java.time.Duration;
 import it.gov.pagopa.rtp.activator.telemetry.OpenTelemetryWebClientFilter;
@@ -26,7 +24,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
 
   private final SslContextFactory sslContextFactory;
   private final ServiceProviderConfig serviceProviderConfig;
-  private final Tracer tracer;
+  private final OpenTelemetryWebClientFilter otelFilter;
   /**
    * Constructs an instance of {@code DefaultWebClientFactory}.
    *
@@ -37,10 +35,10 @@ public class DefaultWebClientFactory implements WebClientFactory {
    */
   public DefaultWebClientFactory(SslContextFactory sslContextFactory,
                                  ServiceProviderConfig serviceProviderConfig,
-                                 OpenTelemetry openTelemetry) {
+                                 OpenTelemetryWebClientFilter otelFilter) {
     this.sslContextFactory = sslContextFactory;
     this.serviceProviderConfig = serviceProviderConfig;
-    this.tracer = openTelemetry.getTracer("default-webclient");
+    this.otelFilter = otelFilter;
   }
 
   /**
@@ -61,7 +59,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
     return WebClient.builder()
         .clientConnector(new ReactorClientHttpConnector(httpClient))
         .filter(new ServerBearerExchangeFilterFunction())
-        .filter(OpenTelemetryWebClientFilter.create(tracer))
+        .filter(otelFilter.filter())
         .build();
   }
 
@@ -83,7 +81,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
 
     return WebClient.builder()
         .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .filter(OpenTelemetryWebClientFilter.create(tracer))
+        .filter(otelFilter.filter())
         .build();
   }
 }
