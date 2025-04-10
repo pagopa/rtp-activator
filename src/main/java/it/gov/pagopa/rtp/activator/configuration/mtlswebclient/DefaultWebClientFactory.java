@@ -24,7 +24,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
 
   private final SslContextFactory sslContextFactory;
   private final ServiceProviderConfig serviceProviderConfig;
-  private final OpenTelemetryWebClientFilter otelFilter;
+  private final OpenTelemetryWebClientFilter openTelemetryWebClientFilter;
   /**
    * Constructs an instance of {@code DefaultWebClientFactory}.
    *
@@ -35,10 +35,10 @@ public class DefaultWebClientFactory implements WebClientFactory {
    */
   public DefaultWebClientFactory(SslContextFactory sslContextFactory,
                                  ServiceProviderConfig serviceProviderConfig,
-                                 OpenTelemetryWebClientFilter otelFilter) {
+                                 OpenTelemetryWebClientFilter openTelemetryWebClientFilter) {
     this.sslContextFactory = sslContextFactory;
     this.serviceProviderConfig = serviceProviderConfig;
-    this.otelFilter = otelFilter;
+    this.openTelemetryWebClientFilter = openTelemetryWebClientFilter;
   }
 
   /**
@@ -59,7 +59,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
     return WebClient.builder()
         .clientConnector(new ReactorClientHttpConnector(httpClient))
         .filter(new ServerBearerExchangeFilterFunction())
-        .filter(otelFilter.filter())
+        .filter(openTelemetryWebClientFilter.filter())
         .build();
   }
 
@@ -81,7 +81,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
 
     return WebClient.builder()
         .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .filter(otelFilter.filter())
+        .filter(openTelemetryWebClientFilter.filter())
         .build();
   }
 }
