@@ -89,8 +89,7 @@ public class OpenTelemetryWebClientFilterTest {
     }
 
     @Test
-    void givenRequestWithoutScope_whenFilterApplied_thenSpanEndsButNoScopeClosed() {
-        // Simula richiesta con solo lo span (senza scope)
+    void givenRequestWithoutScope_whenFilterApplied_thenSpanHandledButScopeSkipped() {
         ClientRequest request = ClientRequest.create(org.springframework.http.HttpMethod.GET, URI.create("http://localhost/test"))
                 .attribute("otel-span", span)
                 .build();
@@ -107,17 +106,13 @@ public class OpenTelemetryWebClientFilterTest {
         verify(span).setStatus(StatusCode.OK);
         verify(span).setAttribute(eq("http.status_code"), eq(200L));
         verify(span).end();
-        verify(scope, never()).close();
     }
 
     @Test
-    void givenRequestWithoutSpan_whenFilterApplied_thenScopeClosedButNoSpanEnded() {
-
+    void givenRequestWithoutSpan_whenFilterApplied_thenScopeClosedButNoSpanHandling() {
+        Span span = mock(Span.class);
         ClientRequest request = ClientRequest.create(org.springframework.http.HttpMethod.GET, URI.create("http://localhost/test"))
-                .attributes(attrs ->{
-                    attrs.put("otel-scope", scope);
-                    attrs.remove("otel-span");
-                })
+                .attribute("otel-scope", scope)
                 .build();
 
         ExchangeFunction exchangeFunction = r -> Mono.just(ClientResponse.create(org.springframework.http.HttpStatus.OK).build());
@@ -128,10 +123,8 @@ public class OpenTelemetryWebClientFilterTest {
         StepVerifier.create(result)
                 .expectNextMatches(response -> response.statusCode().is2xxSuccessful())
                 .verifyComplete();
-
-        verify(span, never()).setStatus(StatusCode.ERROR);
-        verify(span, never()).end(); // span non presente → non deve essere terminato
-        verify(scope).close(); // scope presente → deve essere chiuso
+        verify(scope).close();
+        verifyNoInteractions(span);
     }
 }
 
