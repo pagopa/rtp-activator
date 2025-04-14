@@ -24,6 +24,6 @@ public interface RequestToPayUpdateApi {
    */
   @PostMapping(value = "/send")
   Mono<ResponseEntity<Void>> handleRequestToPayUpdate(
-      @RequestHeader(value = "X-certificate-client-Serial", required = true) String clientCertificateSerialNumber,
+      @RequestHeader(value = "X-Client-Certificate-Serial", required = true) String clientCertificateSerialNumber,
       @Valid @RequestBody Mono<AsynchronousSepaRequestToPayResponseResourceDto> asynchronousSepaRequestToPayResponseResourceDto);
 }
