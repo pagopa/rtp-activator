@@ -51,12 +51,11 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
     log.info("Received request to activate a payer");
     return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
         .flatMap(t -> activationPayerService.activatePayer(t.getPayer().getRtpSpId(),
-            t.getPayer().getFiscalCode()))
+            t.getPayer().getFiscalCode(), activationPropertiesConfig.baseUrl()))
         .<ResponseEntity<Void>>map(payer -> ResponseEntity
             .created(URI.create(activationPropertiesConfig.baseUrl()
                 + payer.activationID().getId().toString()))
             .build())
-        .onErrorReturn(PayerAlreadyExists.class, ResponseEntity.status(409).build())
         .doOnError(a -> log.error("Error activating payer {}", a.getMessage()));
   }
 

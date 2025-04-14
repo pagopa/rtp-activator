@@ -872,9 +872,18 @@ components:
           required: false
           schema:
             $ref: '#/components/schemas/RateLimitReset'
+        Location:
+          description: URL of the conflicting activation resource.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ActivationLocation'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Errors'
 
     Error:
-      description: Error response detailing constraint validations.
+      description: Response returned when an error occurred.
       headers:
         Access-Control-Allow-Origin:
           description: |

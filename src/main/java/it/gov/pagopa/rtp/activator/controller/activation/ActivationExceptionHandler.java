@@ -1,8 +1,11 @@
 package it.gov.pagopa.rtp.activator.controller.activation;
 
+import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import jakarta.validation.ConstraintViolationException;
+import reactor.core.publisher.Mono;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -102,6 +107,42 @@ public class ActivationExceptionHandler {
     return handleBadRequest(errors);
   }
 
+/**
+ * Handles {@link PayerAlreadyExists} exception, which occurs when attempting to create
+ * an activation for a payer that already exists.
+ *
+ * @param ex the {@link PayerAlreadyExists} exception
+ * @return a {@link ResponseEntity} with {@code 409 Conflict} status,
+ *         a Location header, and an {@link ErrorsDto} describing the conflict
+ */
+@ExceptionHandler(PayerAlreadyExists.class)
+@ResponseStatus(HttpStatus.CONFLICT)
+public Mono<ResponseEntity<ErrorsDto>> handlePayerAlreadyExists(PayerAlreadyExists ex) {
+    // Create the error object
+    ErrorDto error = new ErrorDto()
+        .code("01000000F")  // Use appropriate error code
+        .description(ex.getMessage());
+    
+    // Create errors container with a single error
+    ErrorsDto errors = new ErrorsDto();
+    errors.setErrors(Collections.singletonList(error));
+    
+    // If we have the activation ID, use it for the location header
+    if (ex.getExistingActivationId() != null) {
+        String locationUrl = ex.getUrl() + 
+                "/activations/" + ex.getExistingActivationId().toString();
+        
+        return Mono.just(ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .location(URI.create(locationUrl))
+                .body(errors));
+    } else {
+        // If we don't have the ID (using the default constructor), just return the error body
+        return Mono.just(ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(errors));
+    }
+}
 
   /**
    * Constructs a standardized {@link ErrorsDto} response for bad requests.
