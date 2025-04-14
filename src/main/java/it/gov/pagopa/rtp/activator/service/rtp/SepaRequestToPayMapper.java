@@ -240,7 +240,7 @@ public class SepaRequestToPayMapper {
         .add(flgConfRefinstructionForCreditorAgent3EPC25922V30DS02Dto);
 
     List<String> lUstrd = new ArrayList<>();
-    lUstrd.add(rtp.subject() + "/" + rtp.noticeNumber() + " -");
+    lUstrd.add(rtp.subject() + "/" + rtp.noticeNumber());
     lUstrd.add("ATS001/" + rtp.description());
 
     var remittanceInformation21EPC25922V30DS02Dto = new RemittanceInformation21EPC25922V30DS02Dto()
