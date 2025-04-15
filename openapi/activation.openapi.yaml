@@ -268,6 +268,53 @@ paths:
           #description: Unexpected error
           $ref: '#/components/responses/Error'
 
+    patch:
+      operationId: takeoverActivation
+      summary: Takes over a RTP activation.
+      description: |
+        The operation updates the Payer's RTP Service Provider ID of a RTP
+        activation searching it by its ID.
+      tags: [update]
+      security:
+        - oAuth2: [admin_rtp_activations, write_rtp_activations]
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/Version'
+        - $ref: '#/components/parameters/ActivationId'
+      requestBody:
+        $ref: '#/components/requestBodies/TakeoverActivation'
+      responses:
+        "204":
+          #description: No content
+          $ref: '#/components/responses/NoContent'
+        "400":
+          #description: Bad request
+          $ref: '#/components/responses/Error'
+        "401":
+          #description: Wrong credentials
+          $ref: '#/components/responses/Error'
+        "403":
+          #description: Forbidden
+          $ref: '#/components/responses/Error'
+        "404":
+          #description: Not found
+          $ref: '#/components/responses/Error'
+        "406":
+          #description: Not acceptable. Did you require application/json?
+          $ref: '#/components/responses/Error'
+        "415":
+          #description: Unsupported media type. Did you provide application/json?
+          $ref: '#/components/responses/Error'
+        "429":
+          #description: Too many request
+          $ref: '#/components/responses/Error'
+        "500":
+          #description: Server error
+          $ref: '#/components/responses/Error'
+        default:
+          #description: Unexpected error
+          $ref: '#/components/responses/Error'
+
   /activations/payer:
     get:
       operationId: findActivationByPayerId
@@ -415,6 +462,14 @@ components:
       maxLength: 256
       example: "Wrong party identifier"
 
+    StatusCode:
+      description: HTTP status code.
+      type: integer
+      format: int32
+      minimum: 0
+      maximum: 999
+      example: 401
+
     # --------------------------------------------------------------------------
     # Basic types for technical stuff.
     # --------------------------------------------------------------------------
@@ -471,7 +526,10 @@ components:
         Date and time at which activation has been stored.
       type: string
       format: date-time
-      example: "2024-10-30T16:39:34+01:00"
+      minLength: 19
+      maxLength: 29
+      pattern: "^((?:(\\d{4}-\\d{2}-\\d{2})T(\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?))(Z|[\\+-]\\d{2}:\\d{2})?)$"
+      example: "2024-10-30T16:39:34.123+01:00"
 
     FiscalCode:
       description: |
@@ -644,7 +702,7 @@ components:
       description: |
         Data of a RTP activation.
       type: object
-      additionalProperties: true # It's extended by another object.
+      #additionalProperties: true # It's extended by another object.
       properties:
         payer:
           $ref: '#/components/schemas/Payer'
@@ -697,6 +755,18 @@ components:
         fiscalCode: "RSSMRA85T10A562S"
         rtpSpId: "12345678911"
 
+    TakeoverActivationReq:
+      description: Data to takeover a RTP activation.
+      type: object
+      additionalProperties: false
+      properties:
+        rtpSpId:
+          $ref: '#/components/schemas/PartyId'
+      required:
+        - rtpSpId
+      example:
+        rtpSpId: "12345678911"
+
   # ============================================================================
   # Request bodies.
   # ============================================================================
@@ -707,6 +777,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ActivationReq'
+
+    TakeoverActivation:
+      description: Request to take over an existing RTP activation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TakeoverActivationReq'
 
   # ============================================================================
   # Parameters.
