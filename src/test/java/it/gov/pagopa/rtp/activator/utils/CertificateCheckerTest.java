@@ -2,9 +2,13 @@ package it.gov.pagopa.rtp.activator.utils;
 
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,13 +20,6 @@ import it.gov.pagopa.rtp.activator.domain.errors.IncorrectCertificate;
 
 import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
 import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
-import it.gov.pagopa.rtp.activator.epcClient.model.AsynchronousSepaRequestToPayResponseDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.AsynchronousSepaRequestToPayResponseResourceDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.CreditorPaymentActivationRequestStatusReportV07Dto;
-import it.gov.pagopa.rtp.activator.epcClient.model.GroupHeader87Dto;
-import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS04bDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceIVDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.PartyIdentification135Dto;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 
 import reactor.core.publisher.Mono;
@@ -37,10 +34,10 @@ class CertificateCheckerTest {
   @InjectMocks
   private CertificateChecker certificateChecker;
 
-  private AsynchronousSepaRequestToPayResponseResourceDto requestBody;
+  private JsonNode requestBody;
   private final String serviceProviderDebtorId = "ABCDITMMXXX";
   private final String validCertificateSerialNumber = "123456789ABCDEF";
-  private final String invalidCertificateSerialNumber = "INVALID9876543210";
+
 
   @BeforeEach
   void setUp() {
@@ -58,7 +55,7 @@ class CertificateCheckerTest {
 
   @Test
   void verifyRequestCertificateWithValidCertificateShouldReturnRequest() {
-    Mono<AsynchronousSepaRequestToPayResponseResourceDto> result = certificateChecker
+    Mono<JsonNode> result = certificateChecker
         .verifyRequestCertificate(requestBody, validCertificateSerialNumber);
 
     StepVerifier.create(result)
@@ -68,7 +65,8 @@ class CertificateCheckerTest {
 
   @Test
   void verifyRequestCertificateWithInvalidCertificateShouldThrowIncorrectCertificate() {
-    Mono<AsynchronousSepaRequestToPayResponseResourceDto> result = certificateChecker
+    String invalidCertificateSerialNumber = "INVALID9876543210";
+    Mono<JsonNode> result = certificateChecker
         .verifyRequestCertificate(requestBody, invalidCertificateSerialNumber);
 
     StepVerifier.create(result)
@@ -90,7 +88,7 @@ class CertificateCheckerTest {
 
     when(registryDataService.getRegistryData()).thenReturn(Mono.just(registryDataMap));
 
-    Mono<AsynchronousSepaRequestToPayResponseResourceDto> result = certificateChecker
+    Mono<JsonNode> result = certificateChecker
         .verifyRequestCertificate(requestBody, validCertificateSerialNumber);
 
     StepVerifier.create(result)
@@ -99,24 +97,42 @@ class CertificateCheckerTest {
         .verify();
   }
 
-  private AsynchronousSepaRequestToPayResponseResourceDto createMockRequestBody(String serviceProviderDebtorId) {
-    var dto = new AsynchronousSepaRequestToPayResponseResourceDto();
-    var response = new AsynchronousSepaRequestToPayResponseDto();
-    var statusReport = new CreditorPaymentActivationRequestStatusReportV07Dto();
-    var groupHeader = new GroupHeader87Dto();
-    var initiatingParty = new PartyIdentification135Dto();
-    var id = new Party38ChoiceIVDto();
-    var orgId = new OrganisationIdentification29EPC25922V30DS04bDto();
-    String anyBIC = serviceProviderDebtorId;
+  private JsonNode createMockRequestBody(String serviceProviderDebtorId) {
+    final var baseJson = """
+        {
+            "resourceId": "TestRtpMessageJZixUlWE3uYcb4k3lF4",
+            "AsynchronousSepaRequestToPayResponse": {
+                "resourceId": "TestRtpMessageJZixUlWE3uYcb4k3lF4",
+                "Document": {
+                    "CdtrPmtActvtnReqStsRpt": {
+                        "GrpHdr": {
+                            "MsgId": "6588c58bcba84b0382422d45e5d04257",
+                            "CreDtTm": "2025-03-27T14:10:16.972736305Z",
+                            "InitgPty": {
+                                "Id": {
+                                    "OrgId": {
+                                        "AnyBIC": "%s"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        """;
 
-    orgId.setAnyBIC(anyBIC);
-    id.setOrgId(orgId);
-    initiatingParty.setId(id);
-    groupHeader.setInitgPty(initiatingParty);
-    statusReport.setGrpHdr(groupHeader);
-    response.setCdtrPmtActvtnReqStsRpt(statusReport);
-    dto.setAsynchronousSepaRequestToPayResponse(response);
+    return Optional.of(serviceProviderDebtorId)
+        .map(spId -> String.format(baseJson, spId))
+        .map(json -> {
+          try {
+            return new ObjectMapper()
+                .readTree(json);
 
-    return dto;
+          } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+          }
+        })
+        .orElseThrow(() -> new RuntimeException("Couldn't create mock request body."));
   }
 }
