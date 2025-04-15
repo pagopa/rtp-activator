@@ -1,5 +1,7 @@
 package it.gov.pagopa.rtp.activator.utils;
 
+import static it.gov.pagopa.rtp.activator.utils.LoggingUtils.sanitize;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +57,7 @@ public class CertificateChecker {
             return Mono.just(requestBody);
           }
           log.warn("Certificate mismatch: expected {}, received {}",
-              certificateServiceNumberRegistry, certificateSerialNumber);
+              certificateServiceNumberRegistry, sanitize(certificateSerialNumber));
           return Mono.error(new IncorrectCertificate());
         });
 
