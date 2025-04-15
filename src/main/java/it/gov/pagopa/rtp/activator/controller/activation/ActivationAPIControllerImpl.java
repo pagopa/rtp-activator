@@ -49,7 +49,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
       ServerWebExchange exchange) {
     log.info("Received request to activate a payer");
     return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
-        .flatMap(t -> activationPayerService.activatePayer(t.getPayer().getRtpSpId().toString(),
+        .flatMap(t -> activationPayerService.activatePayer(t.getPayer().getRtpSpId(),
             t.getPayer().getFiscalCode()))
         .<ResponseEntity<Void>>map(payer -> ResponseEntity
             .created(URI.create(activationPropertiesConfig.baseUrl()
