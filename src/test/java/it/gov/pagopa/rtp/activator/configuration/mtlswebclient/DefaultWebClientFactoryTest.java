@@ -8,11 +8,13 @@ import io.netty.handler.ssl.SslContext;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ssl.SslContextFactory;
+import it.gov.pagopa.rtp.activator.telemetry.OpenTelemetryWebClientFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,11 +28,18 @@ class DefaultWebClientFactoryTest {
   @Mock
   private SslContext sslContext;
 
+  @Mock
+  private OpenTelemetryWebClientFilter openTelemetryFilter;
+
+  @Mock
+  private ExchangeFilterFunction telemetryExchangeFilter;
+
   private DefaultWebClientFactory mtlsWebClientFactory;
 
   @BeforeEach
   void setUp() {
-    mtlsWebClientFactory = new DefaultWebClientFactory(sslContextFactory, config);
+    when(openTelemetryFilter.filter()).thenReturn(telemetryExchangeFilter);
+    mtlsWebClientFactory = new DefaultWebClientFactory(sslContextFactory, config, openTelemetryFilter);
   }
 
   @Test
@@ -42,5 +51,6 @@ class DefaultWebClientFactoryTest {
 
     assertNotNull(result);
     verify(sslContextFactory).getSslContext();
+    verify(openTelemetryFilter).filter();
   }
 }
