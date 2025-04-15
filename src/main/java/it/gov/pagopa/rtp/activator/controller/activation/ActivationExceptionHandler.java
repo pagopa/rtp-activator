@@ -105,7 +105,7 @@ public class ActivationExceptionHandler {
     // Create error object
     ErrorDto error = new ErrorDto()
         .code("01000000F")
-        .description("Payer already exists");
+        .description(ex.getMessage());
 
     // Create errors container
     ErrorsDto errors = new ErrorsDto();

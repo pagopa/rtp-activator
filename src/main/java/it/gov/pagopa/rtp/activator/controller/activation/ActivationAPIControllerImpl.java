@@ -55,7 +55,6 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
             .created(URI.create(activationPropertiesConfig.baseUrl()
                 + payer.activationID().getId().toString()))
             .build())
-        //.onErrorReturn(PayerAlreadyExists.class, ResponseEntity.status(409).build())
         .doOnError(a -> log.error("Error activating payer {}", a.getMessage()));
   }
 
@@ -78,7 +77,6 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
   @PreAuthorize("hasRole('read_rtp_activations')")
   public Mono<ResponseEntity<ActivationDto>> getActivation( UUID requestId, UUID activationId,
       String version, ServerWebExchange exchange) {
-    // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'getActivation'");
   }
 
