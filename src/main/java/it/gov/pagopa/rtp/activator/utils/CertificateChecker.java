@@ -25,11 +25,15 @@ public class CertificateChecker {
 
     final var serviceProviderDebtorId = Optional.of(requestBody)
         .map(node -> node.path("AsynchronousSepaRequestToPayResponse"))
-        .map(node -> Optional.of(node)
-            .filter(innerNode -> !innerNode.has("CdtrPmtActvtnReqStsRpt"))
-            .map(innerNode -> innerNode.path("Document"))
-            .map(innerNode -> innerNode.path("CdtrPmtActvtnReqStsRpt"))
-            .orElseGet(() -> node.path("CdtrPmtActvtnReqStsRpt")))
+        .map(node -> {
+          final var creditorPaymentActivationRequestStatusReportLabel = "CdtrPmtActvtnReqStsRpt";
+
+          return Optional.of(node)
+              .filter(innerNode -> !innerNode.has(creditorPaymentActivationRequestStatusReportLabel))
+              .map(innerNode -> innerNode.path("Document"))
+              .map(innerNode -> innerNode.path(creditorPaymentActivationRequestStatusReportLabel))
+              .orElseGet(() -> node.path(creditorPaymentActivationRequestStatusReportLabel));
+        })
         .map(node -> node.path("GrpHdr"))
         .map(node -> node.path("InitgPty"))
         .map(node -> node.path("Id"))
@@ -47,7 +51,7 @@ public class CertificateChecker {
           String certificateServiceNumberRegistry = provider.tsp().certificateSerialNumber();
           if (certificateServiceNumberRegistry.equals(certificateSerialNumber)) {
             log.info("Certificate verified successfully. Serial Number: {}",
-                certificateSerialNumber);
+                certificateServiceNumberRegistry);
             return Mono.just(requestBody);
           }
           log.warn("Certificate mismatch: expected {}, received {}",
