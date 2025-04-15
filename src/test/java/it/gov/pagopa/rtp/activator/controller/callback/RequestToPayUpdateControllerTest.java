@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,6 +66,20 @@ class RequestToPayUpdateControllerTest {
 
     StepVerifier.create(result)
         .expectNextMatches(response -> response.getStatusCode() == HttpStatus.FORBIDDEN)
+        .verifyComplete();
+  }
+
+  @Test
+  void handleRequestToPayUpdateWithNonExistingSpIdShouldReturnBadRequest() {
+    final var exception = new ServiceProviderNotFoundException("Test exception");
+    when(certificateChecker.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
+        .thenReturn(Mono.error(exception));
+
+    final var result = controller.handleRequestToPayUpdate(
+        validCertificateSerialNumber, Mono.just(requestBody));
+
+    StepVerifier.create(result)
+        .expectNextMatches(response -> response.getStatusCode() == HttpStatus.BAD_REQUEST)
         .verifyComplete();
   }
 

@@ -2,7 +2,9 @@ package it.gov.pagopa.rtp.activator.controller.callback;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import it.gov.pagopa.rtp.activator.utils.LoggingUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,7 +43,8 @@ public class RequestToPayUpdateController implements RequestToPayUpdateApi {
         .doOnNext(s -> LoggingUtils.logAsJson(() -> s, this.objectMapper))
         .<ResponseEntity<Void>>map(response -> ResponseEntity.ok().build())
         .onErrorReturn(IncorrectCertificate.class,
-            ResponseEntity.status(403).build())
+            ResponseEntity.status(HttpStatus.FORBIDDEN).build())
+        .onErrorReturn(ServiceProviderNotFoundException.class, ResponseEntity.badRequest().build())
         .onErrorReturn(IllegalArgumentException.class, ResponseEntity.badRequest().build())
         .doOnError(a -> log.error("Error receiving the update callback {}", a.getMessage()));
   }

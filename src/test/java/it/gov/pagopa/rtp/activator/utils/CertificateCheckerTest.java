@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,7 +76,7 @@ class CertificateCheckerTest {
   }
 
   @Test
-  void verifyRequestCertificateWithNonExistentServiceProviderShouldThrowIllegalStateException() {
+  void verifyRequestCertificateWithNonExistentServiceProviderShouldThrowServiceProviderNotFoundException() {
     Map<String, ServiceProviderFullData> registryDataMap = new HashMap<>();
     TechnicalServiceProvider tsp = new TechnicalServiceProvider("otherTSPId", "otherTSPName",
         "otherServiceProviderDebtorId", "otherCertSerialNumber", null, true);
@@ -92,7 +93,7 @@ class CertificateCheckerTest {
         .verifyRequestCertificate(requestBody, validCertificateSerialNumber);
 
     StepVerifier.create(result)
-        .expectErrorMatches(throwable -> throwable instanceof IllegalStateException &&
+        .expectErrorMatches(throwable -> throwable instanceof ServiceProviderNotFoundException &&
             throwable.getMessage().contains("No service provider found for creditor: " + serviceProviderDebtorId))
         .verify();
   }

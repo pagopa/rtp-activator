@@ -3,6 +3,7 @@ package it.gov.pagopa.rtp.activator.utils;
 import static it.gov.pagopa.rtp.activator.utils.LoggingUtils.sanitize;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,7 @@ public class CertificateChecker {
 
     return registryDataService.getRegistryData()
         .flatMap(data -> Mono.justOrEmpty(data.get(serviceProviderDebtorId))
-            .switchIfEmpty(Mono.error(new IllegalStateException(
+            .switchIfEmpty(Mono.error(new ServiceProviderNotFoundException(
                 "No service provider found for creditor: " + serviceProviderDebtorId))))
         .flatMap(provider -> {
           String certificateServiceNumberRegistry = provider.tsp().certificateSerialNumber();
