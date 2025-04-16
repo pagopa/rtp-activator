@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.controller.activation;
 
+import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
@@ -52,6 +53,13 @@ import java.util.Optional;
 @RestControllerAdvice(basePackages = "it.gov.pagopa.rtp.activator.controller.activation")
 public class ActivationExceptionHandler {
 
+
+  private final ActivationPropertiesConfig activationPropertiesConfig;
+
+
+  public ActivationExceptionHandler( ActivationPropertiesConfig activationPropertiesConfig) {
+    this.activationPropertiesConfig = activationPropertiesConfig;
+  }
   /**
    * Handles {@link ConstraintViolationException}, which occurs when method-level
    * validation
@@ -114,7 +122,7 @@ public class ActivationExceptionHandler {
     // Return proper 409 response with body and location header
     return ResponseEntity
         .status(HttpStatus.CONFLICT)
-        .location(URI.create("baseurl" + "/activations/" + ex.getExistingActivationId()))
+        .location(URI.create(activationPropertiesConfig.baseUrl() + "/activations/" + ex.getExistingActivationId()))
         .body(errors);
   }
 
