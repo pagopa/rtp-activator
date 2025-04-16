@@ -57,7 +57,7 @@ public class ActivationExceptionHandler {
   private final ActivationPropertiesConfig activationPropertiesConfig;
 
 
-  public ActivationExceptionHandler( ActivationPropertiesConfig activationPropertiesConfig) {
+  public ActivationExceptionHandler(ActivationPropertiesConfig activationPropertiesConfig) {
     this.activationPropertiesConfig = activationPropertiesConfig;
   }
   /**
