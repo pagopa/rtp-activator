@@ -32,12 +32,13 @@ public class RequestToPayUpdateController implements RequestToPayUpdateApi {
   }
 
   @Override
-  public Mono<ResponseEntity<Void>> handleRequestToPayUpdate(String clientCertificateSerialNumber,
-      @Valid Mono<JsonNode> asynchronousSepaRequestToPayResponseResourceWrapper) {
+  public Mono<ResponseEntity<Void>> handleRequestToPayUpdate(
+      String clientCertificateSerialNumber,
+      @Valid Mono<JsonNode> requestBody) {
           
     log.info("Received send callback request"); 
 
-    return asynchronousSepaRequestToPayResponseResourceWrapper
+    return requestBody
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
         .flatMap(s -> certificateChecker.verifyRequestCertificate(s, clientCertificateSerialNumber))
         .doOnNext(s -> LoggingUtils.logAsJson(() -> s, this.objectMapper))
