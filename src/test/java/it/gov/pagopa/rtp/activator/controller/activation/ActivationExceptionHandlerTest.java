@@ -24,88 +24,84 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
 @ExtendWith(SpringExtension.class)
 @EnableConfigurationProperties(value = ActivationPropertiesConfig.class)
 @TestPropertySource("classpath:application.yaml")
 class ActivationExceptionHandlerTest {
 
-    private ActivationExceptionHandler handler;
+  private ActivationExceptionHandler handler;
 
-    private WebExchangeBindException exception;
+  private WebExchangeBindException exception;
 
-    private BindingResult bindingResult;
+  private BindingResult bindingResult;
 
-    @Autowired
-    private ActivationPropertiesConfig activationPropertiesConfig;
+  @Autowired
+  private ActivationPropertiesConfig activationPropertiesConfig;
 
+  @BeforeEach
+  void setUp() {
+    handler = new ActivationExceptionHandler(activationPropertiesConfig);
+    exception = mock(WebExchangeBindException.class);
+    bindingResult = mock(BindingResult.class);
+  }
 
-    @BeforeEach
-    void setUp() {
-        handler = new ActivationExceptionHandler(activationPropertiesConfig);
-        exception = mock(WebExchangeBindException.class);
-        bindingResult = mock(BindingResult.class);
-    }
+  @Test
+  void givenValidationErrors_whenHandleWebExchangeBindException_thenReturnBadRequestResponse() {
+    // Arrange
+    FieldError fieldError1 = new FieldError("objectName", "field1", "invalidValue1", false,
+        new String[] { "NotNull.field1", "NotNull" }, null, "must not be null");
+    FieldError fieldError2 = new FieldError("objectName", "field2", "invalidValue2", false,
+        new String[] { "Invalid.field2", "Invalid" }, null, "must be a valid email");
 
+    when(exception.getBindingResult()).thenReturn(bindingResult);
+    when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError1, fieldError2));
 
-    @Test
-    void givenValidationErrors_whenHandleWebExchangeBindException_thenReturnBadRequestResponse() {
-        // Arrange
-        FieldError fieldError1 = new FieldError("objectName", "field1", "invalidValue1", false,
-            new String[]{"NotNull.field1", "NotNull"}, null, "must not be null");
-        FieldError fieldError2 = new FieldError("objectName", "field2", "invalidValue2", false,
-            new String[]{"Invalid.field2", "Invalid"}, null, "must be a valid email");
+    // Act
+    ResponseEntity<ErrorsDto> response = handler.handleWebExchangeBindException(exception);
 
-        when(exception.getBindingResult()).thenReturn(bindingResult);
-        when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError1, fieldError2));
+    // Assert
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(2, response.getBody().getErrors().size());
 
-        // Act
-        ResponseEntity<ErrorsDto> response = handler.handleWebExchangeBindException(exception);
+    assertEquals("NotNull.field1", response.getBody().getErrors().get(0).getCode());
+    assertEquals("field1 must not be null", response.getBody().getErrors().get(0).getDescription());
 
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(2, response.getBody().getErrors().size());
+    assertEquals("Invalid.field2", response.getBody().getErrors().get(1).getCode());
+    assertEquals("field2 must be a valid email", response.getBody().getErrors().get(1).getDescription());
+  }
 
-        assertEquals("NotNull.field1", response.getBody().getErrors().get(0).getCode());
-        assertEquals("field1 must not be null", response.getBody().getErrors().get(0).getDescription());
+  @Test
+  void handlePayerAlreadyExists_ShouldReturnConflictWithLocationHeader() {
+    UUID activationId = UUID.randomUUID();
+    PayerAlreadyExists ex = mock(PayerAlreadyExists.class);
+    when(ex.getMessage()).thenReturn("Payer already exists");
+    when(ex.getExistingActivationId()).thenReturn(activationId);
 
-        assertEquals("Invalid.field2", response.getBody().getErrors().get(1).getCode());
-        assertEquals("field2 must be a valid email", response.getBody().getErrors().get(1).getDescription());
-    }
+    ResponseEntity<ErrorsDto> response = handler.handlePayerAlreadyExists(ex);
 
+    assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+    assertEquals(URI.create(activationPropertiesConfig.baseUrl() + "/activations/" + activationId),
+        response.getHeaders().getLocation());
+    assertNotNull(response.getBody());
+    assertEquals(1, response.getBody().getErrors().size());
 
-     @Test
-    void handlePayerAlreadyExists_ShouldReturnConflictWithLocationHeader() {
-        UUID activationId = UUID.randomUUID();
-        PayerAlreadyExists ex = mock(PayerAlreadyExists.class);
-        when(ex.getMessage()).thenReturn("Payer already exists");
-        when(ex.getExistingActivationId()).thenReturn(activationId);
+    ErrorDto error = response.getBody().getErrors().get(0);
+    assertEquals("01000000F", error.getCode());
+    assertEquals("Payer already exists", error.getDescription());
+  }
 
-        ResponseEntity<ErrorsDto> response = handler.handlePayerAlreadyExists(ex);
+  @Test
+  void givenNoValidationErrors_whenHandleWebExchangeBindException_thenReturnEmptyErrorList() {
+    when(exception.getBindingResult()).thenReturn(bindingResult);
+    when(bindingResult.getFieldErrors()).thenReturn(List.of());
 
-        assertEquals(response.getStatusCode(), HttpStatus.CONFLICT);
-        assertEquals(response.getHeaders().getLocation(),URI.create(activationPropertiesConfig.baseUrl() + "/activations/" + activationId));
-        assertNotNull(response.getBody());
-        assertEquals(response.getBody().getErrors().size(), 1);
-        
-        ErrorDto error = response.getBody().getErrors().get(0);
-        assertEquals(error.getCode(),"01000000F");
-        assertEquals(error.getDescription(),"Payer already exists");
-    }
+    ResponseEntity<ErrorsDto> response = handler.handleWebExchangeBindException(exception);
 
-    @Test
-    void givenNoValidationErrors_whenHandleWebExchangeBindException_thenReturnEmptyErrorList() {
-        // Arrange
-        when(exception.getBindingResult()).thenReturn(bindingResult);
-        when(bindingResult.getFieldErrors()).thenReturn(List.of());
-
-        // Act
-        ResponseEntity<ErrorsDto> response = handler.handleWebExchangeBindException(exception);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertTrue(response.getBody().getErrors().isEmpty());
-    }
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertTrue(response.getBody().getErrors().isEmpty());
+  }
 
 }
