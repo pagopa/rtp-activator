@@ -24,6 +24,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
 
   private final SslContextFactory sslContextFactory;
   private final ServiceProviderConfig serviceProviderConfig;
+  private final WebClient.Builder webClientBuilder;
 
   /**
    * Constructs an instance of {@code DefaultWebClientFactory}.
@@ -34,10 +35,11 @@ public class DefaultWebClientFactory implements WebClientFactory {
    *                                     including timeout configurations
    */
   public DefaultWebClientFactory(
-      SslContextFactory sslContextFactory,
-      ServiceProviderConfig serviceProviderConfig) {
+          SslContextFactory sslContextFactory,
+          ServiceProviderConfig serviceProviderConfig, WebClient.Builder webClientBuilder) {
     this.sslContextFactory = sslContextFactory;
     this.serviceProviderConfig = serviceProviderConfig;
+      this.webClientBuilder = webClientBuilder;
   }
 
   /**
@@ -54,9 +56,9 @@ public class DefaultWebClientFactory implements WebClientFactory {
     final var httpClient = HttpClient.create()
         .responseTimeout(Duration.ofMillis(serviceProviderConfig.send().timeout()));
 
-    return WebClient.builder()
+    return webClientBuilder
         .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .filter(new ServerBearerExchangeFilterFunction())
+        .filters(filter -> filter.add(new ServerBearerExchangeFilterFunction()))
         .build();
   }
 
@@ -75,7 +77,7 @@ public class DefaultWebClientFactory implements WebClientFactory {
         .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextFactory.getSslContext()))
         .responseTimeout(Duration.ofMillis(serviceProviderConfig.send().timeout()));
 
-    return WebClient.builder()
+    return webClientBuilder
         .clientConnector(new ReactorClientHttpConnector(httpClient))
         .build();
   }
