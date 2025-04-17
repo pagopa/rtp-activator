@@ -5,7 +5,6 @@ import static it.gov.pagopa.rtp.activator.utils.Authorizations.verifySubjectRequ
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.CreateApi;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.ReadApi;
-import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
@@ -56,7 +55,6 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
             .created(URI.create(activationPropertiesConfig.baseUrl()
                 + payer.activationID().getId().toString()))
             .build())
-        .onErrorReturn(PayerAlreadyExists.class, ResponseEntity.status(409).build())
         .doOnError(a -> log.error("Error activating payer {}", a.getMessage()));
   }
 
@@ -77,7 +75,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
 
   @Override
   @PreAuthorize("hasRole('read_rtp_activations')")
-  public Mono<ResponseEntity<ActivationDto>> getActivation(UUID requestId, UUID activationId,
+  public Mono<ResponseEntity<ActivationDto>> getActivation( UUID requestId, UUID activationId,
       String version, ServerWebExchange exchange) {
     throw new UnsupportedOperationException("Unimplemented method 'getActivation'");
   }
