@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.configuration.mtlswebclient;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,11 +27,20 @@ class DefaultWebClientFactoryTest {
   @Mock
   private SslContext sslContext;
 
+  @Mock
+  private WebClient.Builder webClientBuilder;
+
+  @Mock
+  private WebClient webClient;
+
   private DefaultWebClientFactory mtlsWebClientFactory;
 
   @BeforeEach
   void setUp() {
-    mtlsWebClientFactory = new DefaultWebClientFactory(sslContextFactory, config);
+    when(webClientBuilder.clientConnector(any())).thenReturn(webClientBuilder);
+    when(webClientBuilder.build()).thenReturn(webClient);
+
+    mtlsWebClientFactory = new DefaultWebClientFactory(sslContextFactory, config, webClientBuilder);
   }
 
   @Test
@@ -42,5 +52,7 @@ class DefaultWebClientFactoryTest {
 
     assertNotNull(result);
     verify(sslContextFactory).getSslContext();
+    verify(webClientBuilder).clientConnector(any());
+    verify(webClientBuilder).build();
   }
 }
