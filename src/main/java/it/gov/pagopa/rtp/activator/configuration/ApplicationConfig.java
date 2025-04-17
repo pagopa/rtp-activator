@@ -22,6 +22,7 @@ public class ApplicationConfig {
     return JsonMapper.builder()
         .enable(SerializationFeature.INDENT_OUTPUT)
         .addModule(new JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .build();
   }
 
