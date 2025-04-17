@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.spring.webflux.v5_3.SpringWebfluxClientTelemetry;
 import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.invoker.ApiClient;
 import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,8 +32,21 @@ public class ApplicationConfig {
   }
 
 
+  @Bean("webClientBuilder")
+  @NonNull
+  public WebClient.Builder webClientBuilder(@NonNull final OpenTelemetry openTelemetry){
+    Objects.requireNonNull(openTelemetry, "OpenTelemetry bean cannot be null.");
+
+    final var springWebfluxClientTelemetry = SpringWebfluxClientTelemetry.builder(openTelemetry)
+        .build();
+
+    return WebClient.builder()
+        .filters(springWebfluxClientTelemetry::addFilter);
+  }
+
+
   @Bean("webClient")
-  //@Primary
+  @Primary
   public WebClient webClient(@NonNull final WebClientFactory webClientFactory) {
     return Optional.of(webClientFactory)
         .map(WebClientFactory::createSimpleWebClient)
