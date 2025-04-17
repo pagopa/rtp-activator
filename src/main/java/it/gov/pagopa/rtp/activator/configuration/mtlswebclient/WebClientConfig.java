@@ -5,21 +5,19 @@ import io.opentelemetry.instrumentation.spring.webflux.v5_3.SpringWebfluxClientT
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.lang.NonNull;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class WebClientConfig {
 
-    private final SpringWebfluxClientTelemetry springWebfluxClientTelemetry;
-
-    public WebClientConfig(OpenTelemetry openTelemetry) {
-        this.springWebfluxClientTelemetry = SpringWebfluxClientTelemetry.builder(openTelemetry).build();
-    }
-
     @Bean
     @Primary
-    public WebClient.Builder webClientBuilder(){
-        WebClient webclient = WebClient.create();
+    public WebClient.Builder webClientBuilder(@NonNull final OpenTelemetry openTelemetry){
+        final var springWebfluxClientTelemetry = SpringWebfluxClientTelemetry.builder(openTelemetry)
+            .build();
+
+        final var webclient = WebClient.create();
         return webclient.mutate().filters(springWebfluxClientTelemetry::addFilter);
     }
 }
