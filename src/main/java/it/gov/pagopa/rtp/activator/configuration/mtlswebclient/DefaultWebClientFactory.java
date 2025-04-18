@@ -21,7 +21,7 @@ import reactor.netty.http.client.HttpClient;
  * This class provides methods to create both a standard {@link WebClient} and a mutual TLS (mTLS)
  * secured {@link WebClient}, based on the configured service provider settings.
  */
-@Component("defaultMtlsWebClientFactory")
+@Component("defaultWebClientFactory")
 public class DefaultWebClientFactory implements WebClientFactory {
 
   private final SslContextFactory sslContextFactory;
