@@ -52,7 +52,7 @@ dependencies {
 	// Alternative to com.azure.spring:spring-cloud-azure-starter-monitor:1.0.0-beta.6
 	implementation 'com.azure:azure-monitor-opentelemetry-autoconfigure:1.0.0'
 	implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.13.3'
-	implementation ("io.opentelemetry.instrumentation:opentelemetry-spring-webflux-5.3:2.13.3-alpha")
+	implementation ("io.opentelemetry.instrumentation:opentelemetry-spring-webflux-5.3:2.15.0-alpha")
 
 	// https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
 	implementation 'org.apache.commons:commons-lang3:3.0'
