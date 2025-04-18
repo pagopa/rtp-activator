@@ -32,19 +32,6 @@ public class ApplicationConfig {
   }
 
 
-  @Bean("webClientBuilder")
-  @NonNull
-  public WebClient.Builder webClientBuilder(@NonNull final OpenTelemetry openTelemetry){
-    Objects.requireNonNull(openTelemetry, "OpenTelemetry bean cannot be null.");
-
-    final var springWebfluxClientTelemetry = SpringWebfluxClientTelemetry.builder(openTelemetry)
-        .build();
-
-    return WebClient.builder()
-        .filters(springWebfluxClientTelemetry::addFilter);
-  }
-
-
   @Bean("webClient")
   @Primary
   public WebClient webClient(@NonNull final WebClientFactory webClientFactory) {
