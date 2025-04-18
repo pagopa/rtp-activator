@@ -82,7 +82,7 @@ class ActivationExceptionHandlerTest {
     ResponseEntity<ErrorsDto> response = handler.handlePayerAlreadyExists(ex);
 
     assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-    assertEquals(URI.create(activationPropertiesConfig.baseUrl() + "/activations/" + activationId),
+    assertEquals(URI.create(activationPropertiesConfig.baseUrl() + activationId),
         response.getHeaders().getLocation());
     assertNotNull(response.getBody());
     assertEquals(1, response.getBody().getErrors().size());

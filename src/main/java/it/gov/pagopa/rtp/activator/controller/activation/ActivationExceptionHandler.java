@@ -122,7 +122,7 @@ public class ActivationExceptionHandler {
     // Return proper 409 response with body and location header
     return ResponseEntity
         .status(HttpStatus.CONFLICT)
-        .location(URI.create(activationPropertiesConfig.baseUrl() + "/activations/" + ex.getExistingActivationId()))
+        .location(URI.create(activationPropertiesConfig.baseUrl() + ex.getExistingActivationId()))
         .body(errors);
   }
 
