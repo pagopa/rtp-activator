@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.configuration.mtlswebclient;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -8,13 +9,11 @@ import io.netty.handler.ssl.SslContext;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ssl.SslContextFactory;
-import it.gov.pagopa.rtp.activator.telemetry.OpenTelemetryWebClientFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,17 +28,19 @@ class DefaultWebClientFactoryTest {
   private SslContext sslContext;
 
   @Mock
-  private OpenTelemetryWebClientFilter openTelemetryFilter;
+  private WebClient.Builder webClientBuilder;
 
   @Mock
-  private ExchangeFilterFunction telemetryExchangeFilter;
+  private WebClient webClient;
 
   private DefaultWebClientFactory mtlsWebClientFactory;
 
   @BeforeEach
   void setUp() {
-    when(openTelemetryFilter.filter()).thenReturn(telemetryExchangeFilter);
-    mtlsWebClientFactory = new DefaultWebClientFactory(sslContextFactory, config, openTelemetryFilter);
+    when(webClientBuilder.clientConnector(any())).thenReturn(webClientBuilder);
+    when(webClientBuilder.build()).thenReturn(webClient);
+
+    mtlsWebClientFactory = new DefaultWebClientFactory(sslContextFactory, config, webClientBuilder);
   }
 
   @Test
@@ -51,6 +52,7 @@ class DefaultWebClientFactoryTest {
 
     assertNotNull(result);
     verify(sslContextFactory).getSslContext();
-    verify(openTelemetryFilter).filter();
+    verify(webClientBuilder).clientConnector(any());
+    verify(webClientBuilder).build();
   }
 }

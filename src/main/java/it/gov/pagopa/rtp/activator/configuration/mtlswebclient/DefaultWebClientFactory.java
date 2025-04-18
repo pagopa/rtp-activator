@@ -2,7 +2,7 @@ package it.gov.pagopa.rtp.activator.configuration.mtlswebclient;
 
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import java.time.Duration;
-import it.gov.pagopa.rtp.activator.telemetry.OpenTelemetryWebClientFilter;
+
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.lang.NonNull;
 import org.springframework.security.oauth2.server.resource.web.reactive.function.client.ServerBearerExchangeFilterFunction;
@@ -18,17 +18,13 @@ import reactor.netty.http.client.HttpClient;
  * This class provides methods to create both a standard {@link WebClient}
  * and a mutual TLS (mTLS) secured {@link WebClient}, based on the
  * configured service provider settings.
- * <p>
- * Both clients are also instrumented with OpenTelemetry via the
- * {@link OpenTelemetryWebClientFilter}, allowing automatic trace propagation
- * and span creation for outgoing HTTP requests.
  */
 @Component("defaultMtlsWebClientFactory")
 public class DefaultWebClientFactory implements WebClientFactory {
 
   private final SslContextFactory sslContextFactory;
   private final ServiceProviderConfig serviceProviderConfig;
-  private final OpenTelemetryWebClientFilter openTelemetryWebClientFilter;
+  private final WebClient.Builder webClientBuilder;
 
   /**
    * Constructs an instance of {@code DefaultWebClientFactory}.
@@ -37,16 +33,13 @@ public class DefaultWebClientFactory implements WebClientFactory {
    *                                     used for secure mTLS connections
    * @param serviceProviderConfig        configuration settings for the service provider,
    *                                     including timeout configurations
-   * @param openTelemetryWebClientFilter filter that applies OpenTelemetry instrumentation
-   *                                     to outbound HTTP requests
    */
   public DefaultWebClientFactory(
-      SslContextFactory sslContextFactory,
-      ServiceProviderConfig serviceProviderConfig,
-      OpenTelemetryWebClientFilter openTelemetryWebClientFilter) {
+          SslContextFactory sslContextFactory,
+          ServiceProviderConfig serviceProviderConfig, WebClient.Builder webClientBuilder) {
     this.sslContextFactory = sslContextFactory;
     this.serviceProviderConfig = serviceProviderConfig;
-    this.openTelemetryWebClientFilter = openTelemetryWebClientFilter;
+      this.webClientBuilder = webClientBuilder;
   }
 
   /**
@@ -55,10 +48,6 @@ public class DefaultWebClientFactory implements WebClientFactory {
    * The created {@link WebClient} instance is configured with a response timeout
    * based on the service provider's settings and includes a bearer token filter
    * for authentication.
-   * <p>
-   * OpenTelemetry tracing is also enabled to capture and propagate trace context
-   * for outbound HTTP calls.
-   *
    * @return a non-mTLS configured {@link WebClient} instance
    */
   @NonNull
@@ -67,10 +56,9 @@ public class DefaultWebClientFactory implements WebClientFactory {
     final var httpClient = HttpClient.create()
         .responseTimeout(Duration.ofMillis(serviceProviderConfig.send().timeout()));
 
-    return WebClient.builder()
+    return webClientBuilder
         .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .filter(new ServerBearerExchangeFilterFunction())
-        .filter(openTelemetryWebClientFilter.filter())
+        .filters(filter -> filter.add(new ServerBearerExchangeFilterFunction()))
         .build();
   }
 
@@ -80,10 +68,6 @@ public class DefaultWebClientFactory implements WebClientFactory {
    * The created {@link WebClient} is configured to use an SSL context
    * provided by {@link SslContextFactory}, ensuring secure client authentication
    * via mutual TLS.
-   * <p>
-   * OpenTelemetry tracing is also enabled to capture and propagate trace context
-   * for outbound HTTP calls.
-   *
    * @return an mTLS-configured {@link WebClient} instance
    */
   @NonNull
@@ -93,9 +77,8 @@ public class DefaultWebClientFactory implements WebClientFactory {
         .secure(sslContextSpec -> sslContextSpec.sslContext(sslContextFactory.getSslContext()))
         .responseTimeout(Duration.ofMillis(serviceProviderConfig.send().timeout()));
 
-    return WebClient.builder()
+    return webClientBuilder
         .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .filter(openTelemetryWebClientFilter.filter())
         .build();
   }
 }
