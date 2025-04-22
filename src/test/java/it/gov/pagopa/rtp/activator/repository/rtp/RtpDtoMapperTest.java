@@ -43,7 +43,7 @@ class RtpDtoMapperTest {
         .iban("iban123")
         .payTrxRef("ABC/124")
         .flgConf("Y")
-        .status(RtpStatus.CREATED.name())
+        .status(RtpStatus.CREATED)
         .serviceProviderCreditor("PagoPA")
         .build();
 
@@ -64,7 +64,7 @@ class RtpDtoMapperTest {
     assertEquals(rtpEntity.getIban(), rtp.iban());
     assertEquals(rtpEntity.getPayTrxRef(), rtp.payTrxRef());
     assertEquals(rtpEntity.getFlgConf(), rtp.flgConf());
-    assertEquals(rtpEntity.getStatus(), rtp.status().name());
+    assertEquals(rtpEntity.getStatus(), rtp.status());
     assertEquals(rtpEntity.getServiceProviderCreditor(), rtp.serviceProviderCreditor());
   }
 
@@ -108,7 +108,7 @@ class RtpDtoMapperTest {
     assertEquals(rtp.iban(), rtpEntity.getIban());
     assertEquals(rtp.payTrxRef(), rtpEntity.getPayTrxRef());
     assertEquals(rtp.flgConf(), rtpEntity.getFlgConf());
-    assertEquals(rtp.status().name(), rtpEntity.getStatus());
+    assertEquals(rtp.status(), rtpEntity.getStatus());
     assertEquals(rtp.serviceProviderCreditor(), rtpEntity.getServiceProviderCreditor());
   }
 }
