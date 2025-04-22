@@ -2,7 +2,6 @@ package it.gov.pagopa.rtp.activator.repository.rtp;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
-import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -28,7 +27,7 @@ public class RtpMapper {
         .payTrxRef(rtpEntity.getPayTrxRef())
         .flgConf(rtpEntity.getFlgConf())
         .subject(rtpEntity.getSubject())
-        .status(RtpStatus.valueOf(rtpEntity.getStatus()))
+        .status(rtpEntity.getStatus())
         .serviceProviderCreditor(rtpEntity.getServiceProviderCreditor())
         .build();
   }
@@ -50,7 +49,7 @@ public class RtpMapper {
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
         .subject(rtp.subject())
-        .status(rtp.status().name())
+        .status(rtp.status())
         .serviceProviderCreditor(rtp.serviceProviderCreditor())
         .build();
   }
