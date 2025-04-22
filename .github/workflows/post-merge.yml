@@ -33,7 +33,6 @@ jobs:
 
       - name: "Calculate of the new version (dry-run)"
         uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # 4.1.1
-        id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -125,6 +124,7 @@ jobs:
 
       - name: "Calculation of the new version (w/o dry_run) and put tag"
         uses: cycjimmy/semantic-release-action@b1b432f13acb7768e0c8efdec416d363a57546f2 # 4.1.1
+        id: semantic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
