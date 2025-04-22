@@ -43,7 +43,7 @@ public class RtpMapper {
         .payerName(rtp.payerName())
         .payeeName(rtp.payeeName())
         .payeeId(rtp.payeeId())
-        .resourceID(rtp.resourceID().getId())
+        .resourceID(rtp.resourceID().getIdAsString())
         .savingDateTime(rtp.savingDateTime().toInstant(ZoneOffset.UTC))
         .serviceProviderDebtor(rtp.serviceProviderDebtor())
         .iban(rtp.iban())

@@ -9,6 +9,6 @@ import it.gov.pagopa.rtp.activator.telemetry.TraceMongo;
 
 @Repository
 @TraceMongo
-public interface RtpDB extends ReactiveMongoRepository<RtpEntity, UUID> {
+public interface RtpDB extends ReactiveMongoRepository<RtpEntity, String> {
 
 }
