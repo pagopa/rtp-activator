@@ -204,14 +204,12 @@ jobs:
       # Install Newman.
       #
       - name: Install Newman
-        if: steps.semantic.outputs.new_release_published == 'true'
         run: npm install -g newman
 
       #
       # Run Postman collection.
       #
       - name: Run Postman collection
-        if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           newman run src/test/postman/RTP-component-test.postman_collection.json \
             -e src/test/postman/uat.postman_environment.json \
