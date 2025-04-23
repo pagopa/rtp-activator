@@ -66,7 +66,7 @@ class RtpDBRepositoryTest {
         .payerId(rtp.payerId())
         .payeeName(rtp.payeeName())
         .payeeId(rtp.payeeId())
-        .resourceID(rtp.resourceID().getIdAsString())
+        .resourceID(rtp.resourceID().getId())
         .savingDateTime(rtp.savingDateTime().toInstant(ZoneOffset.UTC))
         .serviceProviderDebtor(rtp.serviceProviderDebtor())
         .iban(rtp.iban())
@@ -105,7 +105,7 @@ class RtpDBRepositoryTest {
 
   @Test
   void givenValidId_whenFindById_thenReturnRtp() {
-    final var rtpId = UUID.randomUUID().toString();
+    final var rtpId = UUID.randomUUID();
     final var resourceID = new ResourceID(rtpId);
 
     final var rtpEntity = RtpEntity.builder()
@@ -175,7 +175,7 @@ class RtpDBRepositoryTest {
 
   @Test
   void givenInvalidId_whenFindById_thenReturnEmpty() {
-    final var rtpId = UUID.randomUUID().toString();
+    final var rtpId = UUID.randomUUID();
     final var resourceID = new ResourceID(rtpId);
 
     when(rtpDB.findById(rtpId)).thenReturn(Mono.empty());
@@ -186,7 +186,7 @@ class RtpDBRepositoryTest {
 
   @Test
   void givenDbError_whenFindById_thenThrowException() {
-    final var rtpId = UUID.randomUUID().toString();
+    final var rtpId = UUID.randomUUID();
     final var resourceID = new ResourceID(rtpId);
 
     when(rtpDB.findById(rtpId)).thenReturn(Mono.error(new RuntimeException("DB Error")));

@@ -37,7 +37,7 @@ class RtpDtoMapperTest {
         .payeeName("Payee Name")
         .payeeId("payee123")
         .subject("subject")
-        .resourceID(uuid.toString())
+        .resourceID(uuid)
         .savingDateTime(Instant.now())
         .serviceProviderDebtor("serviceProviderDebtor")
         .iban("iban123")
@@ -58,7 +58,7 @@ class RtpDtoMapperTest {
     assertEquals(rtpEntity.getPayerName(), rtp.payerName());
     assertEquals(rtpEntity.getPayeeName(), rtp.payeeName());
     assertEquals(rtpEntity.getPayeeId(), rtp.payeeId());
-    assertEquals(rtpEntity.getResourceID(), rtp.resourceID().getIdAsString());
+    assertEquals(rtpEntity.getResourceID(), rtp.resourceID().getId());
     assertEquals(LocalDateTime.ofInstant(rtpEntity.getSavingDateTime(), ZoneOffset.UTC), rtp.savingDateTime());
     assertEquals(rtpEntity.getServiceProviderDebtor(), rtp.serviceProviderDebtor());
     assertEquals(rtpEntity.getIban(), rtp.iban());
@@ -102,7 +102,7 @@ class RtpDtoMapperTest {
     assertEquals(rtp.payerName(), rtpEntity.getPayerName());
     assertEquals(rtp.payeeName(), rtpEntity.getPayeeName());
     assertEquals(rtp.payeeId(), rtpEntity.getPayeeId());
-    assertEquals(rtp.resourceID().getIdAsString(), rtpEntity.getResourceID());
+    assertEquals(rtp.resourceID().getId(), rtpEntity.getResourceID());
     assertEquals(rtp.savingDateTime().toInstant(ZoneOffset.UTC), rtpEntity.getSavingDateTime());
     assertEquals(rtp.serviceProviderDebtor(), rtpEntity.getServiceProviderDebtor());
     assertEquals(rtp.iban(), rtpEntity.getIban());
