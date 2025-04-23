@@ -5,8 +5,10 @@ import org.springframework.stereotype.Repository;
 
 import it.gov.pagopa.rtp.activator.telemetry.TraceMongo;
 
+import java.util.UUID;
+
 @Repository
 @TraceMongo
-public interface RtpDB extends ReactiveMongoRepository<RtpEntity, String> {
+public interface RtpDB extends ReactiveMongoRepository<RtpEntity, UUID> {
 
 }

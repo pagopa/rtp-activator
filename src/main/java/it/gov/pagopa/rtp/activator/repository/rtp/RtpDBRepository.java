@@ -30,7 +30,7 @@ public class RtpDBRepository implements RtpRepository {
   public Mono<Rtp> findById(@NonNull final ResourceID resourceID) {
     return Mono.just(resourceID)
         .doFirst(() -> log.debug("Retrieving RTP with id {}", resourceID.getId()))
-        .map(ResourceID::getIdAsString)
+        .map(ResourceID::getId)
         .flatMap(rtpDB::findById)
         .map(rtpMapper::toDomain);
   }

@@ -2,6 +2,8 @@ package it.gov.pagopa.rtp.activator.repository.rtp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +19,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class RtpEntity {
 
   @Id
-  private String resourceID;
+  private UUID resourceID;
   private String noticeNumber;
   private BigDecimal amount;
   private String description;

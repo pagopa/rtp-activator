@@ -13,17 +13,9 @@ public class ResourceID {
         this.id = uuid;
     }
 
-    public ResourceID(String uuid) {
-        this.id = UUID.fromString(uuid);
-    }
-
     public static ResourceID createNew() {
         UUID uuid = UUID.randomUUID();
         return new ResourceID(uuid);
-    }
-
-    public String getIdAsString() {
-        return id.toString();
     }
 
 }
