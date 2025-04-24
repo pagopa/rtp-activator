@@ -48,8 +48,9 @@ class RequestToPayUpdateControllerTest {
     loggingUtilsMock = Mockito.mockStatic(LoggingUtils.class);
 
     loggingUtilsMock
-            .when(() -> LoggingUtils.logAsJson(any(Supplier.class), any(ObjectMapper.class)))
-            .thenAnswer(invocation -> {
+        .when(() -> LoggingUtils.logAsJson(any(Supplier.class), any(ObjectMapper.class)))
+        .thenAnswer(
+            invocation -> {
               assertEquals("ABCDITMMXXX", MDC.get("service_provider"));
               assertEquals("XYZDEBTOR123", MDC.get("debtor"));
               return null;
@@ -137,6 +138,8 @@ class RequestToPayUpdateControllerTest {
         """
         {
             "resourceId": "TestRtpMessageJZixUlWE3uYcb4k3lF4",
+            "serviceProviderDebtor": "ABCDITMMXXX",
+            "fiscalCode": "XYZDEBTOR123",
             "AsynchronousSepaRequestToPayResponse": {
                 "resourceId": "TestRtpMessageJZixUlWE3uYcb4k3lF4",
                 "Document": {
