@@ -103,8 +103,8 @@ class RtpStateMachineTest {
       String description,
       BiFunction<RtpStateMachine, RtpEvent, Publisher<?>> methodInvoker
   ) {
-    final var rtp = new RtpEntity();
-    rtp.setStatus(RtpStatus.CREATED);
+    final var rtpEntity = new RtpEntity();
+    rtpEntity.setStatus(RtpStatus.CREATED);
 
     assertThrows(NullPointerException.class, () -> methodInvoker.apply(stateMachine, RtpEvent.SEND_RTP));
   }
