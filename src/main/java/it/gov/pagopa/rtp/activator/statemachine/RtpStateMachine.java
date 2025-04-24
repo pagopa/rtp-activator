@@ -42,10 +42,6 @@ public class RtpStateMachine implements StateMachine<RtpEntity, RtpEvent> {
     Objects.requireNonNull(event, "Event cannot be null");
 
     return Mono.just(new RtpTransitionKey(source.getStatus(), event))
-        .filter(this::canTransition)
-        .switchIfEmpty(
-            Mono.error(new IllegalStateException(
-                String.format("Cannot transition from %s to %s", source, event))))
         .flatMap(transitionKey -> this.transitionConfiguration.getTransition(transitionKey)
             .map(Mono::just)
             .orElseGet(() -> Mono.error(new IllegalStateException(
