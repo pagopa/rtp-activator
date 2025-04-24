@@ -3,6 +3,7 @@ package it.gov.pagopa.rtp.activator.controller.callback;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,12 +46,12 @@ class RequestToPayUpdateControllerTest {
   @BeforeEach
   void setUp() {
     loggingUtilsMock = Mockito.mockStatic(LoggingUtils.class);
+
     loggingUtilsMock
-        .when(() -> LoggingUtils.logAsJson(any(Supplier.class), any(ObjectMapper.class)))
-        .thenAnswer(
-            invocation -> {
-              assert "ABCDITMMXXX".equals(MDC.get("service_provider"));
-              assert "XYZDEBTOR123".equals(MDC.get("debtor"));
+            .when(() -> LoggingUtils.logAsJson(any(Supplier.class), any(ObjectMapper.class)))
+            .thenAnswer(invocation -> {
+              assertEquals("ABCDITMMXXX", MDC.get("service_provider"));
+              assertEquals("XYZDEBTOR123", MDC.get("debtor"));
               return null;
             });
 
@@ -58,6 +59,9 @@ class RequestToPayUpdateControllerTest {
 
     String serviceProviderDebtorId = "ABCDITMMXXX";
     requestBody = createMockRequestBody(serviceProviderDebtorId);
+
+    MDC.put("service_provider", "ABCDITMMXXX");
+    MDC.put("debtor", "XYZDEBTOR123");
   }
 
   @AfterEach
