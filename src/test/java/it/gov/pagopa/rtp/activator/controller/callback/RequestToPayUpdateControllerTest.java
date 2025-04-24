@@ -33,8 +33,7 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class RequestToPayUpdateControllerTest {
 
-  @Mock
-  private CertificateChecker certificateChecker;
+  @Mock private CertificateChecker certificateChecker;
 
   private RequestToPayUpdateController controller;
 
@@ -43,13 +42,17 @@ class RequestToPayUpdateControllerTest {
   private JsonNode requestBody;
   private final String validCertificateSerialNumber = "123456789ABCDEF";
 
-
   @BeforeEach
   void setUp() {
     loggingUtilsMock = Mockito.mockStatic(LoggingUtils.class);
-    loggingUtilsMock.when(
-            () -> LoggingUtils.logAsJson(any(Supplier.class), any(ObjectMapper.class))
-    ).thenAnswer(invocation -> null);
+    loggingUtilsMock
+        .when(() -> LoggingUtils.logAsJson(any(Supplier.class), any(ObjectMapper.class)))
+        .thenAnswer(
+            invocation -> {
+              assert "ABCDITMMXXX".equals(MDC.get("service_provider"));
+              assert "XYZDEBTOR123".equals(MDC.get("debtor"));
+              return null;
+            });
 
     this.controller = new RequestToPayUpdateController(certificateChecker, new ObjectMapper());
 
@@ -67,8 +70,8 @@ class RequestToPayUpdateControllerTest {
   void handleRequestToPayUpdateWithValidCertificateShouldReturnOk() {
     when(certificateChecker.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
         .thenReturn(Mono.just(requestBody));
-    Mono<ResponseEntity<Void>> result = controller.handleRequestToPayUpdate(
-        validCertificateSerialNumber, Mono.just(requestBody));
+    Mono<ResponseEntity<Void>> result =
+        controller.handleRequestToPayUpdate(validCertificateSerialNumber, Mono.just(requestBody));
 
     StepVerifier.create(result)
         .expectNextMatches(response -> response.getStatusCode() == HttpStatus.OK)
@@ -81,8 +84,8 @@ class RequestToPayUpdateControllerTest {
     when(certificateChecker.verifyRequestCertificate(any(), eq(invalidCertificateSerialNumber)))
         .thenReturn(Mono.error(new IncorrectCertificate()));
 
-    Mono<ResponseEntity<Void>> result = controller.handleRequestToPayUpdate(
-        invalidCertificateSerialNumber, Mono.just(requestBody));
+    Mono<ResponseEntity<Void>> result =
+        controller.handleRequestToPayUpdate(invalidCertificateSerialNumber, Mono.just(requestBody));
 
     StepVerifier.create(result)
         .expectNextMatches(response -> response.getStatusCode() == HttpStatus.FORBIDDEN)
@@ -95,8 +98,8 @@ class RequestToPayUpdateControllerTest {
     when(certificateChecker.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
         .thenReturn(Mono.error(exception));
 
-    final var result = controller.handleRequestToPayUpdate(
-        validCertificateSerialNumber, Mono.just(requestBody));
+    final var result =
+        controller.handleRequestToPayUpdate(validCertificateSerialNumber, Mono.just(requestBody));
 
     StepVerifier.create(result)
         .expectNextMatches(response -> response.getStatusCode() == HttpStatus.BAD_REQUEST)
@@ -109,18 +112,16 @@ class RequestToPayUpdateControllerTest {
     when(certificateChecker.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
         .thenReturn(Mono.error(exception));
 
-    Mono<ResponseEntity<Void>> result = controller.handleRequestToPayUpdate(
-        validCertificateSerialNumber, Mono.just(requestBody));
+    Mono<ResponseEntity<Void>> result =
+        controller.handleRequestToPayUpdate(validCertificateSerialNumber, Mono.just(requestBody));
 
-    StepVerifier.create(result)
-        .expectError(IllegalStateException.class)
-        .verify();
+    StepVerifier.create(result).expectError(IllegalStateException.class).verify();
   }
 
   @Test
   void handleRequestToPayUpdateWithEmptyRequestShouldReturnBadRequest() {
-    Mono<ResponseEntity<Void>> result = controller.handleRequestToPayUpdate(
-        validCertificateSerialNumber, Mono.empty());
+    Mono<ResponseEntity<Void>> result =
+        controller.handleRequestToPayUpdate(validCertificateSerialNumber, Mono.empty());
 
     StepVerifier.create(result)
         .expectNextMatches(response -> response.getStatusCode() == HttpStatus.BAD_REQUEST)
@@ -128,7 +129,8 @@ class RequestToPayUpdateControllerTest {
   }
 
   private JsonNode createMockRequestBody(String serviceProviderDebtorId) {
-    final var baseJson = """
+    final var baseJson =
+        """
         {
             "resourceId": "TestRtpMessageJZixUlWE3uYcb4k3lF4",
             "AsynchronousSepaRequestToPayResponse": {
@@ -154,15 +156,15 @@ class RequestToPayUpdateControllerTest {
 
     return Optional.of(serviceProviderDebtorId)
         .map(spId -> String.format(baseJson, spId))
-        .map(json -> {
-          try {
-            return new ObjectMapper()
-                .readTree(json);
+        .map(
+            json -> {
+              try {
+                return new ObjectMapper().readTree(json);
 
-          } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-          }
-        })
+              } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+              }
+            })
         .orElseThrow(() -> new RuntimeException("Couldn't create mock request body."));
   }
 }
