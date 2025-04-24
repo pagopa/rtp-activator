@@ -9,16 +9,23 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import java.util.Optional;
+import java.util.function.Supplier;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.MDC;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import it.gov.pagopa.rtp.activator.domain.errors.IncorrectCertificate;
 import it.gov.pagopa.rtp.activator.utils.CertificateChecker;
+import it.gov.pagopa.rtp.activator.utils.LoggingUtils;
 
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -31,16 +38,29 @@ class RequestToPayUpdateControllerTest {
 
   private RequestToPayUpdateController controller;
 
+  private MockedStatic<LoggingUtils> loggingUtilsMock;
+
   private JsonNode requestBody;
   private final String validCertificateSerialNumber = "123456789ABCDEF";
 
 
   @BeforeEach
   void setUp() {
+    loggingUtilsMock = Mockito.mockStatic(LoggingUtils.class);
+    loggingUtilsMock.when(
+            () -> LoggingUtils.logAsJson(any(Supplier.class), any(ObjectMapper.class))
+    ).thenAnswer(invocation -> null);
+
     this.controller = new RequestToPayUpdateController(certificateChecker, new ObjectMapper());
 
     String serviceProviderDebtorId = "ABCDITMMXXX";
     requestBody = createMockRequestBody(serviceProviderDebtorId);
+  }
+
+  @AfterEach
+  void tearDown() {
+    loggingUtilsMock.close();
+    MDC.clear();
   }
 
   @Test
