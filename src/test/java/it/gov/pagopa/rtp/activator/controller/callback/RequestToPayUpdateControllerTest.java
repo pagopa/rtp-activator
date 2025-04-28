@@ -40,7 +40,7 @@ class RequestToPayUpdateControllerTest {
     extractorMock.when(() -> PayloadInfoExtractor.populateMdc(any(JsonNode.class)))
             .thenAnswer(invocation -> null);
 
-    controller = new RequestToPayUpdateController(certificateChecker, new ObjectMapper());
+    controller = new RequestToPayUpdateController(certificateChecker);
     requestBody = createMockRequestBody("ABCDITMMXXX");
   }
 

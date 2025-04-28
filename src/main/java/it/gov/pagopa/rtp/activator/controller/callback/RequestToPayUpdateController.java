@@ -1,7 +1,6 @@
 package it.gov.pagopa.rtp.activator.controller.callback;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import it.gov.pagopa.rtp.activator.utils.PayloadInfoExtractor;
 import org.slf4j.MDC;
@@ -23,7 +22,7 @@ public class RequestToPayUpdateController implements RequestToPayUpdateApi {
   private final CertificateChecker certificateChecker;
 
   public RequestToPayUpdateController(
-      CertificateChecker certificateChecker, ObjectMapper objectMapper) {
+      CertificateChecker certificateChecker) {
     this.certificateChecker = certificateChecker;
   }
 
