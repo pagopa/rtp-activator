@@ -228,4 +228,6 @@ jobs:
           newman run src/test/postman/RTP-component-test.postman_collection.json \
             -e src/test/postman/uat.postman_environment.json \
             --env-var "payer-sp-client-secret=${{ secrets.PAYER_SP_CLIENT_SECRET }}" \
-            --env-var "pagopa-sp-client-secret=${{ secrets.PAGOPA_SP_CLIENT_SECRET }}"
+            --env-var "pagopa-sp-client-secret=${{ secrets.PAGOPA_SP_CLIENT_SECRET }}" \
+            --ssl-client-cert certs/certificate.crt \
+            --ssl-client-key certs/private.key
