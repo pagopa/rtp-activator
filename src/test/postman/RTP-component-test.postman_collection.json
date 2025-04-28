@@ -577,8 +577,8 @@
 								"method": "POST",
 								"header": [
 									{
-										"key": "X-Client-Certificate-Serial",
-										"value": "99999999999999999",
+										"key": "Version",
+										"value": "v1",
 										"type": "text"
 									}
 								],
