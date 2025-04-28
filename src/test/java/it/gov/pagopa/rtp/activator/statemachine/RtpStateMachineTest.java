@@ -91,7 +91,7 @@ class RtpStateMachineTest {
 
     StepVerifier.create(stateMachine.transition(rtp, event))
         .expectErrorSatisfies(e -> {
-          assertTrue(e instanceof IllegalStateException);
+          assertInstanceOf(IllegalStateException.class, e);
           assertTrue(e.getMessage().contains("Cannot transition from"));
         })
         .verify();
