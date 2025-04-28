@@ -210,15 +210,18 @@ jobs:
       # Create certificate directory
       #
       - name: Create certificate directory
-        run: mkdir -p certs
+        run: |
+          mkdir -p certs
+          chmod 600 certs
 
       #
       # Write certificate files
       #
       - name: Write certificate files
         run: |
-          echo "${{ secrets.CERT_FILE }}" > certs/certificate.crt
-          echo "${{ secrets.KEY_FILE }}" > certs/private.key
+          printf '%s\n' "${{ secrets.CERT_FILE }}" > certs/certificate.crt
+          printf '%s\n' "${{ secrets.KEY_FILE }}" > certs/private.key
+          chmod 600 certs/private.key
 
       #
       # Run Postman collection.
