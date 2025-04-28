@@ -207,6 +207,20 @@ jobs:
         run: npm install -g newman
 
       #
+      # Create certificate directory
+      #
+      - name: Create certificate directory
+        run: mkdir -p certs
+
+      #
+      # Write certificate files
+      #
+      - name: Write certificate files
+        run: |
+          echo "${{ secrets.CERT_FILE }}" > certs/certificate.crt
+          echo "${{ secrets.KEY_FILE }}" > certs/private.key
+
+      #
       # Run Postman collection.
       #
       - name: Run Postman collection
