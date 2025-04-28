@@ -25,7 +25,7 @@ class PayloadInfoExtractorTest {
     }
 
     @Test
-    void populateMdc_withFirstFormat_shouldExtractServiceProviderOnly() throws Exception {
+    void populateMdc_DS_04B_shouldExtractServiceProviderOnly() throws Exception {
         String json = """
         {
           "resourceId": "456789123-rtp-response-001",
@@ -66,7 +66,7 @@ class PayloadInfoExtractorTest {
     }
 
     @Test
-    void populateMdc_withSecondFormat_shouldExtractServiceProviderAndDebtor() throws Exception {
+    void populateMdc_DS_08P_shouldExtractServiceProviderAndDebtor() throws Exception {
         String jsonTemplate = """
         {
           "resourceId": "id",
