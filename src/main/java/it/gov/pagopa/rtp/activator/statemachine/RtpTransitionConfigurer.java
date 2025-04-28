@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 public class RtpTransitionConfigurer implements TransitionConfigurer<RtpEntity, RtpStatus, RtpEvent> {
 
-  private static final Consumer<RtpEntity> NOOP_CONSUMER = rtpEntity -> {};
+  private static final Consumer<RtpEntity> NOOP_ACTION = rtpEntity -> {};
 
   private final Map<RtpTransitionKey, RtpTransition> transitionsMap = new ConcurrentHashMap<>();
 
@@ -20,7 +20,7 @@ public class RtpTransitionConfigurer implements TransitionConfigurer<RtpEntity, 
   public TransitionConfigurer<RtpEntity, RtpStatus, RtpEvent> register(
       TransitionKey<RtpStatus, RtpEvent> transitionKey, RtpStatus toState) {
 
-    return this.register(transitionKey, toState, NOOP_CONSUMER);
+    return this.register(transitionKey, toState, NOOP_ACTION);
   }
 
 
