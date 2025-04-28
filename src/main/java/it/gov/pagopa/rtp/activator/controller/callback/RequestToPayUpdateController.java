@@ -3,7 +3,6 @@ package it.gov.pagopa.rtp.activator.controller.callback;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
-import it.gov.pagopa.rtp.activator.utils.LoggingUtils;
 import it.gov.pagopa.rtp.activator.utils.PayloadInfoExtractor;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -22,12 +21,10 @@ import reactor.core.publisher.Mono;
 public class RequestToPayUpdateController implements RequestToPayUpdateApi {
 
   private final CertificateChecker certificateChecker;
-  private final ObjectMapper objectMapper;
 
   public RequestToPayUpdateController(
       CertificateChecker certificateChecker, ObjectMapper objectMapper) {
     this.certificateChecker = certificateChecker;
-    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -40,7 +37,7 @@ public class RequestToPayUpdateController implements RequestToPayUpdateApi {
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
         .flatMap(s -> certificateChecker.verifyRequestCertificate(s, clientCertificateSerialNumber))
         .doOnNext(PayloadInfoExtractor::populateMdc)
-        .<ResponseEntity<Void>>map(_s -> ResponseEntity.ok().build())
+        .<ResponseEntity<Void>>map(s -> ResponseEntity.ok().build())
         .doOnSuccess(resp -> log.info("Send callback processed successfully"))
         .doOnError(err -> log.error("Error receiving the update callback {}", err.getMessage()))
         .onErrorReturn(
