@@ -18,7 +18,7 @@ class ActivationErrorCodeTest {
   @DisplayName("findByCode should return correct enum for valid code")
   void findByCodeReturnsCorrectEnum() {
     // Given a valid error code
-    String errorCode = "01021000F";
+    String errorCode = "01021000E";
 
     // When findByCode is called
     ActivationErrorCode result = ActivationErrorCode.findByCode(errorCode);
@@ -68,15 +68,15 @@ class ActivationErrorCodeTest {
   @DisplayName("Check specific error codes have correct values")
   void specificErrorCodesHaveCorrectValues() {
     // 400 Bad Request
-    assertEquals("01021000F", ActivationErrorCode.INVALID_REQUEST_FORMAT.getCode());
+    assertEquals("01021000E", ActivationErrorCode.INVALID_REQUEST_FORMAT.getCode());
     assertEquals(400, ActivationErrorCode.INVALID_REQUEST_FORMAT.getHttpStatus());
 
     // 401 Unauthorized
-    assertEquals("01011000F", ActivationErrorCode.MISSING_AUTHENTICATION_TOKEN.getCode());
+    assertEquals("01011000E", ActivationErrorCode.MISSING_AUTHENTICATION_TOKEN.getCode());
     assertEquals(401, ActivationErrorCode.MISSING_AUTHENTICATION_TOKEN.getHttpStatus());
 
     // 404 Not Found
-    assertEquals("01041000F", ActivationErrorCode.ACTIVATION_NOT_FOUND.getCode());
+    assertEquals("01041000E", ActivationErrorCode.ACTIVATION_NOT_FOUND.getCode());
     assertEquals(404, ActivationErrorCode.ACTIVATION_NOT_FOUND.getHttpStatus());
 
     // 500 Internal Server Error

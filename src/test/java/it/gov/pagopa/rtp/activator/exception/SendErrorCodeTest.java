@@ -18,7 +18,7 @@ class SendErrorCodeTest {
   @DisplayName("findByCode should return correct enum for valid code")
   void findByCodeReturnsCorrectEnum() {
     // Given a valid error code
-    String errorCode = "02021000F";
+    String errorCode = "02021000E";
 
     // When findByCode is called
     SendErrorCode result = SendErrorCode.findByCode(errorCode);
@@ -68,11 +68,11 @@ class SendErrorCodeTest {
   @DisplayName("Check specific error codes have correct values")
   void specificErrorCodesHaveCorrectValues() {
     // 400 Bad Request
-    assertEquals("02021000F", SendErrorCode.INVALID_REQUEST_FORMAT.getCode());
+    assertEquals("02021000E", SendErrorCode.INVALID_REQUEST_FORMAT.getCode());
     assertEquals(400, SendErrorCode.INVALID_REQUEST_FORMAT.getHttpStatus());
 
     // 401 Unauthorized
-    assertEquals("02011000F", SendErrorCode.MISSING_AUTHENTICATION_TOKEN.getCode());
+    assertEquals("02011000E", SendErrorCode.MISSING_AUTHENTICATION_TOKEN.getCode());
     assertEquals(401, SendErrorCode.MISSING_AUTHENTICATION_TOKEN.getHttpStatus());
 
     // 500 Internal Server Error
