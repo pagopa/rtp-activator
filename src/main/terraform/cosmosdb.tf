@@ -14,6 +14,10 @@ resource "azurerm_cosmosdb_mongo_collection" "rtps" {
   shard_key = "_id"
 
   throughput = var.cosmosdb_throughput
+
+  index {
+    keys = ["_id"]
+  }
 }
 
 resource "azurerm_cosmosdb_mongo_collection" "activations" {
@@ -24,4 +28,8 @@ resource "azurerm_cosmosdb_mongo_collection" "activations" {
   shard_key = "_id"
 
   throughput = var.cosmosdb_throughput
+
+  index {
+    keys = ["_id"]
+  }
 }
