@@ -17,6 +17,7 @@ resource "azurerm_cosmosdb_mongo_collection" "rtps" {
 
   index {
     keys = ["_id"]
+    unique = true
   }
 }
 
@@ -31,5 +32,6 @@ resource "azurerm_cosmosdb_mongo_collection" "activations" {
 
   index {
     keys = ["_id"]
+    unique = true
   }
 }
