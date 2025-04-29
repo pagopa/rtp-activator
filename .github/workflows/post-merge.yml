@@ -212,15 +212,15 @@ jobs:
       - name: Create certificate directory
         run: |
           mkdir -p certs
-          chmod 600 certs
+          chmod 700 certs
 
       #
       # Write certificate files
       #
       - name: Write certificate files
         run: |
-          printf '%s\n' "${{ secrets.CERT_FILE }}" > certs/certificate.crt
-          printf '%s\n' "${{ secrets.KEY_FILE }}" > certs/private.key
+          echo “${{ secrets.CERT_FILE }}” | base64 --decode > certs/certificate.crt
+          echo “${{ secrets.KEY_FILE }}” | base64 --decode > certs/private.key
           chmod 600 certs/private.key
 
       #
