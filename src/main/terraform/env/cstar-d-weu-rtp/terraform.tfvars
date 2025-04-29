@@ -67,3 +67,10 @@ rtp_environment_configs = {
   AZURE_BLOB_NAME                         : "serviceregistry.json"
   CALLBACK_BASE_URL                       : "https://api-rtp-cb.dev.cstar.pagopa.it/rtp/cb"
 }
+#---------------------------------------------------------------------------------
+# Configuration cosmos
+#---------------------------------------------------------------------------------
+cosmosdb_resource_group = "cstar-d-weu-rtp-data-rg"
+cosmosdb_account_name   = "cstar-d-weu-rtp-cosmos"
+cosmosdb_throughput     = 400
+
