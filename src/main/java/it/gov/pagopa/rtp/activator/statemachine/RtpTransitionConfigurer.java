@@ -115,4 +115,3 @@ public class RtpTransitionConfigurer implements TransitionConfigurer<RtpEntity, 
     return new RtpTransitionConfiguration(this.transitionsMap);
   }
 }
-

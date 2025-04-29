@@ -52,4 +52,3 @@ public class RtpTransitionConfiguration implements TransitionConfiguration<RtpEn
         .map(this.transitionsMap::get);
   }
 }
-
