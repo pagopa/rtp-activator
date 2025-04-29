@@ -2,6 +2,7 @@ package it.gov.pagopa.rtp.activator.controller.activation;
 
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
+import it.gov.pagopa.rtp.activator.exception.ActivationErrorCode;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,8 +89,8 @@ class ActivationExceptionHandlerTest {
     assertEquals(1, response.getBody().getErrors().size());
 
     ErrorDto error = response.getBody().getErrors().get(0);
-    assertEquals("01000000F", error.getCode());
-    assertEquals("Payer already exists", error.getDescription());
+    assertEquals(ActivationErrorCode.DUPLICATE_PAYER_ID_ACTIVATION.getCode(), error.getCode());
+    assertEquals(ActivationErrorCode.DUPLICATE_PAYER_ID_ACTIVATION.getMessage(), error.getDescription());
   }
 
   @Test
