@@ -2,6 +2,7 @@ package it.gov.pagopa.rtp.activator.controller.activation;
 
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
+import it.gov.pagopa.rtp.activator.exception.ActivationErrorCode;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
 import jakarta.validation.ConstraintViolationException;
@@ -112,8 +113,8 @@ public class ActivationExceptionHandler {
   public ResponseEntity<ErrorsDto> handlePayerAlreadyExists(PayerAlreadyExists ex) {
     // Create error object
     ErrorDto error = new ErrorDto()
-        .code("01000000F")
-        .description(ex.getMessage());
+        .code(ActivationErrorCode.DUPLICATE_PAYER_ID_ACTIVATION.getCode())
+        .description(ActivationErrorCode.DUPLICATE_PAYER_ID_ACTIVATION.getMessage());
 
     // Create errors container
     ErrorsDto errors = new ErrorsDto();
@@ -121,7 +122,7 @@ public class ActivationExceptionHandler {
 
     // Return proper 409 response with body and location header
     return ResponseEntity
-        .status(HttpStatus.CONFLICT)
+        .status(HttpStatus.valueOf(ActivationErrorCode.DUPLICATE_PAYER_ID_ACTIVATION.getHttpStatus()))
         .location(URI.create(activationPropertiesConfig.baseUrl() + ex.getExistingActivationId()))
         .body(errors);
   }
