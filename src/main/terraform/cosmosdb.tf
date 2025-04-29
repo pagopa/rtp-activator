@@ -4,6 +4,10 @@ resource "azurerm_cosmosdb_mongo_database" "rtp" {
   account_name        = var.cosmosdb_account_name
 
   throughput = var.cosmosdb_throughput
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_cosmosdb_mongo_collection" "rtps" {
@@ -19,6 +23,10 @@ resource "azurerm_cosmosdb_mongo_collection" "rtps" {
     keys = ["_id"]
     unique = true
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_cosmosdb_mongo_collection" "activations" {
@@ -33,5 +41,9 @@ resource "azurerm_cosmosdb_mongo_collection" "activations" {
   index {
     keys = ["_id"]
     unique = true
+  }
+
+  lifecycle {
+    prevent_destroy = true
   }
 }
