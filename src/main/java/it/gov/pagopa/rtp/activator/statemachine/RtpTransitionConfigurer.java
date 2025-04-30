@@ -13,13 +13,32 @@ import java.util.function.Consumer;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
+/**
+ * Default implementation of {@link TransitionConfigurer} for {@link RtpEntity} transitions.
+ * <p>
+ * This class allows for the programmatic registration of valid transitions between {@link RtpStatus}
+ * states, triggered by {@link RtpEvent} events. It supports attaching optional pre- and post-transition
+ * actions to each state change.
+ * </p>
+ */
 public class RtpTransitionConfigurer implements TransitionConfigurer<RtpEntity, RtpStatus, RtpEvent> {
 
+  /**
+   * A no-operation consumer that does nothing.
+   * Used as a default when no transition action is provided.
+   */
   private static final Consumer<RtpEntity> NOOP_ACTION = rtpEntity -> {};
 
   private final Map<RtpTransitionKey, RtpTransition> transitionsMap = new ConcurrentHashMap<>();
 
 
+  /**
+   * Registers a basic transition with no actions.
+   *
+   * @param transitionKey the source state and event triggering the transition
+   * @param toState       the target state after the transition
+   * @return the current {@link TransitionConfigurer} instance for chaining
+   */
   @Override
   public TransitionConfigurer<RtpEntity, RtpStatus, RtpEvent> register(
       @NonNull final TransitionKey<RtpStatus, RtpEvent> transitionKey,
@@ -29,6 +48,14 @@ public class RtpTransitionConfigurer implements TransitionConfigurer<RtpEntity, 
   }
 
 
+  /**
+   * Registers a transition with a single post-transition action.
+   *
+   * @param transitionKey the source state and event triggering the transition
+   * @param toState       the target state after the transition
+   * @param action        the action to execute after the transition
+   * @return the current {@link TransitionConfigurer} instance for chaining
+   */
   @Override
   public TransitionConfigurer<RtpEntity, RtpStatus, RtpEvent> register(
       @NonNull final TransitionKey<RtpStatus, RtpEvent> transitionKey,
@@ -44,6 +71,15 @@ public class RtpTransitionConfigurer implements TransitionConfigurer<RtpEntity, 
   }
 
 
+  /**
+   * Registers a transition with pre and post-transition actions.
+   *
+   * @param transitionKey         the source state and event triggering the transition
+   * @param toState                the target state after the transition
+   * @param preTransitionAction    list of actions to perform before changing the state
+   * @param postTransitionAction   list of actions to perform after changing the state
+   * @return the current {@link TransitionConfigurer} instance for chaining
+   */
   @Override
   public TransitionConfigurer<RtpEntity, RtpStatus, RtpEvent> register(
       @NonNull final TransitionKey<RtpStatus, RtpEvent> transitionKey,
@@ -69,6 +105,11 @@ public class RtpTransitionConfigurer implements TransitionConfigurer<RtpEntity, 
   }
 
 
+  /**
+   * Builds and returns the {@link TransitionConfiguration} containing all registered transitions.
+   *
+   * @return a configured {@link TransitionConfiguration}
+   */
   @Override
   public TransitionConfiguration<RtpEntity, RtpStatus, RtpEvent> build() {
     return new RtpTransitionConfiguration(this.transitionsMap);
