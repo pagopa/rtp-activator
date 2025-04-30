@@ -48,4 +48,3 @@ public class RtpStateMachineFactory implements StateMachineFactory<RtpEntity, Rt
     return new RtpStateMachine(this.transitionConfigurer.build());
   }
 }
-

@@ -35,6 +35,12 @@ class StateMachineConfigurationTest {
     assertAll(
         () -> assertTransitionExists(config, RtpStatus.CREATED, RtpEvent.SEND_RTP, RtpStatus.SENT),
         () -> assertTransitionExists(config, RtpStatus.CREATED, RtpEvent.ERROR_SEND_RTP, RtpStatus.ERROR_SEND),
+        () -> assertTransitionExists(config, RtpStatus.CREATED, RtpEvent.ACCEPT_RTP, RtpStatus.ACCEPTED),
+        () -> assertTransitionExists(config, RtpStatus.CREATED, RtpEvent.REJECT_RTP, RtpStatus.REJECTED),
+        () -> assertTransitionExists(config, RtpStatus.CREATED, RtpEvent.USER_ACCEPT_RTP, RtpStatus.USER_ACCEPTED),
+        () -> assertTransitionExists(config, RtpStatus.CREATED, RtpEvent.USER_REJECT_RTP, RtpStatus.USER_REJECTED),
+        () -> assertTransitionExists(config, RtpStatus.CREATED, RtpEvent.PAY_RTP, RtpStatus.PAYED),
+        () -> assertTransitionExists(config, RtpStatus.CREATED, RtpEvent.CANCEL_RTP, RtpStatus.CANCELLED),
         () -> assertTransitionExists(config, RtpStatus.SENT, RtpEvent.ACCEPT_RTP, RtpStatus.ACCEPTED),
         () -> assertTransitionExists(config, RtpStatus.SENT, RtpEvent.REJECT_RTP, RtpStatus.REJECTED),
         () -> assertTransitionExists(config, RtpStatus.SENT, RtpEvent.USER_ACCEPT_RTP, RtpStatus.USER_ACCEPTED),
