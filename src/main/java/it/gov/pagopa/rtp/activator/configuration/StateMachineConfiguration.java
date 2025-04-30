@@ -57,6 +57,15 @@ public class StateMachineConfiguration {
         .register(new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.ERROR_SEND_RTP), RtpStatus.ERROR_SEND, persistRtp())
 
         // Transitions from SENT
+        .register(new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.SEND_RTP), RtpStatus.SENT, persistRtp())
+        .register(new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.ERROR_SEND_RTP), RtpStatus.ERROR_SEND, persistRtp())
+        .register(new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.ACCEPT_RTP), RtpStatus.ACCEPTED, persistRtp())
+        .register(new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.REJECT_RTP), RtpStatus.REJECTED, persistRtp())
+        .register(new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.USER_ACCEPT_RTP), RtpStatus.USER_ACCEPTED, persistRtp())
+        .register(new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.USER_REJECT_RTP), RtpStatus.USER_REJECTED, persistRtp())
+        .register(new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.PAY_RTP), RtpStatus.PAYED, persistRtp())
+        .register(new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.CANCEL_RTP), RtpStatus.CANCELLED, persistRtp())
+
         .register(new RtpTransitionKey(RtpStatus.SENT, RtpEvent.ACCEPT_RTP), RtpStatus.ACCEPTED, persistRtp())
         .register(new RtpTransitionKey(RtpStatus.SENT, RtpEvent.REJECT_RTP), RtpStatus.REJECTED, persistRtp())
         .register(new RtpTransitionKey(RtpStatus.SENT, RtpEvent.USER_ACCEPT_RTP), RtpStatus.USER_ACCEPTED, persistRtp())
@@ -90,4 +99,3 @@ public class StateMachineConfiguration {
   }
 
 }
-
