@@ -3,6 +3,13 @@ package it.gov.pagopa.rtp.activator.service.rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import reactor.core.publisher.Mono;
 
+/**
+ * Interface defining state transition operations for {@link Rtp} entities.
+ * <p>
+ * Each method corresponds to a specific domain event that triggers a transition
+ * within a state machine. Implementations are responsible for applying the event
+ * and returning the updated {@link Rtp} instance.
+ */
 public interface RtpStatusUpdater {
 
   Mono<Rtp> triggerSendRtp(Rtp rtp);
@@ -27,4 +34,3 @@ public interface RtpStatusUpdater {
 
   Mono<Rtp> triggerCancelRtpRejected(Rtp rtp);
 }
-
