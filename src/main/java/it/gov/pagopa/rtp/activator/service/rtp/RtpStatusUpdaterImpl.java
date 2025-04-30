@@ -20,8 +20,6 @@ import reactor.core.publisher.Mono;
  * Each public method corresponds to a domain event that can be triggered on an {@link Rtp} instance,
  * such as sending, cancelling, or accepting a Request-to-Pay.
  * <p>
- * Internally, the class converts the domain model to an entity form, triggers the event via the state machine,
- * and maps the result back to the domain model.
  */
 @Component("rtpStatusUpdater")
 @Slf4j
