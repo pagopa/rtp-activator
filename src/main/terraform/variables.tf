@@ -117,16 +117,3 @@ variable "rtp_environment_secrets" {
   type = map(any)
   default = {}
 }
-
-variable "cosmosdb_resource_group" {
-  type = string
-}
-
-variable "cosmosdb_account_name" {
-  type = string
-}
-
-variable "cosmosdb_throughput" {
-  type    = number
-  default = 400
-}
