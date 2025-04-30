@@ -6,6 +6,7 @@ import it.gov.pagopa.rtp.activator.repository.rtp.RtpEntity;
 import it.gov.pagopa.rtp.activator.repository.rtp.RtpMapper;
 import it.gov.pagopa.rtp.activator.statemachine.StateMachine;
 import it.gov.pagopa.rtp.activator.statemachine.StateMachineFactory;
+import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -14,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.*;
 
 class RtpStatusUpdaterImplTest {
@@ -40,114 +42,142 @@ class RtpStatusUpdaterImplTest {
   void setUp() {
     MockitoAnnotations.openMocks(this);
 
-    when(stateMachineFactory.createStateMachine()).
-        thenReturn(stateMachine);
+    rtp = mock(Rtp.class);
     when(rtpMapper.toDbEntity(rtp))
         .thenReturn(rtpEntity);
-    when(stateMachine.transition(eq(rtpEntity), any()))
+
+    rtpStatusUpdater = new RtpStatusUpdaterImpl(() -> stateMachine, rtpMapper);
+  }
+
+  private void verifyTransition(RtpEvent event, Function<RtpStatusUpdaterImpl, Mono<Rtp>> triggerMethod) {
+    final var expectedRtp = mock(Rtp.class);
+
+    when(stateMachine.transition(rtpEntity, event))
         .thenReturn(Mono.just(rtpEntity));
     when(rtpMapper.toDomain(rtpEntity))
-        .thenReturn(rtp);
+        .thenReturn(expectedRtp);
 
-    rtpStatusUpdater = new RtpStatusUpdaterImpl(stateMachineFactory, rtpMapper);
+    StepVerifier.create(triggerMethod.apply(rtpStatusUpdater))
+        .expectNext(expectedRtp)
+        .verifyComplete();
+  }
+
+  private void verifyErrorPropagation(RtpEvent event, Function<RtpStatusUpdaterImpl, Mono<Rtp>> triggerMethod) {
+    when(stateMachine.transition(rtpEntity, event))
+        .thenReturn(Mono.error(new IllegalStateException("Transition failed")));
+
+    StepVerifier.create(triggerMethod.apply(rtpStatusUpdater))
+        .expectErrorSatisfies(error -> assertInstanceOf(IllegalStateException.class, error))
+        .verify();
   }
 
   @Test
-  void givenRtp_whenTriggerSendRtp_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerSendRtp(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.SEND_RTP);
+  void givenValidInput_whenTriggerSendRtp_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.SEND_RTP, updater -> updater.triggerSendRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerCancelRtp_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerCancelRtp(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.CANCEL_RTP);
+  void givenStateMachineFails_whenTriggerSendRtp_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.SEND_RTP, updater -> updater.triggerSendRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerAcceptRtp_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerAcceptRtp(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.ACCEPT_RTP);
+  void givenValidInput_whenTriggerCancelRtp_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.CANCEL_RTP, updater -> updater.triggerCancelRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerRejectRtp_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerRejectRtp(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.REJECT_RTP);
+  void givenStateMachineFails_whenTriggerCancelRtp_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.CANCEL_RTP, updater -> updater.triggerCancelRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerUserAcceptRtp_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerUserAcceptRtp(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.USER_ACCEPT_RTP);
+  void givenValidInput_whenTriggerAcceptRtp_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.ACCEPT_RTP, updater -> updater.triggerAcceptRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerUserRejectRtp_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerUserRejectRtp(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.USER_REJECT_RTP);
+  void givenStateMachineFails_whenTriggerAcceptRtp_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.ACCEPT_RTP, updater -> updater.triggerAcceptRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerPayRtp_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerPayRtp(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.PAY_RTP);
+  void givenValidInput_whenTriggerRejectRtp_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.REJECT_RTP, updater -> updater.triggerRejectRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerErrorSendRtp_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerErrorSendRtp(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.ERROR_SEND_RTP);
+  void givenStateMachineFails_whenTriggerRejectRtp_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.REJECT_RTP, updater -> updater.triggerRejectRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerErrorCancelRtp_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerErrorCancelRtp(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.ERROR_CANCEL_RTP);
+  void givenValidInput_whenTriggerUserAcceptRtp_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.USER_ACCEPT_RTP, updater -> updater.triggerUserAcceptRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerCancelRtpAccr_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerCancelRtpAccr(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
-
-    verify(stateMachine).transition(rtpEntity, RtpEvent.CANCEL_RTP_ACCR);
+  void givenStateMachineFails_whenTriggerUserAcceptRtp_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.USER_ACCEPT_RTP, updater -> updater.triggerUserAcceptRtp(rtp));
   }
 
   @Test
-  void givenRtp_whenTriggerCancelRtpRejected_thenTransitionAndReturn() {
-    StepVerifier.create(rtpStatusUpdater.triggerCancelRtpRejected(rtp))
-        .expectNext(rtp)
-        .verifyComplete();
+  void givenValidInput_whenTriggerUserRejectRtp_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.USER_REJECT_RTP, updater -> updater.triggerUserRejectRtp(rtp));
+  }
 
-    verify(stateMachine).transition(rtpEntity, RtpEvent.CANCEL_RTP_REJECTED);
+  @Test
+  void givenStateMachineFails_whenTriggerUserRejectRtp_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.USER_REJECT_RTP, updater -> updater.triggerUserRejectRtp(rtp));
+  }
+
+  @Test
+  void givenValidInput_whenTriggerPayRtp_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.PAY_RTP, updater -> updater.triggerPayRtp(rtp));
+  }
+
+  @Test
+  void givenStateMachineFails_whenTriggerPayRtp_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.PAY_RTP, updater -> updater.triggerPayRtp(rtp));
+  }
+
+  @Test
+  void givenValidInput_whenTriggerErrorSendRtp_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.ERROR_SEND_RTP, updater -> updater.triggerErrorSendRtp(rtp));
+  }
+
+  @Test
+  void givenStateMachineFails_whenTriggerErrorSendRtp_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.ERROR_SEND_RTP, updater -> updater.triggerErrorSendRtp(rtp));
+  }
+
+  @Test
+  void givenValidInput_whenTriggerErrorCancelRtp_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.ERROR_CANCEL_RTP, updater -> updater.triggerErrorCancelRtp(rtp));
+  }
+
+  @Test
+  void givenStateMachineFails_whenTriggerErrorCancelRtp_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.ERROR_CANCEL_RTP, updater -> updater.triggerErrorCancelRtp(rtp));
+  }
+
+  @Test
+  void givenValidInput_whenTriggerCancelRtpAccr_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.CANCEL_RTP_ACCR, updater -> updater.triggerCancelRtpAccr(rtp));
+  }
+
+  @Test
+  void givenStateMachineFails_whenTriggerCancelRtpAccr_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.CANCEL_RTP_ACCR, updater -> updater.triggerCancelRtpAccr(rtp));
+  }
+
+  @Test
+  void givenValidInput_whenTriggerCancelRtpRejected_thenReturnUpdatedRtp() {
+    verifyTransition(RtpEvent.CANCEL_RTP_REJECTED, updater -> updater.triggerCancelRtpRejected(rtp));
+  }
+
+  @Test
+  void givenStateMachineFails_whenTriggerCancelRtpRejected_thenPropagateError() {
+    verifyErrorPropagation(RtpEvent.CANCEL_RTP_REJECTED, updater -> updater.triggerCancelRtpRejected(rtp));
   }
 }
