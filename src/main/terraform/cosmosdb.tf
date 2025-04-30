@@ -3,7 +3,9 @@ resource "azurerm_cosmosdb_mongo_database" "rtp" {
   resource_group_name = var.cosmosdb_resource_group
   account_name        = var.cosmosdb_account_name
 
-  throughput = var.cosmosdb_throughput
+  autoscale_settings {
+    max_throughput = var.cosmosdb_throughput
+  }
 
   lifecycle {
     prevent_destroy = true
@@ -17,7 +19,9 @@ resource "azurerm_cosmosdb_mongo_collection" "rtps" {
   database_name       = azurerm_cosmosdb_mongo_database.rtp.name
   shard_key = "_id"
 
-  throughput = var.cosmosdb_throughput
+  autoscale_settings {
+    max_throughput = var.cosmosdb_throughput
+  }
 
   index {
     keys = ["_id"]
@@ -36,7 +40,9 @@ resource "azurerm_cosmosdb_mongo_collection" "activations" {
   database_name       = azurerm_cosmosdb_mongo_database.rtp.name
   shard_key = "_id"
 
-  throughput = var.cosmosdb_throughput
+  autoscale_settings {
+    max_throughput = var.cosmosdb_throughput
+  }
 
   index {
     keys = ["_id"]
