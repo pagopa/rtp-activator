@@ -7,12 +7,14 @@ import it.gov.pagopa.rtp.activator.repository.rtp.RtpMapper;
 import it.gov.pagopa.rtp.activator.statemachine.StateMachine;
 import it.gov.pagopa.rtp.activator.statemachine.StateMachineFactory;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 
 @Component("rtpStatusUpdater")
+@Slf4j
 public class RtpStatusUpdaterImpl implements RtpStatusUpdater {
 
   private final StateMachine<RtpEntity, RtpEvent> stateMachine;
@@ -107,15 +109,19 @@ public class RtpStatusUpdaterImpl implements RtpStatusUpdater {
 
   @NonNull
   private Mono<Rtp> triggerEvent(
-      @NonNull final Rtp rtp, @NonNull final RtpEvent event) {
+      @NonNull final Rtp sourceRtp, @NonNull final RtpEvent event) {
 
-    Objects.requireNonNull(rtp, "Rtp cannot be null");
+    Objects.requireNonNull(sourceRtp, "Rtp cannot be null");
     Objects.requireNonNull(event, "Event cannot be null");
 
-    return Mono.just(rtp)
+    return Mono.just(sourceRtp)
+        .doFirst(() -> log.debug("Triggering event {} for RTP status {}", event, sourceRtp.status()))
+        .doOnNext(rtp -> log.debug("Mapping RTP model to RTP entity."))
         .map(this.rtpMapper::toDbEntity)
+        .doOnNext(rtp -> log.debug("Calling state machine."))
         .flatMap(rtpEntity ->
             Mono.from(this.stateMachine.transition(rtpEntity, event)))
+        .doOnNext(rtp -> log.debug("Mapping RTP entity to RTP model."))
         .map(this.rtpMapper::toDomain);
   }
 }
