@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.repository.activation;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Document("activations")
 public class ActivationEntity {
     @Id
-    private String id;
+    private UUID id;
     private String serviceProviderDebtor;
     private Instant effectiveActivationDate;
 

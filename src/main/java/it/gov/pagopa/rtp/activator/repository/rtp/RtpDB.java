@@ -1,11 +1,11 @@
 package it.gov.pagopa.rtp.activator.repository.rtp;
 
-
-import java.util.UUID;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 
 import it.gov.pagopa.rtp.activator.telemetry.TraceMongo;
+
+import java.util.UUID;
 
 @Repository
 @TraceMongo

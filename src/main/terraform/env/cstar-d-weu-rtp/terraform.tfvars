@@ -67,3 +67,4 @@ rtp_environment_configs = {
   AZURE_BLOB_NAME                         : "serviceregistry.json"
   CALLBACK_BASE_URL                       : "https://api-rtp-cb.dev.cstar.pagopa.it/rtp/cb"
 }
+

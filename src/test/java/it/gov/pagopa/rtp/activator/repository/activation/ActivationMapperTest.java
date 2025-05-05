@@ -17,7 +17,7 @@ class ActivationMapperTest {
     @Test
     void testToDomain() {
         ActivationEntity activationEntity = new ActivationEntity();
-        activationEntity.setId(UUID.randomUUID().toString());
+        activationEntity.setId(UUID.randomUUID());
         activationEntity.setServiceProviderDebtor("RTP_SP_ID");
         activationEntity.setFiscalCode("FISCAL_CODE");
         activationEntity.setEffectiveActivationDate(Instant.ofEpochSecond(1732517304));
@@ -25,7 +25,7 @@ class ActivationMapperTest {
         Payer payer = mapper.toDomain(activationEntity);
 
         assertNotNull(payer);
-        assertEquals(activationEntity.getId(), payer.activationID().getId().toString());
+        assertEquals(activationEntity.getId(), payer.activationID().getId());
         assertEquals(activationEntity.getServiceProviderDebtor(), payer.serviceProviderDebtor());
         assertEquals(activationEntity.getFiscalCode(), payer.fiscalCode());
         assertEquals(activationEntity.getEffectiveActivationDate(), payer.effectiveActivationDate());
@@ -39,7 +39,7 @@ class ActivationMapperTest {
         ActivationEntity activationEntity = mapper.toDbEntity(payer);
 
         assertNotNull(activationEntity);
-        assertEquals(payer.activationID().getId().toString(), activationEntity.getId());
+        assertEquals(payer.activationID().getId(), activationEntity.getId());
         assertEquals(payer.serviceProviderDebtor(), activationEntity.getServiceProviderDebtor());
         assertEquals(payer.fiscalCode(), activationEntity.getFiscalCode());
         assertEquals(payer.effectiveActivationDate(), activationEntity.getEffectiveActivationDate());
