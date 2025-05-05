@@ -107,4 +107,3 @@ public class DefaultWebClientFactory implements WebClientFactory {
         .filters(springWebfluxClientTelemetry::addFilter);
   }
 }
-
