@@ -15,6 +15,8 @@ import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentific
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,8 +56,8 @@ class SepaRequestToPayMapperTest {
     String rtpSpId = "F4K3SP12";
     String iban = "IT60X0542811101000000123456";
     BigDecimal amount = new BigDecimal("99999999999");
-    LocalDateTime savingDateTime = LocalDateTime.of(2025, 1, 1, 12, 31, 20, 11);
-    final var expectedDateZulu = "2025-01-01T12:31:20Z";
+    LocalDateTime savingDateTime = LocalDateTime.of(2025, 1, 1, 12, 31, 20, 11).atZone(ZoneId.systemDefault()).toLocalDateTime();
+    final var expectedDate = "2025-01-01T12:31:20+01:00";
     LocalDate expiryDate = LocalDate.now().plusDays(5);
     String description = "Pagamento TARI";
     String noticeNumber = "123456";
@@ -86,7 +88,7 @@ class SepaRequestToPayMapperTest {
     // Verify group header
     var grpHdr = result.getDocument().getCdtrPmtActvtnReq().getGrpHdr();
     assertEquals(nRtp.resourceID().getId().toString().replace("-",""), grpHdr.getMsgId());
-    assertEquals(expectedDateZulu, grpHdr.getCreDtTm());
+    assertEquals(expectedDate, grpHdr.getCreDtTm());
 
     // Verify payment information
     var pmtInf = result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0);
@@ -135,8 +137,8 @@ class SepaRequestToPayMapperTest {
     String rtpSpId = "12345678911";
     String iban = "IT60X0542811101000000123456";
     BigDecimal amount = new BigDecimal("99999999999");
-    LocalDateTime savingDateTime = LocalDateTime.of(2025, 1,1,12,31,20,11);
-    final var expectedDateZulu = "2025-01-01T12:31:20Z";
+    LocalDateTime savingDateTime = LocalDateTime.of(2025, 1,1,12,31,20,11).atZone(ZoneId.systemDefault()).toLocalDateTime();
+    final var expectedDate = "2025-01-01T12:31:20+01:00";
     LocalDate expiryDate = LocalDate.now().plusDays(5);
     String description = "Pagamento TARI";
     String noticeNumber = "123456";
@@ -167,7 +169,7 @@ class SepaRequestToPayMapperTest {
     // Verify group header
     var grpHdr = result.getDocument().getCdtrPmtActvtnReq().getGrpHdr();
     assertEquals(nRtp.resourceID().getId().toString().replace("-",""), grpHdr.getMsgId());
-    assertEquals(expectedDateZulu, grpHdr.getCreDtTm());
+    assertEquals(expectedDate, grpHdr.getCreDtTm());
 
     // Verify payment information
     var pmtInf = result.getDocument().getCdtrPmtActvtnReq().getPmtInf().get(0);
