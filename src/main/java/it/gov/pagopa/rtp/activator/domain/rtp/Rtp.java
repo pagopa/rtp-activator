@@ -1,7 +1,6 @@
 package it.gov.pagopa.rtp.activator.domain.rtp;
 
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,11 +48,11 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
         .build();
   }
 
-  public Rtp toRtpSent(Rtp rtp, Clock clock) {
+  public Rtp toRtpSent(Rtp rtp) {
     final var updatedEvents = Stream.concat(
         rtp.events().stream(), Stream.of(
             Event.builder()
-                .timestamp(Instant.now(clock))
+                .timestamp(Instant.now())
                 .precStatus(rtp.status)
                 .triggerEvent(RtpEvent.SEND_RTP)
                 .build()
