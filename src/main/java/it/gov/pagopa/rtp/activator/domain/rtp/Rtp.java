@@ -1,8 +1,12 @@
 package it.gov.pagopa.rtp.activator.domain.rtp;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Stream;
 import lombok.Builder;
 import lombok.With;
 
@@ -10,9 +14,12 @@ import lombok.With;
 @With
 @Builder
 public record Rtp(String noticeNumber, BigDecimal amount, String description, LocalDate expiryDate,
-    String payerId, String payerName, String payeeName, String payeeId, ResourceID resourceID,
-    String subject, LocalDateTime savingDateTime, String serviceProviderDebtor, String iban,
-    String payTrxRef, String flgConf, RtpStatus status, String serviceProviderCreditor) {
+                  String payerId, String payerName, String payeeName, String payeeId,
+                  ResourceID resourceID,
+                  String subject, LocalDateTime savingDateTime, String serviceProviderDebtor,
+                  String iban,
+                  String payTrxRef, String flgConf, RtpStatus status,
+                  String serviceProviderCreditor, List<Event> events) {
 
   public Rtp toRtpWithActivationInfo(String rtpSpId) {
     return Rtp.builder()
@@ -33,10 +40,26 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
         .serviceProviderCreditor(this.serviceProviderCreditor())
         .savingDateTime(this.savingDateTime())
         .status(RtpStatus.CREATED)
+        .events(List.of(
+            Event.builder()
+                .timestamp(Instant.now())
+                .triggerEvent(RtpEvent.CREATE_RTP)
+                .build()
+        ))
         .build();
   }
 
-  public Rtp toRtpSent(Rtp rtp) {
+  public Rtp toRtpSent(Rtp rtp, Clock clock) {
+    final var updatedEvents = Stream.concat(
+        rtp.events().stream(), Stream.of(
+            Event.builder()
+                .timestamp(Instant.now(clock))
+                .precStatus(rtp.status)
+                .triggerEvent(RtpEvent.SEND_RTP)
+                .build()
+        ))
+        .toList();
+
     return Rtp.builder()
         .serviceProviderDebtor(rtp.serviceProviderDebtor())
         .iban(rtp.iban())
@@ -55,6 +78,7 @@ public record Rtp(String noticeNumber, BigDecimal amount, String description, Lo
         .serviceProviderCreditor(this.serviceProviderCreditor())
         .savingDateTime(rtp.savingDateTime())
         .status(RtpStatus.SENT)
+        .events(updatedEvents)
         .build();
   }
 }
