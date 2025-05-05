@@ -72,7 +72,7 @@ class RtpDBRepositoryTest {
         .iban(rtp.iban())
         .payTrxRef(rtp.payTrxRef())
         .flgConf(rtp.flgConf())
-        .status("CREATED")
+        .status(RtpStatus.CREATED)
         .serviceProviderCreditor("PagoPA")
         .build();
 
@@ -124,7 +124,7 @@ class RtpDBRepositoryTest {
         .iban("iban123")
         .payTrxRef("ABC/124")
         .flgConf("Y")
-        .status(RtpStatus.CREATED.name())
+        .status(RtpStatus.CREATED)
         .serviceProviderCreditor("PagoPA")
         .build();
 
@@ -144,7 +144,7 @@ class RtpDBRepositoryTest {
         .iban(rtpEntity.getIban())
         .payTrxRef(rtpEntity.getPayTrxRef())
         .flgConf(rtpEntity.getFlgConf())
-        .status(RtpStatus.valueOf(rtpEntity.getStatus()))
+        .status(rtpEntity.getStatus())
         .serviceProviderCreditor(rtpEntity.getServiceProviderCreditor())
         .build();
 
