@@ -26,6 +26,7 @@ import it.gov.pagopa.rtp.activator.epcClient.model.ExternalServiceLevel1CodeDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.FinancialIdentificationSchemeName1ChoiceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.FinancialInstitutionIdentification18EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.GenericFinancialIdentification1Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.GenericOrganisationIdentification1Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.GenericOrganisationIdentification1EPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.GenericOrganisationIdentification1EPC25922V30DS04bDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.GenericOrganisationIdentification1EPC25922V30DS112Dto;
@@ -33,15 +34,18 @@ import it.gov.pagopa.rtp.activator.epcClient.model.GenericPersonIdentification1E
 import it.gov.pagopa.rtp.activator.epcClient.model.GroupHeader105EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.InstructionForCreditorAgent3EPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.LocalInstrument2ChoiceDto;
+import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS04bDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS112Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentificationSchemeName1ChoiceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04b2Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04bDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OriginalGroupInformation29EPC25922V30DS15RTPDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OriginalPaymentInstruction34EPC25922V30DS11Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.OriginalTransactionReference28EPC25922V30DS11Dto;
+import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceEPC25922V30DS022Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceEPC25922V30DS02Dto;
 import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceEPC25922V30DS04bDto;
@@ -100,8 +104,25 @@ public class SepaRequestToPayMapper {
 
     var sepaRequestToPayRequestResourceDto = new SepaRequestToPayRequestResourceDto();
 
-    var partyIdentification135EPC25922V30DS02Dto = new PartyIdentification135EPC25922V30DS02Dto();
-    partyIdentification135EPC25922V30DS02Dto.setNm("PagoPA");// FIXED
+    var organisationIdentificationSchemeName1ChoiceDto = new OrganisationIdentificationSchemeName1ChoiceDto()
+        .cd("BOID");
+
+    var genericOrganisationIdentification1Dto = new GenericOrganisationIdentification1Dto()
+        .id(this.pagoPaConfigProperties.details().fiscalCode())
+        .schmeNm(organisationIdentificationSchemeName1ChoiceDto);
+
+    var  lGenericOrganisationIdentification1Dtos = new  ArrayList<GenericOrganisationIdentification1Dto>();
+    lGenericOrganisationIdentification1Dtos.add(genericOrganisationIdentification1Dto);
+
+    var  organisationIdentification29Dto = new OrganisationIdentification29Dto()
+        .othr(lGenericOrganisationIdentification1Dtos);
+
+    var party38ChoiceDto = new Party38ChoiceDto()
+        .orgId(organisationIdentification29Dto);
+
+    var partyIdentification135EPC25922V30DS02Dto = new PartyIdentification135EPC25922V30DS02Dto()
+        .nm("PagoPA")
+        .id(party38ChoiceDto);
 
     var groupHeader105EPC25922V30DS02Dto = new GroupHeader105EPC25922V30DS02Dto()
         .msgId(rtp.resourceID().getId().toString().replace("-",""))

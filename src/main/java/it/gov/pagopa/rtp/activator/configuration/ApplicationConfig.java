@@ -8,6 +8,8 @@ import it.gov.pagopa.rtp.activator.activateClient.api.ReadApi;
 import it.gov.pagopa.rtp.activator.activateClient.invoker.ApiClient;
 import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -22,6 +24,7 @@ public class ApplicationConfig {
     return JsonMapper.builder()
         .enable(SerializationFeature.INDENT_OUTPUT)
         .addModule(new JavaTimeModule())
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .build();
   }
 
@@ -36,7 +39,7 @@ public class ApplicationConfig {
 
 
   @Bean("activationApiClient")
-  public ApiClient apiClient(WebClient webClient) {
+  public ApiClient apiClient(@Qualifier("webClient") WebClient webClient) {
     return new ApiClient(webClient);
   }
 

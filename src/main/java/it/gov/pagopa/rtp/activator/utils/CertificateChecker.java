@@ -1,16 +1,14 @@
 package it.gov.pagopa.rtp.activator.utils;
 
+import static it.gov.pagopa.rtp.activator.utils.LoggingUtils.sanitize;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import it.gov.pagopa.rtp.activator.domain.errors.IncorrectCertificate;
-import it.gov.pagopa.rtp.activator.epcClient.model.AsynchronousSepaRequestToPayResponseDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.AsynchronousSepaRequestToPayResponseResourceDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.CreditorPaymentActivationRequestStatusReportV07Dto;
-import it.gov.pagopa.rtp.activator.epcClient.model.GroupHeader87Dto;
-import it.gov.pagopa.rtp.activator.epcClient.model.OrganisationIdentification29EPC25922V30DS04bDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.Party38ChoiceIVDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.PartyIdentification135Dto;
 import it.gov.pagopa.rtp.activator.service.registryfile.RegistryDataService;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
@@ -25,33 +23,42 @@ public class CertificateChecker {
     this.registryDataService = registryDataService;
   }
 
-  public Mono<AsynchronousSepaRequestToPayResponseResourceDto> verifyRequestCertificate(
-      AsynchronousSepaRequestToPayResponseResourceDto requestBody, String certificateSerialNumber) {
+  public Mono<JsonNode> verifyRequestCertificate(
+      JsonNode requestBody, String certificateSerialNumber) {
 
-    String serviceProviderDebtorId = Optional
-        .ofNullable(requestBody.getAsynchronousSepaRequestToPayResponse())
-        .map(AsynchronousSepaRequestToPayResponseDto::getCdtrPmtActvtnReqStsRpt)
-        .map(CreditorPaymentActivationRequestStatusReportV07Dto::getGrpHdr).map(GroupHeader87Dto::getInitgPty)
-        .map(PartyIdentification135Dto::getId).map(Party38ChoiceIVDto::getOrgId)
-        .map(OrganisationIdentification29EPC25922V30DS04bDto::getAnyBIC)
-        .orElseThrow(() -> new IllegalStateException("AnyBIC is null or empty"));
+    final var serviceProviderDebtorId = Optional.of(requestBody)
+        .map(node -> node.path("AsynchronousSepaRequestToPayResponse"))
+        .map(node -> {
+          final var creditorPaymentActivationRequestStatusReportLabel = "CdtrPmtActvtnReqStsRpt";
+
+          return Optional.of(node)
+              .filter(innerNode -> !innerNode.has(creditorPaymentActivationRequestStatusReportLabel))
+              .map(innerNode -> innerNode.path("Document"))
+              .map(innerNode -> innerNode.path(creditorPaymentActivationRequestStatusReportLabel))
+              .orElseGet(() -> node.path(creditorPaymentActivationRequestStatusReportLabel));
+        })
+        .map(node -> node.path("GrpHdr"))
+        .map(node -> node.path("InitgPty"))
+        .map(node -> node.path("Id"))
+        .map(node -> node.path("OrgId"))
+        .map(node -> node.path("AnyBIC"))
+        .map(JsonNode::asText)
+        .map(StringUtils::trimToNull)
+        .orElseThrow(() -> new IllegalArgumentException("Couldn't parse Service Provider of Debtor id."));
 
     return registryDataService.getRegistryData()
-        .flatMap(data -> {
-
-          if (!data.containsKey(serviceProviderDebtorId)) {
-            return Mono.error(new IllegalStateException(
-                "No service provider found for creditor: " + serviceProviderDebtorId));
-          }
-          return Mono.just(data.get(serviceProviderDebtorId));
-        })
+        .flatMap(data -> Mono.justOrEmpty(data.get(serviceProviderDebtorId))
+            .switchIfEmpty(Mono.error(new ServiceProviderNotFoundException(
+                "No service provider found for creditor: " + serviceProviderDebtorId))))
         .flatMap(provider -> {
           String certificateServiceNumberRegistry = provider.tsp().certificateSerialNumber();
           if (certificateServiceNumberRegistry.equals(certificateSerialNumber)) {
-              log.info("Certificate verified successfully. Serial Number: {}", certificateSerialNumber);
-              return Mono.just(requestBody);
+            log.info("Certificate verified successfully. Serial Number: {}",
+                certificateServiceNumberRegistry);
+            return Mono.just(requestBody);
           }
-          log.warn("Certificate mismatch: expected {}, received {}", certificateServiceNumberRegistry, certificateSerialNumber);
+          log.warn("Certificate mismatch: expected {}, received {}",
+              certificateServiceNumberRegistry, sanitize(certificateSerialNumber));
           return Mono.error(new IncorrectCertificate());
         });
 

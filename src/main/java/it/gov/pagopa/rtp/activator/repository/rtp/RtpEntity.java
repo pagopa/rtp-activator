@@ -1,14 +1,18 @@
 package it.gov.pagopa.rtp.activator.repository.rtp;
 
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 @Data
 @Builder
@@ -33,7 +37,8 @@ public class RtpEntity {
   private String iban;
   private String payTrxRef;
   private String flgConf;
-  private String status;
+  @Field(name = "status", targetType = FieldType.STRING)
+  private RtpStatus status;
   private String serviceProviderCreditor;
 
 }

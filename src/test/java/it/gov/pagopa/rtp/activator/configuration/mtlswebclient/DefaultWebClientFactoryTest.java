@@ -5,6 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.netty.handler.ssl.SslContext;
+import io.opentelemetry.api.OpenTelemetry;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
 import it.gov.pagopa.rtp.activator.configuration.ssl.SslContextFactory;
@@ -30,7 +31,7 @@ class DefaultWebClientFactoryTest {
 
   @BeforeEach
   void setUp() {
-    mtlsWebClientFactory = new DefaultWebClientFactory(sslContextFactory, config);
+    mtlsWebClientFactory = new DefaultWebClientFactory(sslContextFactory, config, OpenTelemetry.noop());
   }
 
   @Test
