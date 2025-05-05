@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.domain.rtp;
 
 public enum RtpEvent {
+  CREATE_RTP,
   SEND_RTP,
   CANCEL_RTP,
   ACCEPT_RTP,
