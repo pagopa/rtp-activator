@@ -1,21 +1,18 @@
 package it.gov.pagopa.rtp.activator.utils;
 
-import org.springframework.stereotype.Component;
-
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
 import java.util.Optional;
 
 public class DateUtils {
 
-    public static String localDateTimeToZulu(LocalDateTime localDateTime) {
-        return Optional.ofNullable(localDateTime)
-            .map(sdt-> sdt.toInstant(ZoneOffset.UTC))
-            .map(sdt -> sdt.with(ChronoField.NANO_OF_SECOND, 0))
-            .map(DateTimeFormatter.ISO_INSTANT::format)
-            .orElseThrow(() -> new IllegalArgumentException("Couldn't convert saving datetime to Zulu format"));
-    }
-
+  public static String localDateTimeToOffsetFormat(LocalDateTime localDateTime) {
+    return Optional.ofNullable(localDateTime)
+        .map(ldt -> ldt.atZone(ZoneId.of("Europe/Rome")))
+        .map(zdt -> zdt.withNano(0))
+        .map(DateTimeFormatter.ISO_OFFSET_DATE_TIME::format)
+        .orElseThrow(
+            () -> new IllegalArgumentException("Couldn't convert local datetime to offset format"));
+  }
 }
