@@ -29,6 +29,7 @@ public class RtpMapper {
         .subject(rtpEntity.getSubject())
         .status(rtpEntity.getStatus())
         .serviceProviderCreditor(rtpEntity.getServiceProviderCreditor())
+        .events(rtpEntity.getEvents())
         .build();
   }
 
@@ -51,6 +52,7 @@ public class RtpMapper {
         .subject(rtp.subject())
         .status(rtp.status())
         .serviceProviderCreditor(rtp.serviceProviderCreditor())
+        .events(rtp.events())
         .build();
   }
 }
