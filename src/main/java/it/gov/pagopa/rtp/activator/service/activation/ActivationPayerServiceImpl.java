@@ -5,6 +5,7 @@ import java.time.Instant;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
@@ -30,9 +31,8 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
         ActivationID activationID = ActivationID.createNew();
         Payer payer = new Payer(activationID, serviceProviderDebtor, fiscalCode, Instant.now());
 
-        return activationDBRepository.findByFiscalCode(fiscalCode)
-            .flatMap(existingEntity -> Mono.<Payer>error(new PayerAlreadyExists(existingEntity.activationID().getId())))
-            .switchIfEmpty(Mono.defer(() -> activationDBRepository.save(payer)))
+        return activationDBRepository.save(payer)
+            .onErrorMap(DuplicateKeyException.class, ex -> new PayerAlreadyExists())
             .doOnSuccess(newPayer -> MDC.put("service_provider", serviceProviderDebtor))
             .doOnSuccess(newPayer -> MDC.put("debtor", fiscalCode))
             .doOnSuccess(newPayer -> log.info("Payer activated with id: {}", newPayer.activationID().getId()))
