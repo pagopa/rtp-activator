@@ -77,7 +77,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
         .doOnNext(epcRequest -> log.debug("Calling send RTP handler."))
         .flatMap(this.sendRtpHandler::handle)
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
-        .map(response -> rtpToSend)
+        .map(EpcRequest::rtpToSend)
         .defaultIfEmpty(rtpToSend)
         .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
             rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()))
@@ -112,7 +112,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
         .doOnNext(epcRequest -> log.debug("Calling send RTP cancellation handler."))
         .flatMap(this.cancelRtpHandler::handle)
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
-        .map(response -> rtpToSend)
+        .map(EpcRequest::rtpToSend)
         .defaultIfEmpty(rtpToSend)
         .doOnSuccess(rtpSent -> log.info("RTP cancellation sent to {} with id: {}",
             rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()))
