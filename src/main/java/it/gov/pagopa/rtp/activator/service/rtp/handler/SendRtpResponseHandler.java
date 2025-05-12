@@ -41,6 +41,6 @@ public class SendRtpResponseHandler implements RequestHandler<EpcRequest> {
             case ERROR -> this.rtpStatusUpdater.triggerErrorSendRtp(rtpToUpdate);
           };
         })
-        .map(rtp -> request.withRtpToSend(rtp));
+        .map(request::withRtpToSend);
   }
 }
