@@ -3,6 +3,7 @@ package it.gov.pagopa.rtp.activator.service.rtp.handler;
 import it.gov.pagopa.rtp.activator.configuration.OpenAPIClientFactory;
 import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
+import it.gov.pagopa.rtp.activator.domain.rtp.TransactionStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.service.rtp.SepaRequestToPayMapper;
 import java.util.UUID;
@@ -69,7 +70,7 @@ public class CancelRtpHandler extends EpcApiInvokerHandler implements RequestHan
               .doFirst(() -> log.info("Sending RTP cancellation request to {}", rtpToSend.serviceProviderDebtor()))
               .retryWhen(sendRetryPolicy());
         })
-        .map(request::withResponse);
+        .map(resp -> request.withResponse(TransactionStatus.ACTC));
   }
 }
 
