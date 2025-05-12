@@ -34,6 +34,9 @@ class SendRtpProcessorImplTest {
   @Mock
   private CancelRtpHandler cancelRtpHandler;
 
+  @Mock
+  private SendRtpResponseHandler sendRtpResponseHandler;
+
   @InjectMocks
   private SendRtpProcessorImpl sendRtpProcessor;
 
@@ -61,6 +64,8 @@ class SendRtpProcessorImplTest {
     when(oauth2Handler.handle(epcRequestWithRegistryData))
         .thenReturn(Mono.just(epcRequestWithToken));
     when(sendRtpHandler.handle(epcRequestWithToken))
+        .thenReturn(Mono.just(epcRequestWithResponse));
+    when(sendRtpResponseHandler.handle(epcRequestWithResponse))
         .thenReturn(Mono.just(epcRequestWithResponse));
 
     final var resultMono = sendRtpProcessor.sendRtpToServiceProviderDebtor(rtpToSend);
