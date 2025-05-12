@@ -17,6 +17,7 @@ import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
 import it.gov.pagopa.rtp.activator.domain.registryfile.TechnicalServiceProvider;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.TransactionStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.epcClient.invoker.ApiClient;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
@@ -79,6 +80,7 @@ class SendRtpHandlerTest {
 
   @Test
   void givenValidRequest_whenHandleRtpSend_thenSendRtp() {
+    final var transactionStatus = TransactionStatus.ACTC;
     final var resourceId = ResourceID.createNew();
     final var request = mock(EpcRequest.class);
     final var rtpToSend = mock(Rtp.class);
@@ -108,7 +110,7 @@ class SendRtpHandlerTest {
         .thenReturn(sepaRequest);
     when(epcClient.postRequestToPayRequests(any(), any(), eq(sepaRequest)))
         .thenReturn(Mono.just(sepaResponse));
-    when(request.withResponse(sepaResponse))
+    when(request.withResponse(transactionStatus))
         .thenReturn(request);
     when(webClientFactory.createMtlsWebClient())
         .thenReturn(webClient);
@@ -124,6 +126,7 @@ class SendRtpHandlerTest {
 
   @Test
   void givenRequestWithoutCertificate_whenHandleRtpSend_thenUseSimpleWebClient() {
+    final var transactionStatus = TransactionStatus.ACTC;
     final var resourceId = ResourceID.createNew();
     final var request = mock(EpcRequest.class);
     final var rtpToSend = mock(Rtp.class);
@@ -153,7 +156,7 @@ class SendRtpHandlerTest {
         .thenReturn(sepaRequest);
     when(epcClient.postRequestToPayRequests(any(), any(), eq(sepaRequest)))
         .thenReturn(Mono.just(sepaResponse));
-    when(request.withResponse(sepaResponse))
+    when(request.withResponse(transactionStatus))
         .thenReturn(request);
 
     final var result = sendRtpHandler.handle(request);
@@ -213,6 +216,7 @@ class SendRtpHandlerTest {
 
   @Test
   void givenValidRequest_whenSendingFailsOnce_thenRetriesAndSucceeds() {
+    final var transactionStatus = TransactionStatus.ACTC;
     final var resourceId = ResourceID.createNew();
     final var request = mock(EpcRequest.class);
     final var rtpToSend = mock(Rtp.class);
@@ -252,7 +256,7 @@ class SendRtpHandlerTest {
             }
         );
 
-    when(request.withResponse(sepaResponse))
+    when(request.withResponse(transactionStatus))
         .thenReturn(request);
 
     final var result = sendRtpHandler.handle(request);
@@ -264,6 +268,7 @@ class SendRtpHandlerTest {
 
   @Test
   void givenPartiallyFailingRtpSend_whenHandlingRtpSend_thenRequestIdShouldChange() {
+    final var transactionStatus = TransactionStatus.ACTC;
     final var numRetries = MAX_ATTEMPTS;
     final var resourceId = ResourceID.createNew();
     final var request = mock(EpcRequest.class);
@@ -292,7 +297,7 @@ class SendRtpHandlerTest {
         .thenReturn(apiClient);
     when(sepaRequestToPayMapper.toEpcRequestToPay(rtpToSend))
         .thenReturn(sepaRequest);
-    when(request.withResponse(sepaResponse))
+    when(request.withResponse(transactionStatus))
         .thenReturn(request);
     when(webClientFactory.createMtlsWebClient())
         .thenReturn(webClient);
