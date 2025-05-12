@@ -228,7 +228,7 @@ class SendRTPServiceTest {
         .thenReturn(Mono.just(mockActivationDto()));
 
     when(sendRtpProcessor.sendRtpToServiceProviderDebtor(any()))
-        .thenReturn(Mono.just(sourceRtp));
+        .thenReturn(Mono.just(rtpSent));
 
     /*
      * Mocks the save method.
