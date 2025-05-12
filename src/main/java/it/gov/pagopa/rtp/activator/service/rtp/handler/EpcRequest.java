@@ -2,6 +2,7 @@ package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
 import it.gov.pagopa.rtp.activator.domain.registryfile.ServiceProviderFullData;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.TransactionStatus;
 import java.util.Objects;
 import lombok.With;
 import org.springframework.lang.NonNull;
@@ -20,8 +21,7 @@ public record EpcRequest(
     Rtp rtpToSend,
     ServiceProviderFullData serviceProviderFullData,
     String token,
-    Object response,
-    Class<?> responseClass
+    TransactionStatus response
 ) {
 
   /**
@@ -31,13 +31,11 @@ public record EpcRequest(
    * @return a new instance of {@link EpcRequest} with the specified RTP and null for other fields
    * @throws NullPointerException if the provided rtpToSend is null
    */
-  public static <T> EpcRequest of(
-      @NonNull final Rtp rtpToSend,
-      @NonNull final Class<T> responseClass) {
+  public static EpcRequest of(@NonNull final Rtp rtpToSend) {
 
     Objects.requireNonNull(rtpToSend, "Rtp to send cannot be null.");
 
-    return new EpcRequest(rtpToSend, null, null, null, responseClass);
+    return new EpcRequest(rtpToSend, null, null, null);
   }
 
 }
