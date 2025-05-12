@@ -27,6 +27,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
   private final Oauth2Handler oauth2Handler;
   private final SendRtpHandler sendRtpHandler;
   private final CancelRtpHandler cancelRtpHandler;
+  private final SendRtpResponseHandler sendRtpResponseHandler;
 
 
   /**
@@ -36,18 +37,21 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
    * @param oauth2Handler The handler responsible for OAuth2 authentication.
    * @param sendRtpHandler The handler responsible for sending the RTP request.
    * @param cancelRtpHandler The handler responsible for sending the RTP cancellation request.
+   * @param sendRtpResponseHandler The handler responsible for handling the RTP response.
    * @throws NullPointerException if any of the provided handlers are {@code null}.
    */
   public SendRtpProcessorImpl(
       @NonNull final RegistryDataHandler registryDataHandler,
       @NonNull final Oauth2Handler oauth2Handler,
       @NonNull final SendRtpHandler sendRtpHandler,
-      @NonNull final CancelRtpHandler cancelRtpHandler) {
+      @NonNull final CancelRtpHandler cancelRtpHandler,
+      @NonNull final SendRtpResponseHandler sendRtpResponseHandler) {
 
     this.registryDataHandler = Objects.requireNonNull(registryDataHandler);
     this.oauth2Handler = Objects.requireNonNull(oauth2Handler);
     this.sendRtpHandler = Objects.requireNonNull(sendRtpHandler);
     this.cancelRtpHandler = Objects.requireNonNull(cancelRtpHandler);
+    this.sendRtpResponseHandler = Objects.requireNonNull(sendRtpResponseHandler);
   }
 
 
@@ -76,6 +80,8 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
         .flatMap(this::handleIntermediateSteps)
         .doOnNext(epcRequest -> log.debug("Calling send RTP handler."))
         .flatMap(this.sendRtpHandler::handle)
+        .doOnNext(epcRequest -> log.debug("Handling send RTP response."))
+        .flatMap(this.sendRtpResponseHandler::handle)
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
         .map(EpcRequest::rtpToSend)
         .defaultIfEmpty(rtpToSend)
