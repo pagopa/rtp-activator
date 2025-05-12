@@ -35,11 +35,11 @@ class RegistryDataHandlerTest {
   void givenValidRequest_whenHandle_thenReturnModifiedRequest() {
     final var spId = "spId";
     final var rtpToSend = mock(Rtp.class);
-    final var request = new EpcRequest(rtpToSend, null, null, null, Object.class);
+    final var request = new EpcRequest(rtpToSend, null, null, null);
     final var serviceProviderData = new ServiceProviderFullData(spId, "spName",
         new TechnicalServiceProvider("tspId", "tspName", "tspUrl", "tspSecret", null, true));
 
-    final var expectedRequest = new EpcRequest(rtpToSend, serviceProviderData, null, null, Object.class);
+    final var expectedRequest = new EpcRequest(rtpToSend, serviceProviderData, null, null);
 
     when(rtpToSend.serviceProviderDebtor())
         .thenReturn(spId);
@@ -57,7 +57,7 @@ class RegistryDataHandlerTest {
   void givenRequestWithoutServiceProvider_whenHandle_thenThrowServiceProviderNotFoundException() {
 
     final var rtpToSend = mock(Rtp.class);
-    final var request = new EpcRequest(rtpToSend, null, null, null, Object.class);
+    final var request = new EpcRequest(rtpToSend, null, null, null);
 
     when(rtpToSend.serviceProviderDebtor()).thenReturn("unknown-debtor");
     when(registryDataService.getRegistryData()).thenReturn(Mono.just(Collections.emptyMap()));
@@ -74,7 +74,7 @@ class RegistryDataHandlerTest {
   void givenRegistryServiceFails_whenHandle_thenErrorIsPropagated() {
 
     final var rtpToSend = mock(Rtp.class);
-    final var request = new EpcRequest(rtpToSend, null, null, null, Object.class);
+    final var request = new EpcRequest(rtpToSend, null, null, null);
     when(registryDataService.getRegistryData()).thenReturn(Mono.error(new RuntimeException("Service failure")));
 
     final var result = registryDataHandler.handle(request);
