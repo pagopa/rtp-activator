@@ -1,11 +1,15 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
+import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.TransactionStatus;
 import it.gov.pagopa.rtp.activator.service.rtp.RtpStatusUpdater;
 import java.util.Objects;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+
 
 @Component("sendRtpResponseHandler")
 @Slf4j
@@ -31,16 +35,25 @@ public class SendRtpResponseHandler implements RequestHandler<EpcRequest> {
           final var rtpToUpdate = req.rtpToSend();
           final var transactionStatus = req.response();
 
-          if (transactionStatus == null)
-            return this.rtpStatusUpdater.triggerSendRtp(rtpToUpdate);
-
-          return switch (transactionStatus) {
-            case ACTC -> this.rtpStatusUpdater.triggerAcceptRtp(rtpToUpdate);
-            case ACCP -> Mono.error(new IllegalStateException("Not implemented"));
-            case RJCT -> this.rtpStatusUpdater.triggerRejectRtp(rtpToUpdate);
-            case ERROR -> this.rtpStatusUpdater.triggerErrorSendRtp(rtpToUpdate);
-          };
+          return Optional.ofNullable(transactionStatus)
+              .map(status -> this.triggerRtpStatus(rtpToUpdate, status))
+              .orElseGet(() -> this.rtpStatusUpdater.triggerSendRtp(rtpToUpdate));
         })
         .map(request::withRtpToSend);
   }
+
+
+  @NonNull
+  private Mono<Rtp> triggerRtpStatus(
+      @NonNull final Rtp rtpToUpdate,
+      @NonNull final TransactionStatus transactionStatus) {
+
+    return switch (transactionStatus) {
+      case ACTC -> this.rtpStatusUpdater.triggerAcceptRtp(rtpToUpdate);
+      case ACCP -> Mono.error(new IllegalStateException("Not implemented"));
+      case RJCT -> this.rtpStatusUpdater.triggerRejectRtp(rtpToUpdate);
+      case ERROR -> this.rtpStatusUpdater.triggerErrorSendRtp(rtpToUpdate);
+    };
+  }
+
 }
