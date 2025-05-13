@@ -98,6 +98,7 @@ public class SendRtpHandler extends EpcApiInvokerHandler implements RequestHandl
     return Optional.of(ex)
         .filter(Exceptions::isRetryExhausted)
         .map(Throwable::getCause)
+        .filter(WebClientResponseException.class::isInstance)
         .map(WebClientResponseException.class::cast)
         .map(WebClientResponseException::getStatusCode)
         .filter(httpStatusCode -> httpStatusCode.isSameCodeAs(HttpStatus.BAD_REQUEST))
