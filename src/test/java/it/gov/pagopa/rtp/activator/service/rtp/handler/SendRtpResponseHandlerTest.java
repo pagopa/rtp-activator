@@ -34,14 +34,14 @@ class SendRtpResponseHandlerTest {
 
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     MockitoAnnotations.openMocks(this);
   }
 
 
   @ParameterizedTest
   @MethodSource("provideTransactionStatusAndExpectedMethodForSuccess")
-  public void givenValidRequest_whenTransactionStatusIsX_thenTriggerY(
+  void givenValidRequest_whenTransactionStatusIsX_thenTriggerY(
       TransactionStatus transactionStatus,
       String expectedMethod)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -73,7 +73,7 @@ class SendRtpResponseHandlerTest {
 
 
   @Test
-  public void givenValidRequest_whenTransactionStatusIsAccp_thenThrowIllegalStateException() {
+  void givenValidRequest_whenTransactionStatusIsAccp_thenThrowIllegalStateException() {
     final var request = mock(EpcRequest.class);
     Rtp rtpToSend = mock(Rtp.class);
     TransactionStatus transactionStatus = TransactionStatus.ACCP;
@@ -94,7 +94,7 @@ class SendRtpResponseHandlerTest {
 
   @ParameterizedTest
   @MethodSource("provideTransactionStatusForException")
-  public void givenValidRequest_whenTransactionStatusIsX_thenThrowException(
+  void givenValidRequest_whenTransactionStatusIsX_thenThrowException(
       TransactionStatus transactionStatus,
       Class<? extends Throwable> expectedException) {
 
@@ -120,7 +120,7 @@ class SendRtpResponseHandlerTest {
   }
 
   @Test
-  public void givenNullRequest_whenHandleCalled_thenThrowNullPointerException() {
+  void givenNullRequest_whenHandleCalled_thenThrowNullPointerException() {
     assertThrows(NullPointerException.class, () -> sendRtpResponseHandler.handle(null));
   }
 
