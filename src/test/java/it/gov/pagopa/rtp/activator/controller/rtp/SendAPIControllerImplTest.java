@@ -13,6 +13,7 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
+import it.gov.pagopa.rtp.activator.domain.errors.SepaRequestException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
@@ -267,6 +268,26 @@ class SendAPIControllerImplTest {
     verify(sendRTPService, times(0)).send(any());
     verify(rtpDtoMapper, times(0)).toRtpWithServiceProviderCreditor(any(), (any()));
 
+  }
+
+
+  @Test
+  @RtpSenderWriter()
+  void givenRejectedRtp_whenSendRtp_thenReturnUnprocessableEntity() {
+
+    when(rtpDtoMapper.toRtpWithServiceProviderCreditor(any(CreateRtpDto.class),
+        eq("PagoPA"))).thenReturn(expectedRtp);
+    when(sendRTPService.send(expectedRtp))
+        .thenReturn(Mono.error(new SepaRequestException("Rejected")));
+
+    webTestClient.post()
+        .uri("/rtps")
+        .bodyValue(generateSendRequest())
+        .exchange()
+        .expectStatus()
+        .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+    verify(sendRTPService, times(1)).send(expectedRtp);
   }
 
 
