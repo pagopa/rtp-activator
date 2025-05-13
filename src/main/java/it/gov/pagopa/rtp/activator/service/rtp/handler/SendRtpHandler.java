@@ -77,8 +77,22 @@ public class SendRtpHandler extends EpcApiInvokerHandler implements RequestHandl
   }
 
 
+  /**
+   * Handles the error that occurs when retrying the RTP request.
+   * If the error is a {@link WebClientResponseException} with a {@code HttpStatus.BAD_REQUEST} status code, the method
+   * updates the {@link EpcRequest} with a {@code TransactionStatus.RJCT} (Rejected) status. Otherwise, it updates
+   * the request with an {@code TransactionStatus.ERROR} status.
+   *
+   * @param ex      The {@link IllegalStateException} that occurred during the retry
+   * @param request The {@link EpcRequest} that was being processed
+   * @return A {@code Mono<EpcRequest>} containing the updated {@code request}
+   * @throws NullPointerException if {@code ex} or {@code request} is {@code null}
+   */
   @NonNull
-  private Mono<EpcRequest> handleRetryError(@NonNull final IllegalStateException ex, @NonNull final EpcRequest request) {
+  private Mono<EpcRequest> handleRetryError(
+      @NonNull final IllegalStateException ex,
+      @NonNull final EpcRequest request) {
+
     log.warn("Handling error upon sending RTP to {}", request.serviceProviderFullData().tsp().serviceEndpoint());
 
     return Optional.of(ex)
