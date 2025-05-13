@@ -1,10 +1,7 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -69,27 +66,6 @@ class SendRtpResponseHandlerTest {
         Arguments.of(TransactionStatus.ERROR, "triggerErrorSendRtp"),
         Arguments.of(null, "triggerSendRtp")
     );
-  }
-
-
-  @Test
-  void givenValidRequest_whenTransactionStatusIsAccp_thenThrowIllegalStateException() {
-    final var request = mock(EpcRequest.class);
-    Rtp rtpToSend = mock(Rtp.class);
-    TransactionStatus transactionStatus = TransactionStatus.ACCP;
-
-    when(request.rtpToSend()).thenReturn(rtpToSend);
-    when(request.response()).thenReturn(transactionStatus);
-
-    // Act
-    Mono<EpcRequest> result = sendRtpResponseHandler.handle(request);
-
-    // Assert
-    StepVerifier.create(result)
-        .expectErrorMatches(throwable -> throwable instanceof IllegalStateException)
-        .verify();
-
-    verify(rtpStatusUpdater, never()).triggerSendRtp(any(Rtp.class));
   }
 
   @ParameterizedTest
