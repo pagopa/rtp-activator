@@ -1,14 +1,21 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.domain.errors.SepaRequestException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.domain.rtp.TransactionStatus;
 import it.gov.pagopa.rtp.activator.service.rtp.RtpStatusUpdater;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+import reactor.util.retry.RetryBackoffSpec;
 
 
 /**
@@ -20,16 +27,25 @@ import reactor.core.publisher.Mono;
 public class SendRtpResponseHandler implements RequestHandler<EpcRequest> {
 
   private final RtpStatusUpdater rtpStatusUpdater;
+  private final RtpRepository rtpRepository;
+  private final ServiceProviderConfig serviceProviderConfig;
 
 
   /**
    * Constructs a new {@link SendRtpResponseHandler} instance with the provided {@link RtpStatusUpdater}.
    *
    * @param rtpStatusUpdater the {@link RtpStatusUpdater} instance to be used for updating the RTP status
+   * @param rtpRepository the {@link RtpRepository} instance to be used for persisting RTP data
+   * @param serviceProviderConfig the {@link ServiceProviderConfig} instance containing configuration data for retries
    * @throws NullPointerException if `rtpStatusUpdater` is `null`
    */
-  public SendRtpResponseHandler(@NonNull final RtpStatusUpdater rtpStatusUpdater) {
+  public SendRtpResponseHandler(
+      @NonNull final RtpStatusUpdater rtpStatusUpdater,
+      @NonNull final RtpRepository rtpRepository,
+      @NonNull final ServiceProviderConfig serviceProviderConfig) {
     this.rtpStatusUpdater = Objects.requireNonNull(rtpStatusUpdater);
+    this.rtpRepository = Objects.requireNonNull(rtpRepository);
+    this.serviceProviderConfig = Objects.requireNonNull(serviceProviderConfig);
   }
 
 
@@ -53,7 +69,7 @@ public class SendRtpResponseHandler implements RequestHandler<EpcRequest> {
 
           return Optional.ofNullable(transactionStatus)
               .map(status -> this.triggerRtpStatus(rtpToUpdate, status))
-              .orElseGet(() -> this.rtpStatusUpdater.triggerSendRtp(rtpToUpdate));
+              .orElseGet(() -> this.triggerTransitionAndPersist(rtpToUpdate, this.rtpStatusUpdater::triggerSendRtp));
         })
         .map(request::withRtpToSend);
   }
@@ -61,6 +77,8 @@ public class SendRtpResponseHandler implements RequestHandler<EpcRequest> {
 
   /**
    * Triggers the appropriate {@code RTP} status update based on the provided transaction status.
+   * If the transaction status is {@link TransactionStatus#RJCT} or {@link TransactionStatus#ERROR},
+   * a {@link SepaRequestException} is thrown after state transition.
    *
    * @param rtpToUpdate the {@link Rtp} instance to be updated
    * @param transactionStatus the {@link TransactionStatus} to be used for the update
@@ -72,11 +90,58 @@ public class SendRtpResponseHandler implements RequestHandler<EpcRequest> {
       @NonNull final Rtp rtpToUpdate,
       @NonNull final TransactionStatus transactionStatus) {
     return switch (transactionStatus) {
-      case ACTC -> this.rtpStatusUpdater.triggerAcceptRtp(rtpToUpdate);
+      case ACTC -> this.triggerTransitionAndPersist(rtpToUpdate, this.rtpStatusUpdater::triggerAcceptRtp);
+
       case ACCP -> Mono.error(new IllegalStateException("Not implemented"));
-      case RJCT -> this.rtpStatusUpdater.triggerRejectRtp(rtpToUpdate);
-      case ERROR -> this.rtpStatusUpdater.triggerErrorSendRtp(rtpToUpdate);
+
+      case RJCT -> this.triggerTransitionAndPersist(rtpToUpdate, this.rtpStatusUpdater::triggerRejectRtp)
+          .flatMap(rtp -> Mono.error(new SepaRequestException("SRTP send has been rejected")));
+
+      case ERROR -> this.triggerTransitionAndPersist(rtpToUpdate, this.rtpStatusUpdater::triggerErrorSendRtp)
+          .flatMap(rtp -> Mono.error(new SepaRequestException("Could not send SRTP")));
     };
+  }
+
+
+  /**
+   * Applies a transition function to an RTP entity and persists the result using retry policy.
+   *
+   * @param rtpToUpdate       the RTP entity to update
+   * @param transitionFunction the function that applies a state transition to the RTP
+   * @return a {@code Mono<Rtp>} containing the persisted RTP after transition
+   * @throws NullPointerException if either parameter is {@code null}
+   */
+  @NonNull
+  private Mono<Rtp> triggerTransitionAndPersist(
+      @NonNull final Rtp rtpToUpdate,
+      @NonNull final Function<Rtp, Mono<Rtp>> transitionFunction) {
+
+    Objects.requireNonNull(rtpToUpdate, "rtpToUpdate must not be null");
+    Objects.requireNonNull(transitionFunction, "transitionFunction must not be null");
+
+    return transitionFunction.apply(rtpToUpdate)
+        .flatMap(
+            rtpToSave -> rtpRepository.save(rtpToSave)
+                .retryWhen(sendRetryPolicy())
+                .doOnError(ex -> log.error("Failed after retries", ex))
+
+        );
+  }
+
+
+  /**
+   * Builds a {@link RetryBackoffSpec} for persisting RTP entities using configuration values.
+   *
+   * @return a configured {@code RetryBackoffSpec} for retrying persistence operations
+   */
+  private RetryBackoffSpec sendRetryPolicy() {
+    final var maxAttempts = serviceProviderConfig.send().retry().maxAttempts();
+    final var minDurationMillis = serviceProviderConfig.send().retry().backoffMinDuration();
+    final var jitter = serviceProviderConfig.send().retry().backoffJitter();
+
+    return Retry.backoff(maxAttempts, Duration.ofMillis(minDurationMillis))
+        .jitter(jitter)
+        .doAfterRetry(signal -> log.info("Retry number {}", signal.totalRetries()));
   }
 }
 
