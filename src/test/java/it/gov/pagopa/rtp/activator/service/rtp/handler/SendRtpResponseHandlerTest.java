@@ -5,7 +5,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Activation;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send;
+import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retry;
+import it.gov.pagopa.rtp.activator.domain.errors.SepaRequestException;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.domain.rtp.TransactionStatus;
 import it.gov.pagopa.rtp.activator.service.rtp.RtpStatusUpdater;
 import java.lang.reflect.InvocationTargetException;
@@ -23,16 +29,23 @@ import reactor.test.StepVerifier;
 
 class SendRtpResponseHandlerTest {
 
-  @Mock
   private RtpStatusUpdater rtpStatusUpdater;
-
-  @InjectMocks
+  private RtpRepository rtpRepository;
   private SendRtpResponseHandler sendRtpResponseHandler;
 
 
   @BeforeEach
   void setUp() {
-    MockitoAnnotations.openMocks(this);
+    this.rtpStatusUpdater = mock(RtpStatusUpdater.class);
+    this.rtpRepository = mock(RtpRepository.class);
+
+    final var serviceProviderConfig = new ServiceProviderConfig(
+        "http://localhost:8080",
+        new Activation("http://localhost:8080"),
+        new Send("v1", new Retry(3, 100, 0.75), 10000L));
+
+    this.sendRtpResponseHandler = new SendRtpResponseHandler(rtpStatusUpdater, rtpRepository,
+        serviceProviderConfig);
   }
 
 
@@ -52,6 +65,9 @@ class SendRtpResponseHandlerTest {
         .invoke(rtpStatusUpdater, rtpToSend))
         .thenReturn(Mono.just(rtpToSend));
 
+    when(rtpRepository.save(rtpToSend))
+        .thenReturn(Mono.just(rtpToSend));
+
     final var result = sendRtpResponseHandler.handle(request);
 
     StepVerifier.create(result)
@@ -62,8 +78,6 @@ class SendRtpResponseHandlerTest {
   private static Stream<Arguments> provideTransactionStatusAndExpectedMethodForSuccess() {
     return Stream.of(
         Arguments.of(TransactionStatus.ACTC, "triggerAcceptRtp"),
-        Arguments.of(TransactionStatus.RJCT, "triggerRejectRtp"),
-        Arguments.of(TransactionStatus.ERROR, "triggerErrorSendRtp"),
         Arguments.of(null, "triggerSendRtp")
     );
   }
@@ -72,26 +86,39 @@ class SendRtpResponseHandlerTest {
   @MethodSource("provideTransactionStatusForException")
   void givenValidRequest_whenTransactionStatusIsX_thenThrowException(
       TransactionStatus transactionStatus,
-      Class<? extends Throwable> expectedException) {
+      Class<? extends Throwable> expectedException,
+      String expectedMethod)
+      throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
     final var rtpToSend = mock(Rtp.class);
-    EpcRequest request = mock(EpcRequest.class);
+    final var request = mock(EpcRequest.class);
 
     when(request.rtpToSend()).thenReturn(rtpToSend);
     when(request.response()).thenReturn(transactionStatus);
+
+    if (expectedMethod != null) {
+      when(
+          rtpStatusUpdater.getClass()
+              .getMethod(expectedMethod, Rtp.class)
+              .invoke(rtpStatusUpdater, rtpToSend))
+          .thenReturn(Mono.just(rtpToSend));
+
+      when(rtpRepository.save(rtpToSend))
+          .thenReturn(Mono.just(rtpToSend));
+    }
 
     final var result = sendRtpResponseHandler.handle(request);
 
     StepVerifier.create(result)
         .expectErrorMatches(throwable -> throwable.getClass().equals(expectedException))
         .verify();
-
-    verifyNoInteractions(rtpStatusUpdater);
   }
 
   private static Stream<Arguments> provideTransactionStatusForException() {
     return Stream.of(
-        Arguments.of(TransactionStatus.ACCP, IllegalStateException.class)
+        Arguments.of(TransactionStatus.ACCP, IllegalStateException.class, null),
+        Arguments.of(TransactionStatus.RJCT, SepaRequestException.class, "triggerRejectRtp"),
+        Arguments.of(TransactionStatus.ERROR, SepaRequestException.class, "triggerErrorSendRtp")
     );
   }
 
