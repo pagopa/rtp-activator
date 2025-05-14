@@ -15,8 +15,10 @@ import it.gov.pagopa.rtp.activator.configuration.ServiceProviderConfig.Send.Retr
 import it.gov.pagopa.rtp.activator.domain.errors.MessageBadFormed;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotActivatedException;
 import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
+import it.gov.pagopa.rtp.activator.domain.rtp.Event;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpEvent;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.model.SepaRequestToPayRequestResourceDto;
@@ -25,8 +27,10 @@ import it.gov.pagopa.rtp.activator.service.rtp.handler.SendRtpProcessor;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -211,13 +215,20 @@ class SendRTPServiceTest {
     final var savingDateTime = LocalDateTime.now();
 
     final var sourceRtp = mockRtp(RtpStatus.CREATED, resourceId, savingDateTime);
-    final var rtpSent = mockRtp(RtpStatus.SENT, resourceId, savingDateTime);
+    final var rtpSent = mockRtp(RtpStatus.SENT, resourceId, savingDateTime)
+        .withEvents(List.of(
+            Event.builder()
+                .timestamp(Instant.now())
+                .precStatus(RtpStatus.CREATED)
+                .triggerEvent(RtpEvent.SEND_RTP)
+                .build()
+        ));
 
     when(readApi.findActivationByPayerId(any(), any(), any()))
         .thenReturn(Mono.just(mockActivationDto()));
 
     when(sendRtpProcessor.sendRtpToServiceProviderDebtor(any()))
-        .thenReturn(Mono.just(rtpSent));
+        .thenReturn(Mono.just(sourceRtp));
 
     /*
      * Mocks the save method.
@@ -225,7 +236,6 @@ class SendRTPServiceTest {
      * under retry test.
      * Subsequent returns are actually testing retry logic.
      */
-
     final var saveAttempts = new AtomicInteger();
     when(rtpRepository.save(any()))
         .thenAnswer(invocation -> {
@@ -236,8 +246,39 @@ class SendRTPServiceTest {
         });
 
     StepVerifier.create(sendRTPService.send(sourceRtp))
-        .expectNext(rtpSent)
+        .assertNext(actualRtp -> {
+          assertEquals(rtpSent.noticeNumber(), actualRtp.noticeNumber());
+          assertEquals(rtpSent.amount(), actualRtp.amount());
+          assertEquals(rtpSent.description(), actualRtp.description());
+          assertEquals(rtpSent.expiryDate(), actualRtp.expiryDate());
+          assertEquals(rtpSent.payerId(), actualRtp.payerId());
+          assertEquals(rtpSent.payerName(), actualRtp.payerName());
+          assertEquals(rtpSent.payeeName(), actualRtp.payeeName());
+          assertEquals(rtpSent.payeeId(), actualRtp.payeeId());
+          assertEquals(rtpSent.resourceID(), actualRtp.resourceID());
+          assertEquals(rtpSent.subject(), actualRtp.subject());
+          assertEquals(rtpSent.savingDateTime(), actualRtp.savingDateTime());
+          assertEquals(rtpSent.serviceProviderDebtor(), actualRtp.serviceProviderDebtor());
+          assertEquals(rtpSent.iban(), actualRtp.iban());
+          assertEquals(rtpSent.payTrxRef(), actualRtp.payTrxRef());
+          assertEquals(rtpSent.flgConf(), actualRtp.flgConf());
+          assertEquals(rtpSent.status(), actualRtp.status());
+          assertEquals(rtpSent.serviceProviderCreditor(), actualRtp.serviceProviderCreditor());
+
+          /*
+          The assertion on the timestamp field is not present as is not strictly relevant to check whether
+          the expected and actual ones match
+           */
+          assertEquals(rtpSent.events().size(), actualRtp.events().size());
+          for (int i = 0; i < rtpSent.events().size(); i++) {
+            final var expectedEvent = rtpSent.events().get(i);
+            final var actualEvent = actualRtp.events().get(i);
+            assertEquals(expectedEvent.precStatus(), actualEvent.precStatus());
+            assertEquals(expectedEvent.triggerEvent(), actualEvent.triggerEvent());
+          }
+        })
         .verifyComplete();
+
 
     verify(rtpRepository, times(2)).save(any());
   }
@@ -336,6 +377,7 @@ class SendRTPServiceTest {
         .status(status)
         .flgConf(flgConf)
         .subject(subject)
+        .events(List.of())
         .build();
   }
 

@@ -3,14 +3,17 @@ package it.gov.pagopa.rtp.activator.repository.rtp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import it.gov.pagopa.rtp.activator.domain.rtp.Event;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpEvent;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +29,8 @@ class RtpDtoMapperTest {
 
   @Test
   void toDomain() {
-    var uuid = UUID.randomUUID();
+    final var uuid = UUID.randomUUID();
+
     RtpEntity rtpEntity = RtpEntity.builder()
         .noticeNumber("12345")
         .amount(BigDecimal.valueOf(100.50))
@@ -45,6 +49,12 @@ class RtpDtoMapperTest {
         .flgConf("Y")
         .status(RtpStatus.CREATED)
         .serviceProviderCreditor("PagoPA")
+        .events(List.of(
+            Event.builder()
+                .timestamp(Instant.now())
+                .triggerEvent(RtpEvent.CREATE_RTP)
+                .build()
+        ))
         .build();
 
     Rtp rtp = rtpMapper.toDomain(rtpEntity);
@@ -66,6 +76,7 @@ class RtpDtoMapperTest {
     assertEquals(rtpEntity.getFlgConf(), rtp.flgConf());
     assertEquals(rtpEntity.getStatus(), rtp.status());
     assertEquals(rtpEntity.getServiceProviderCreditor(), rtp.serviceProviderCreditor());
+    assertEquals(rtpEntity.getEvents(), rtp.events());
   }
 
   @Test
@@ -89,6 +100,12 @@ class RtpDtoMapperTest {
         .flgConf("Y")
         .status(RtpStatus.CREATED)
         .serviceProviderCreditor("PagoPA")
+        .events(List.of(
+            Event.builder()
+                .timestamp(Instant.now())
+                .triggerEvent(RtpEvent.CREATE_RTP)
+                .build()
+        ))
         .build();
 
     RtpEntity rtpEntity = rtpMapper.toDbEntity(rtp);
@@ -110,5 +127,6 @@ class RtpDtoMapperTest {
     assertEquals(rtp.flgConf(), rtpEntity.getFlgConf());
     assertEquals(rtp.status(), rtpEntity.getStatus());
     assertEquals(rtp.serviceProviderCreditor(), rtpEntity.getServiceProviderCreditor());
+    assertEquals(rtp.events(), rtpEntity.getEvents());
   }
 }
