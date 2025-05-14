@@ -21,6 +21,5 @@ public class ActivationEntity {
     private UUID id;
     private String serviceProviderDebtor;
     private Instant effectiveActivationDate;
-
     private String fiscalCode;
 }
