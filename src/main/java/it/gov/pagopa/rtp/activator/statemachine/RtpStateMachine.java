@@ -132,7 +132,7 @@ public class RtpStateMachine implements StateMachine<RtpEntity, RtpEvent> {
 
     Objects.requireNonNull(rtpEntity, "Entity cannot be null");
     Objects.requireNonNull(newStatus, "Status cannot be null");
-    Objects.requireNonNull(triggerEvent, "Event cannot be null");
+    Objects.requireNonNull(triggerEvent, "Trigger event cannot be null");
 
     final var updatedEvents = Stream.concat(
             rtpEntity.getEvents().stream(), Stream.of(
