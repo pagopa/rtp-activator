@@ -31,7 +31,6 @@ import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCr
 import it.gov.pagopa.rtp.activator.service.rtp.handler.SendRtpProcessor;
 
 import it.gov.pagopa.rtp.activator.utils.LoggingUtils;
-import java.time.Duration;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,8 +41,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
-import reactor.util.retry.RetryBackoffSpec;
 
 @Service
 @Slf4j
@@ -108,15 +105,6 @@ public class SendRTPServiceImpl implements SendRTPService {
             error -> log.error("Error saving Rtp to be sent: {}", error.getMessage(), error));
 
     return rtpToSend.flatMap(this.sendRtpProcessor::sendRtpToServiceProviderDebtor)
-        .flatMap(
-            rtpToSave -> rtpRepository.save(rtpToSave)
-                .retryWhen(sendRetryPolicy())
-                .doOnError(ex -> log.error("Failed after retries", ex))
-
-        )
-        .doOnSuccess(
-            rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
-        .doOnError(error -> log.error("Error sending RTP: {}", error.getMessage(), error))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)
         .switchIfEmpty(Mono.error(new PayerNotActivatedException()));
   }
@@ -161,16 +149,6 @@ public class SendRTPServiceImpl implements SendRTPService {
       case BAD_REQUEST -> new MessageBadFormed(exception.getResponseBodyAsString());
       default -> new RuntimeException("Internal Server Error");
     };
-  }
-
-  private RetryBackoffSpec sendRetryPolicy() {
-    final var maxAttempts = serviceProviderConfig.send().retry().maxAttempts();
-    final var minDurationMillis = serviceProviderConfig.send().retry().backoffMinDuration();
-    final var jitter = serviceProviderConfig.send().retry().backoffJitter();
-
-    return Retry.backoff(maxAttempts, Duration.ofMillis(minDurationMillis))
-        .jitter(jitter)
-        .doAfterRetry(signal -> log.info("Retry number {}", signal.totalRetries()));
   }
 
   private Throwable mapExternalSendResponseToException(WebClientResponseException exception) {
