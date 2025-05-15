@@ -322,4 +322,72 @@ class CancelRtpHandlerTest {
     assertEquals(numRetries, capturedRequestIds.size());
     assertEquals(numRetries, new HashSet<>(capturedRequestIds).size());
   }
+
+  @Test
+  void givenBadRequestResponse_whenHandleRtpCancellation_thenReturnRJCRStatus() {
+    final var resourceId = ResourceID.createNew();
+    final var request = mock(EpcRequest.class);
+    final var rtpToCancel = mock(Rtp.class);
+    final var providerData = mock(ServiceProviderFullData.class);
+    final var tsp = mock(TechnicalServiceProvider.class);
+    final var sepaRequest = mock(SepaRequestToPayCancellationRequestResourceDto.class);
+    final var webClient = mock(WebClient.class);
+
+    when(rtpToCancel.resourceID()).thenReturn(resourceId);
+    when(request.rtpToSend()).thenReturn(rtpToCancel);
+    when(request.serviceProviderFullData()).thenReturn(providerData);
+    when(providerData.tsp()).thenReturn(tsp);
+    when(tsp.serviceEndpoint()).thenReturn("https://example.com");
+    when(webClientFactory.createSimpleWebClient()).thenReturn(webClient);
+    when(epcClientFactory.createClient(webClient)).thenReturn(epcClient);
+    when(epcClient.getApiClient()).thenReturn(apiClient);
+    when(sepaRequestToPayMapper.toEpcRequestToCancel(rtpToCancel)).thenReturn(sepaRequest);
+
+    WebClientResponseException cause = WebClientResponseException.create(
+            400, "Bad Request", null, null, null);
+    IllegalStateException retryExhausted = new IllegalStateException("Retry exhausted", cause);
+    retryExhausted.addSuppressed(new RuntimeException("Retries finished"));
+
+    when(epcClient.postRequestToPayCancellationRequest(any(), any(), any(), any()))
+            .thenThrow(retryExhausted);
+    when(request.withResponse(TransactionStatus.ERROR)).thenReturn(request);
+
+    StepVerifier.create(cancelRtpHandler.handle(request))
+            .expectNext(request)
+            .verifyComplete();
+  }
+
+  @Test
+  void givenGenericErrorResponse_whenHandleRtpCancellation_thenReturnErrorStatus() {
+    final var resourceId = ResourceID.createNew();
+    final var request = mock(EpcRequest.class);
+    final var rtpToCancel = mock(Rtp.class);
+    final var providerData = mock(ServiceProviderFullData.class);
+    final var tsp = mock(TechnicalServiceProvider.class);
+    final var sepaRequest = mock(SepaRequestToPayCancellationRequestResourceDto.class);
+    final var webClient = mock(WebClient.class);
+
+    when(rtpToCancel.resourceID()).thenReturn(resourceId);
+    when(request.rtpToSend()).thenReturn(rtpToCancel);
+    when(request.serviceProviderFullData()).thenReturn(providerData);
+    when(providerData.tsp()).thenReturn(tsp);
+    when(tsp.serviceEndpoint()).thenReturn("https://example.com");
+    when(webClientFactory.createSimpleWebClient()).thenReturn(webClient);
+    when(epcClientFactory.createClient(webClient)).thenReturn(epcClient);
+    when(epcClient.getApiClient()).thenReturn(apiClient);
+    when(sepaRequestToPayMapper.toEpcRequestToCancel(rtpToCancel)).thenReturn(sepaRequest);
+
+    WebClientResponseException cause = WebClientResponseException.create(
+            500, "Internal Server Error", null, null, null);
+    IllegalStateException retryExhausted = new IllegalStateException("Retry exhausted", cause);
+    retryExhausted.addSuppressed(new RuntimeException("Retries finished"));
+
+    when(epcClient.postRequestToPayCancellationRequest(any(), any(), any(), any()))
+            .thenThrow(retryExhausted);
+    when(request.withResponse(TransactionStatus.ERROR)).thenReturn(request);
+
+    StepVerifier.create(cancelRtpHandler.handle(request))
+            .expectNext(request)
+            .verifyComplete();
+  }
 }
