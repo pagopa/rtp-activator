@@ -6,10 +6,15 @@ import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
 import it.gov.pagopa.rtp.activator.domain.rtp.TransactionStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.service.rtp.SepaRequestToPayMapper;
+
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
 
@@ -62,7 +67,7 @@ public class CancelRtpHandler extends EpcApiInvokerHandler implements RequestHan
           epcClient.getApiClient().setBasePath(basePath);
           this.injectTokenIntoEpcRequest(epcClient, request);
 
-          return Mono.defer(() -> epcClient.postRequestToPayCancellationRequest(
+          return Mono.fromCallable(() -> epcClient.postRequestToPayCancellationRequest(
                   request.rtpToSend().resourceID().getId(),
                   UUID.randomUUID().toString(),
                   request.rtpToSend().resourceID().getId().toString(),
@@ -70,7 +75,28 @@ public class CancelRtpHandler extends EpcApiInvokerHandler implements RequestHan
               .doFirst(() -> log.info("Sending RTP cancellation request to {}", rtpToSend.serviceProviderDebtor()))
               .retryWhen(sendRetryPolicy());
         })
-        .map(resp -> request.withResponse(TransactionStatus.ACTC));
+        .doOnSuccess(resp -> log.info("Mapping sent RFC to {}", TransactionStatus.CNCL))
+        .map(resp -> request.withResponse(TransactionStatus.CNCL))
+        .onErrorResume(IllegalStateException.class, ex -> this.handleRetryError(ex, request))
+        .doOnNext(resp -> log.info("Response: {}", resp.response()));
   }
+
+    @NonNull
+    private Mono<EpcRequest> handleRetryError(
+            @NonNull final IllegalStateException ex,
+            @NonNull final EpcRequest request) {
+
+        log.warn("Handling error upon sending RFC to {}", request.serviceProviderFullData().tsp().serviceEndpoint());
+
+        return Optional.of(ex)
+                .filter(Exceptions::isRetryExhausted)
+                .map(Throwable::getCause)
+                .filter(WebClientResponseException.class::isInstance)
+                .map(WebClientResponseException.class::cast)
+                .map(WebClientResponseException::getStatusCode)
+                .filter(httpStatusCode -> httpStatusCode.isSameCodeAs(HttpStatus.BAD_REQUEST))
+                .map(statusCode -> Mono.just(request.withResponse(TransactionStatus.RJCR)))
+                .orElse(Mono.just(request.withResponse(TransactionStatus.ERROR)));
+    }
 }
 
