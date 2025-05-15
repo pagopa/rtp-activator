@@ -1,8 +1,6 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
-import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousRequestToPayCancellationResponseDto;
-import it.gov.pagopa.rtp.activator.epcClient.model.SynchronousSepaRequestToPayCreationResponseDto;
 import it.gov.pagopa.rtp.activator.utils.ExceptionUtils;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
@@ -74,12 +72,12 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
     return Mono.just(rtpToSend)
         .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()))
         .doOnNext(rtp -> log.debug("Creating EPC request."))
-        .map(rtp -> EpcRequest.of(rtp, SynchronousSepaRequestToPayCreationResponseDto.class))
+        .map(EpcRequest::of)
         .flatMap(this::handleIntermediateSteps)
         .doOnNext(epcRequest -> log.debug("Calling send RTP handler."))
         .flatMap(this.sendRtpHandler::handle)
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
-        .map(response -> rtpToSend)
+        .map(EpcRequest::rtpToSend)
         .defaultIfEmpty(rtpToSend)
         .doOnSuccess(rtpSent -> log.info("RTP sent to {} with id: {}",
             rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()))
@@ -109,12 +107,12 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
     return Mono.just(rtpToSend)
         .doFirst(() -> log.info("Sending RTP cancellation to {}", rtpToSend.serviceProviderDebtor()))
         .doOnNext(rtp -> log.debug("Creating EPC request for cancellation."))
-        .map(rtp -> EpcRequest.of(rtp, SynchronousRequestToPayCancellationResponseDto.class))
+        .map(EpcRequest::of)
         .flatMap(this::handleIntermediateSteps)
         .doOnNext(epcRequest -> log.debug("Calling send RTP cancellation handler."))
         .flatMap(this.cancelRtpHandler::handle)
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
-        .map(response -> rtpToSend)
+        .map(EpcRequest::rtpToSend)
         .defaultIfEmpty(rtpToSend)
         .doOnSuccess(rtpSent -> log.info("RTP cancellation sent to {} with id: {}",
             rtpSent.serviceProviderDebtor(), rtpSent.resourceID().getId()))
