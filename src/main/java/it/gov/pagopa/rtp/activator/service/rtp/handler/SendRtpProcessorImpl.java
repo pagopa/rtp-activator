@@ -28,6 +28,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
   private final SendRtpHandler sendRtpHandler;
   private final CancelRtpHandler cancelRtpHandler;
   private final SendRtpResponseHandler sendRtpResponseHandler;
+  private final CancelRtpResponseHandler cancelRtpResponseHandler;
 
 
   /**
@@ -46,12 +47,14 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
       @NonNull final SendRtpHandler sendRtpHandler,
       @NonNull final CancelRtpHandler cancelRtpHandler,
       @NonNull final SendRtpResponseHandler sendRtpResponseHandler) {
+      @NonNull final CancelRtpResponseHandler cancelRtpResponseHandler) {
 
     this.registryDataHandler = Objects.requireNonNull(registryDataHandler);
     this.oauth2Handler = Objects.requireNonNull(oauth2Handler);
     this.sendRtpHandler = Objects.requireNonNull(sendRtpHandler);
     this.cancelRtpHandler = Objects.requireNonNull(cancelRtpHandler);
     this.sendRtpResponseHandler = Objects.requireNonNull(sendRtpResponseHandler);
+    this.cancelRtpResponseHandler = Objects.requireNonNull(cancelRtpResponseHandler);
   }
 
 
@@ -117,6 +120,8 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
         .flatMap(this::handleIntermediateSteps)
         .doOnNext(epcRequest -> log.debug("Calling send RTP cancellation handler."))
         .flatMap(this.cancelRtpHandler::handle)
+        .doOnNext(epcRequest -> log.debug("Calling cancel RTP response handler."))
+        .flatMap(this.cancelRtpResponseHandler::handle)
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
         .map(EpcRequest::rtpToSend)
         .defaultIfEmpty(rtpToSend)
