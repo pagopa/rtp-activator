@@ -1,10 +1,13 @@
 package it.gov.pagopa.rtp.activator.statemachine;
 
+import it.gov.pagopa.rtp.activator.domain.rtp.Event;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpEvent;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.repository.rtp.RtpEntity;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.reactivestreams.Publisher;
 import org.springframework.lang.NonNull;
 import reactor.core.publisher.Mono;
@@ -87,7 +90,8 @@ public class RtpStateMachine implements StateMachine<RtpEntity, RtpEvent> {
                 String.format("Cannot transition from %s to %s", source, event)))))
         .doOnNext(transition -> transition.getPreTransactionActions()
             .forEach(action -> action.accept(source)))
-        .doOnNext(transition -> source.setStatus(transition.getDestination()))
+        .doOnNext(transition -> this.advanceStatus(
+            source, transition.getDestination(), transition.getEvent()))
         .doOnNext(transition -> transition.getPostTransactionActions()
             .forEach(action -> action.accept(source)))
         .map(transition -> source);
@@ -109,6 +113,39 @@ public class RtpStateMachine implements StateMachine<RtpEntity, RtpEvent> {
     return Optional.of(transitionKey)
         .flatMap(this.transitionConfiguration::getTransition)
         .isPresent();
+  }
+
+
+  /**
+   * Advances the status of the given {@link RtpEntity} to a new status and updates its events.
+   *
+   * @param rtpEntity   the entity whose status is to be updated
+   * @param newStatus   the new status to set for the entity
+   * @param triggerEvent the event that triggered the status change
+   * @throws NullPointerException if any of the arguments is {@code null}
+   */
+  @NonNull
+  private void advanceStatus(
+      @NonNull final RtpEntity rtpEntity,
+      @NonNull final RtpStatus newStatus,
+      @NonNull final RtpEvent triggerEvent) {
+
+    Objects.requireNonNull(rtpEntity, "Entity cannot be null");
+    Objects.requireNonNull(newStatus, "Status cannot be null");
+    Objects.requireNonNull(triggerEvent, "Trigger event cannot be null");
+
+    final var updatedEvents = Stream.concat(
+            rtpEntity.getEvents().stream(), Stream.of(
+                Event.builder()
+                    .timestamp(Instant.now())
+                    .precStatus(rtpEntity.getStatus())
+                    .triggerEvent(triggerEvent)
+                    .build()
+            ))
+        .toList();
+
+    rtpEntity.setStatus(newStatus);
+    rtpEntity.setEvents(updatedEvents);
   }
 }
 

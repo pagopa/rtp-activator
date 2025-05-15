@@ -107,16 +107,14 @@ public class SendRTPServiceImpl implements SendRTPService {
         .doOnError(
             error -> log.error("Error saving Rtp to be sent: {}", error.getMessage(), error));
 
-    final var sentRtp = rtpToSend.flatMap(this.sendRtpProcessor::sendRtpToServiceProviderDebtor)
-        .map(rtp::toRtpSent)
+    return rtpToSend.flatMap(this.sendRtpProcessor::sendRtpToServiceProviderDebtor)
         .flatMap(
             rtpToSave -> rtpRepository.save(rtpToSave)
                 .retryWhen(sendRetryPolicy())
                 .doOnError(ex -> log.error("Failed after retries", ex))
 
-        );
-
-    return sentRtp.doOnSuccess(
+        )
+        .doOnSuccess(
             rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .doOnError(error -> log.error("Error sending RTP: {}", error.getMessage(), error))
         .onErrorMap(WebClientResponseException.class, this::mapExternalSendResponseToException)

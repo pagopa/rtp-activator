@@ -3,9 +3,11 @@ package it.gov.pagopa.rtp.activator.statemachine;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
+import it.gov.pagopa.rtp.activator.domain.rtp.Event;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpEvent;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.repository.rtp.RtpEntity;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -33,12 +35,19 @@ class RtpStateMachineTest {
   private RtpStateMachine stateMachine;
 
   private final RtpEntity rtp = new RtpEntity();
+  private final RtpStatus sourceStatus = RtpStatus.CREATED;
   private final RtpEvent event = RtpEvent.SEND_RTP;
-  private final RtpTransitionKey transitionKey = new RtpTransitionKey(RtpStatus.CREATED, RtpEvent.SEND_RTP);
+  private final RtpTransitionKey transitionKey = new RtpTransitionKey(sourceStatus, event);
 
   @BeforeEach
   void setUp() {
-    rtp.setStatus(RtpStatus.CREATED);
+    rtp.setStatus(sourceStatus);
+    rtp.setEvents(List.of(
+        Event.builder()
+            .timestamp(Instant.now())
+            .triggerEvent(RtpEvent.CREATE_RTP)
+            .build()
+    ));
     stateMachine = new RtpStateMachine(transitionConfiguration);
   }
 
@@ -64,22 +73,29 @@ class RtpStateMachineTest {
 
   @Test
   void givenValidTransition_whenTransition_thenApplyAndReturnEntity() {
+    final var destination = RtpStatus.SENT;
+    final var triggerEvent = RtpEvent.SEND_RTP;
+
     when(transitionConfiguration.getTransition(transitionKey))
         .thenReturn(Optional.of(transition));
 
     when(transition.getPreTransactionActions()).thenReturn(List.of(
         entity -> entity.setPayeeName("pre-action")));
 
-    when(transition.getDestination()).thenReturn(RtpStatus.SENT);
+    when(transition.getDestination()).thenReturn(destination);
+
+    when(transition.getEvent()).thenReturn(triggerEvent);
 
     when(transition.getPostTransactionActions()).thenReturn(List.of(
         entity -> entity.setPayeeId("post-action")));
 
     StepVerifier.create(stateMachine.transition(rtp, event))
         .assertNext(result -> {
-          assertEquals(RtpStatus.SENT, result.getStatus());
+          assertEquals(destination, result.getStatus());
           assertEquals("pre-action", result.getPayeeName());
           assertEquals("post-action", result.getPayeeId());
+          assertEquals(sourceStatus, result.getEvents().getLast().precStatus());
+          assertEquals(triggerEvent, result.getEvents().getLast().triggerEvent());
         })
         .verifyComplete();
   }
