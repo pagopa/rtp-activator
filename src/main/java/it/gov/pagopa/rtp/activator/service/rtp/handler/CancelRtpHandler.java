@@ -77,6 +77,7 @@ public class CancelRtpHandler extends EpcApiInvokerHandler implements RequestHan
         })
         .doOnSuccess(resp -> log.info("Mapping sent RFC to {}", TransactionStatus.CNCL))
         .map(resp -> request.withResponse(TransactionStatus.CNCL))
+        .switchIfEmpty(Mono.just(request))
         .onErrorResume(IllegalStateException.class, ex -> this.handleRetryError(ex, request))
         .doOnNext(resp -> log.info("Response: {}", resp.response()));
   }
