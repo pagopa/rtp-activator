@@ -82,22 +82,30 @@ public class CancelRtpHandler extends EpcApiInvokerHandler implements RequestHan
         .doOnNext(resp -> log.info("Response: {}", resp.response()));
   }
 
-    @NonNull
-    private Mono<EpcRequest> handleRetryError(
-            @NonNull final IllegalStateException ex,
-            @NonNull final EpcRequest request) {
+  /**
+   * Handles errors that occur during the retry process of sending an RTP cancellation request. It
+   * distinguishes between different types of errors and returns the appropriate transaction status.
+   *
+   * @param ex The exception thrown during the retry process.
+   * @param request The original EPC request.
+   * @return A {@code Mono} containing the EPC request with an updated status based on the error
+   *     type.
+   */
+  @NonNull
+  private Mono<EpcRequest> handleRetryError(
+      @NonNull final IllegalStateException ex, @NonNull final EpcRequest request) {
 
-        log.warn("Handling error upon sending RFC to {}", request.serviceProviderFullData().tsp().serviceEndpoint());
+    log.warn("Handling error upon sending RFC to {}", request.serviceProviderFullData().tsp().serviceEndpoint());
 
-        return Optional.of(ex)
-                .filter(Exceptions::isRetryExhausted)
-                .map(Throwable::getCause)
-                .filter(WebClientResponseException.class::isInstance)
-                .map(WebClientResponseException.class::cast)
-                .map(WebClientResponseException::getStatusCode)
-                .filter(httpStatusCode -> httpStatusCode.isSameCodeAs(HttpStatus.BAD_REQUEST))
-                .map(statusCode -> Mono.just(request.withResponse(TransactionStatus.RJCR)))
-                .orElse(Mono.just(request.withResponse(TransactionStatus.ERROR)));
-    }
+    return Optional.of(ex)
+        .filter(Exceptions::isRetryExhausted)
+        .map(Throwable::getCause)
+        .filter(WebClientResponseException.class::isInstance)
+        .map(WebClientResponseException.class::cast)
+        .map(WebClientResponseException::getStatusCode)
+        .filter(httpStatusCode -> httpStatusCode.isSameCodeAs(HttpStatus.BAD_REQUEST))
+        .map(statusCode -> Mono.just(request.withResponse(TransactionStatus.RJCR)))
+        .orElse(Mono.just(request.withResponse(TransactionStatus.ERROR)));
+  }
 }
 

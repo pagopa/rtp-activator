@@ -39,6 +39,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
    * @param sendRtpHandler The handler responsible for sending the RTP request.
    * @param cancelRtpHandler The handler responsible for sending the RTP cancellation request.
    * @param sendRtpResponseHandler The handler responsible for handling the RTP response.
+   * @param cancelRtpResponseHandler The handler responsible for processing the response to an RTP cancellation.
    * @throws NullPointerException if any of the provided handlers are {@code null}.
    */
   public SendRtpProcessorImpl(
@@ -120,8 +121,8 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
         .flatMap(this::handleIntermediateSteps)
         .doOnNext(epcRequest -> log.debug("Calling send RTP cancellation handler."))
         .flatMap(this.cancelRtpHandler::handle)
-        .doOnNext(epcRequest -> log.debug("Calling cancel RTP response handler."))
-        .flatMap(this.cancelRtpResponseHandler::handle)
+        .doOnNext(epcRequest -> log.debug("Calling cancel RTP response handler.")) 
+        .flatMap(this.cancelRtpResponseHandler::handle) 
         .onErrorMap(ExceptionUtils::gracefullyHandleError)
         .map(EpcRequest::rtpToSend)
         .defaultIfEmpty(rtpToSend)
