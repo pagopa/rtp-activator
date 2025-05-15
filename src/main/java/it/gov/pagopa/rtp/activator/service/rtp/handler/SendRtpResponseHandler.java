@@ -38,7 +38,7 @@ public class SendRtpResponseHandler implements RequestHandler<EpcRequest> {
    *
    * @param request the {@link EpcRequest} to be handled
    * @return a {@code Mono<EpcRequest>} containing the updated {@link EpcRequest}
-   * @throws NullPointerException if `request` is `null`
+   * @throws NullPointerException if {@code request} is {@code null}
    */
   @Override
   @NonNull
