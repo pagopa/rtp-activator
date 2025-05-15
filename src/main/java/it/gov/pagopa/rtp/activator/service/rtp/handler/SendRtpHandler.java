@@ -70,8 +70,9 @@ public class SendRtpHandler extends EpcApiInvokerHandler implements RequestHandl
               .doFirst(() -> log.info("Sending RTP to {}", rtpToSend.serviceProviderDebtor()))
               .retryWhen(sendRetryPolicy());
         })
-        .doOnSuccess(resp -> log.info("Mapping sent RTP to {}", TransactionStatus.ACTC))
         .map(resp -> request.withResponse(TransactionStatus.ACTC))
+        .doOnNext(resp -> log.info("Mapping sent RTP to {}", TransactionStatus.ACTC))
+        .switchIfEmpty(Mono.just(request))
         .onErrorResume(IllegalStateException.class, ex -> this.handleRetryError(ex, request))
         .doOnNext(resp -> log.info("Response: {}", resp.response()));
   }
