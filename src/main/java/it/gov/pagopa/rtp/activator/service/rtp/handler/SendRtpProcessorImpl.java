@@ -47,7 +47,7 @@ public class SendRtpProcessorImpl implements SendRtpProcessor {
       @NonNull final Oauth2Handler oauth2Handler,
       @NonNull final SendRtpHandler sendRtpHandler,
       @NonNull final CancelRtpHandler cancelRtpHandler,
-      @NonNull final SendRtpResponseHandler sendRtpResponseHandler) {
+      @NonNull final SendRtpResponseHandler sendRtpResponseHandler,
       @NonNull final CancelRtpResponseHandler cancelRtpResponseHandler) {
 
     this.registryDataHandler = Objects.requireNonNull(registryDataHandler);
