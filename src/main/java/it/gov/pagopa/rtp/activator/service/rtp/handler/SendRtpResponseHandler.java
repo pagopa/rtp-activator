@@ -89,16 +89,17 @@ public class SendRtpResponseHandler implements RequestHandler<EpcRequest> {
   private Mono<Rtp> triggerRtpStatus(
       @NonNull final Rtp rtpToUpdate,
       @NonNull final TransactionStatus transactionStatus) {
+
     return switch (transactionStatus) {
       case ACTC -> this.triggerTransitionAndPersist(rtpToUpdate, this.rtpStatusUpdater::triggerAcceptRtp);
-
-      case ACCP -> Mono.error(new IllegalStateException("Not implemented"));
 
       case RJCT -> this.triggerTransitionAndPersist(rtpToUpdate, this.rtpStatusUpdater::triggerRejectRtp)
           .flatMap(rtp -> Mono.error(new SepaRequestException("SRTP send has been rejected")));
 
       case ERROR -> this.triggerTransitionAndPersist(rtpToUpdate, this.rtpStatusUpdater::triggerErrorSendRtp)
           .flatMap(rtp -> Mono.error(new SepaRequestException("Could not send SRTP")));
+
+      default -> Mono.error(new IllegalStateException("Not implemented"));
     };
   }
 
