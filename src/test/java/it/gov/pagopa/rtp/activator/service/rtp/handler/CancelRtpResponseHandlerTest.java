@@ -30,7 +30,7 @@ class CancelRtpResponseHandlerTest {
   }
 
   @Test
-  void givenValidRtpAndStatusCNCL_whenHandle_thenCancelAccrTriggeredAndEventAdded() {
+  void givenValidRtpAndStatusCNCL_whenHandle_thenCancelAccrTriggered() {
     Rtp rtp = createRtpWithStatus();
     TransactionStatus status = TransactionStatus.CNCL;
     EpcRequest request = new EpcRequest(rtp, null, null, status);
@@ -42,19 +42,15 @@ class CancelRtpResponseHandlerTest {
     when(updater.triggerCancelRtpAccr(updated)).thenReturn(Mono.just(finalUpdated));
 
     StepVerifier.create(handler.handle(request))
-                .expectNextMatches(resp -> {
-              Rtp resultRtp = resp.rtpToSend();
-              return resultRtp.events().stream()
-                  .anyMatch(e -> e.triggerEvent() == RtpEvent.CANCEL_RTP_ACCR);
-            })
-        .verifyComplete();
+            .expectNextMatches(resp -> resp.rtpToSend().status() == RtpStatus.CANCELLED)
+            .verifyComplete();
 
     verify(updater).triggerCancelRtp(rtp);
     verify(updater).triggerCancelRtpAccr(updated);
   }
 
   @Test
-  void givenValidRtpAndStatusRJCR_whenHandle_thenCancelRejectedTriggeredAndEventAdded() {
+  void givenValidRtpAndStatusRJCR_whenHandle_thenCancelRejectedTriggered() {
     Rtp rtp = createRtpWithStatus();
     TransactionStatus status = TransactionStatus.RJCR;
     EpcRequest request = new EpcRequest(rtp, null, null, status);
@@ -66,9 +62,8 @@ class CancelRtpResponseHandlerTest {
     when(updater.triggerCancelRtpRejected(updated)).thenReturn(Mono.just(finalUpdated));
 
     StepVerifier.create(handler.handle(request))
-                .expectNextMatches(resp -> resp.rtpToSend().events().stream()
-                    .anyMatch(e -> e.triggerEvent() == RtpEvent.CANCEL_RTP_REJECTED))
-        .verifyComplete();
+            .expectNextMatches(resp -> resp.rtpToSend().status() == RtpStatus.CANCELLED)
+            .verifyComplete();
 
     verify(updater).triggerCancelRtp(rtp);
     verify(updater).triggerCancelRtpRejected(updated);
@@ -104,7 +99,7 @@ class CancelRtpResponseHandlerTest {
   }
 
   @Test
-  void givenValidRtpAndStatusERROR_whenHandle_thenErrorCancelTriggeredAndEventAdded() {
+  void givenValidRtpAndStatusERROR_whenHandle_thenErrorCancelTriggered() {
     Rtp rtp = createRtpWithStatus();
     TransactionStatus status = TransactionStatus.ERROR;
     EpcRequest request = new EpcRequest(rtp, null, null, status);
@@ -116,8 +111,7 @@ class CancelRtpResponseHandlerTest {
     when(updater.triggerErrorCancelRtp(updated)).thenReturn(Mono.just(finalUpdated));
 
     StepVerifier.create(handler.handle(request))
-            .expectNextMatches(resp -> resp.rtpToSend().events().stream()
-                    .anyMatch(e -> e.triggerEvent() == RtpEvent.ERROR_CANCEL_RTP))
+            .expectNextMatches(resp -> resp.rtpToSend().status() == RtpStatus.CANCELLED)
             .verifyComplete();
 
     verify(updater).triggerCancelRtp(rtp);

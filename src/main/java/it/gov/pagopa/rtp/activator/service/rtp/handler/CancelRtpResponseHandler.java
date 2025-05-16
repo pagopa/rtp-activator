@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -58,7 +57,6 @@ public class CancelRtpResponseHandler implements RequestHandler<EpcRequest>{
         var previousStatus = rtp.status();
 
         return updater.triggerCancelRtp(rtp)
-                .flatMap(updated -> addEvent(updated, RtpEvent.CANCEL_RTP, previousStatus))
                 .doOnNext(r -> log.info("Successfully triggered cancel RTP"))
                 .onErrorMap(IllegalStateException.class,
                         ex -> new RtpInvalidStateTransition(previousStatus.name(), RtpStatus.CANCELLED.name()))
@@ -75,34 +73,13 @@ public class CancelRtpResponseHandler implements RequestHandler<EpcRequest>{
      * @return A {@code Mono} with the updated RTP.
      */
     private Mono<Rtp> triggerCancelStatus(Rtp rtp, TransactionStatus status) {
-        var precStatus = rtp.status();
         log.debug("Handling TransactionStatus: {}", status);
 
         return switch (status) {
-            case CNCL -> updater.triggerCancelRtpAccr(rtp)
-                    .flatMap(r -> addEvent(r, RtpEvent.CANCEL_RTP_ACCR, precStatus));
-            case RJCR -> updater.triggerCancelRtpRejected(rtp)
-                    .flatMap(r -> addEvent(r, RtpEvent.CANCEL_RTP_REJECTED, precStatus));
-            case ERROR -> updater.triggerErrorCancelRtp(rtp)
-                    .flatMap(r -> addEvent(r, RtpEvent.ERROR_CANCEL_RTP, precStatus));
+            case CNCL -> updater.triggerCancelRtpAccr(rtp);
+            case RJCR -> updater.triggerCancelRtpRejected(rtp);
+            case ERROR -> updater.triggerErrorCancelRtp(rtp);
             default -> Mono.error(new IllegalStateException("TransactionStatus not supported: " + status));
         };
-    }
-
-    /**
-     * Adds an event to the RTP's event history.
-     *
-     * @param rtp The RTP to update.
-     * @param trigger The event that occurred.
-     * @param precStatus The previous status before the event.
-     * @return A {@code Mono} with the RTP updated with the new event.
-     */
-    private Mono<Rtp> addEvent(Rtp rtp, RtpEvent trigger, RtpStatus precStatus) {
-        rtp.events().add(Event.builder()
-                .timestamp(Instant.now())
-                .precStatus(precStatus)
-                .triggerEvent(trigger)
-                .build());
-        return Mono.just(rtp);
     }
 }
