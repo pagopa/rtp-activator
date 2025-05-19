@@ -67,17 +67,16 @@ public class CancelRtpHandler extends EpcApiInvokerHandler implements RequestHan
           epcClient.getApiClient().setBasePath(basePath);
           this.injectTokenIntoEpcRequest(epcClient, request);
 
-          return Mono.fromCallable(() -> epcClient.postRequestToPayCancellationRequest(
+          return Mono.defer(() -> epcClient.postRequestToPayCancellationRequest(
                   request.rtpToSend().resourceID().getId(),
                   UUID.randomUUID().toString(),
                   request.rtpToSend().resourceID().getId().toString(),
                   sepaRequest))
               .doFirst(() -> log.info("Sending RTP cancellation request to {}", rtpToSend.serviceProviderDebtor()))
+              .thenReturn(request.withResponse(TransactionStatus.CNCL))
+              .doOnNext(resp -> log.info("Mapping sent RFC to {}", TransactionStatus.CNCL))
               .retryWhen(sendRetryPolicy());
         })
-        .doOnSuccess(resp -> log.info("Mapping sent RFC to {}", TransactionStatus.CNCL))
-        .map(resp -> request.withResponse(TransactionStatus.CNCL))
-        .switchIfEmpty(Mono.just(request))
         .onErrorResume(IllegalStateException.class, ex -> this.handleRetryError(ex, request))
         .doOnNext(resp -> log.info("Response: {}", resp.response()));
   }
