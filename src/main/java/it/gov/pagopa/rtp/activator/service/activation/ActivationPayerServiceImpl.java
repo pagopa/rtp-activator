@@ -1,11 +1,15 @@
 package it.gov.pagopa.rtp.activator.service.activation;
 
+import it.gov.pagopa.rtp.activator.domain.payer.DeactivationReason;
 import java.time.Instant;
 
 import io.opentelemetry.instrumentation.annotations.WithSpan;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
@@ -39,8 +43,35 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
             .doFinally(f -> MDC.clear());
     }
 
+
+    @NonNull
+    @Override
+    public Mono<Payer> findPayerById(@NonNull final UUID id) {
+
+        Objects.requireNonNull(id, "Id cannot be null");
+
+        return this.activationDBRepository.findById(id);
+    }
+
+
     @Override
     public Mono<Payer> findPayer(String payer) {
             return activationDBRepository.findByFiscalCode(payer);
+    }
+
+
+    @NonNull
+    @Override
+    public Mono<Void> deactivatePayer(@NonNull final Payer payerToDeactivate) {
+        Objects.requireNonNull(payerToDeactivate, "Payer cannot be null");
+
+        return Mono.just(payerToDeactivate)
+            .doOnNext(payer -> log.info("Deactivating payer with id {} and fiscal code {}",
+                payer.activationID().getId(), payer.fiscalCode()))
+            .flatMap(payer ->
+                this.activationDBRepository.deactivate(payer, DeactivationReason.DELETE))
+            .doOnSuccess(id -> log.info("Payer deactivated with id {} and fiscal code {}",
+                payerToDeactivate.activationID().getId(), payerToDeactivate.fiscalCode()))
+            .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));
     }
 }
