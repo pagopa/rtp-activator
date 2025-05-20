@@ -1,7 +1,9 @@
 package it.gov.pagopa.rtp.activator.repository.activation;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -133,4 +135,51 @@ class ActivationDBRepositoryTest {
 
     assertThrows(NullPointerException.class, (() -> repository.deactivate(payer, null)));
   }
+
+  @Test
+  void givenValidPayer_whenSaveToDeletedDbFails_thenErrorIsPropagated() {
+    final var payer = mock(Payer.class);
+    final var activationId = UUID.randomUUID();
+    final var reason = DeactivationReason.TAKEOVER;
+
+    final var deletedEntity = new DeletedActivationEntity();
+    deletedEntity.setId(activationId);
+
+    when(activationMapper.toDeletedDbEntity(payer, reason))
+        .thenReturn(deletedEntity);
+    when(deletedActivationDB.save(deletedEntity))
+        .thenReturn(Mono.error(new IllegalArgumentException("DB save error")));
+
+    StepVerifier.create(repository.deactivate(payer, reason))
+        .expectErrorMessage("DB save error")
+        .verify();
+
+    verify(deletedActivationDB).save(deletedEntity);
+    verify(activationDB, never()).deleteById(any(UUID.class));
+  }
+
+  @Test
+  void givenValidPayer_whenDeleteFromActivationDbFails_thenErrorIsPropagated() {
+    final var payer = mock(Payer.class);
+    final var activationId = UUID.randomUUID();
+    final var reason = DeactivationReason.TAKEOVER;
+
+    final var deletedEntity = new DeletedActivationEntity();
+    deletedEntity.setId(activationId);
+
+    when(activationMapper.toDeletedDbEntity(payer, reason))
+        .thenReturn(deletedEntity);
+    when(deletedActivationDB.save(deletedEntity))
+        .thenReturn(Mono.just(deletedEntity));
+    when(activationDB.deleteById(activationId))
+        .thenReturn(Mono.error(new IllegalArgumentException("Delete error")));
+
+    StepVerifier.create(repository.deactivate(payer, reason))
+        .expectErrorMessage("Delete error")
+        .verify();
+
+    verify(deletedActivationDB).save(deletedEntity);
+    verify(activationDB).deleteById(activationId);
+  }
+
 }
