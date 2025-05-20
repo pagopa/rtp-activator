@@ -12,5 +12,7 @@ public interface PayerRepository {
     Mono<Payer> findByFiscalCode(String fiscalCode);
     
     Mono<Payer> save(Payer payer);
+
+    Mono<Void> deactivate(Payer payer, DeactivationReason deactivationReason);
     
 }
