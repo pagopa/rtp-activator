@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
-import it.gov.pagopa.rtp.activator.domain.errors.RtpInvalidStateTransition;
 import it.gov.pagopa.rtp.activator.domain.rtp.*;
 import it.gov.pagopa.rtp.activator.service.rtp.RtpStatusUpdater;
 import lombok.NonNull;
@@ -42,8 +41,6 @@ public class CancelRtpResponseHandler implements RequestHandler<EpcRequest> {
    *       update action via the {@link RtpStatusUpdater}.
    *   <li>If the transaction status is not present, it simply attempts to trigger the 'CANCELLED'
    *       state transition on the RTP.
-   *   <li>Handles any invalid state transition errors, transforming them into {@link
-   *       RtpInvalidStateTransition}.
    *   <li>Updates the {@code EpcRequest} with the modified RTP.
    * </ol>
    *
@@ -65,8 +62,6 @@ public class CancelRtpResponseHandler implements RequestHandler<EpcRequest> {
                   .map(status -> this.updater.triggerCancelRtp(rtpToUpdate)
                               .flatMap(updatedRtp -> triggerCancelStatus(updatedRtp, status)))
                   .orElseGet(() -> this.updater.triggerCancelRtp(rtpToUpdate))
-                  .onErrorMap(IllegalStateException.class, e ->
-                          new RtpInvalidStateTransition(rtpToUpdate.status().name(), RtpStatus.CANCELLED.name()))
                   .map(request::withRtpToSend)
                   .doOnSuccess(r -> log.info("Completed handling cancel RTP response"));
             });

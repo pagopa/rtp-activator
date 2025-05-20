@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.service.rtp.handler;
 
-import it.gov.pagopa.rtp.activator.domain.errors.RtpInvalidStateTransition;
 import it.gov.pagopa.rtp.activator.domain.rtp.*;
 import it.gov.pagopa.rtp.activator.service.rtp.RtpStatusUpdater;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,15 +86,18 @@ class CancelRtpResponseHandlerTest {
   }
 
   @Test
-    void givenTriggerCancelFailsWithIllegalStateException_whenHandle_thenMapToRtpInvalidStateTransition() {
+  void whenTriggerCancelRtpFails_thenPropagatesIllegalStateException() {
     Rtp rtp = createRtpWithStatus();
     EpcRequest request = new EpcRequest(rtp, null, null, null);
 
     when(updater.triggerCancelRtp(rtp)).thenReturn(Mono.error(new IllegalStateException("Invalid state")));
 
     StepVerifier.create(handler.handle(request))
-        .expectError(RtpInvalidStateTransition.class)
-        .verify();
+            .expectErrorMatches(err -> err instanceof IllegalStateException &&
+                    err.getMessage().equals("Invalid state"))
+            .verify();
+
+    verify(updater).triggerCancelRtp(rtp);
   }
 
   @Test
@@ -119,19 +121,19 @@ class CancelRtpResponseHandlerTest {
   }
 
   @Test
-  void givenUnsupportedTransactionStatus_whenHandle_thenThrowsIllegalStateException() {
+  void whenUnsupportedTransactionStatus_thenPropagatesIllegalStateException() {
     Rtp rtp = createRtpWithStatus();
-    TransactionStatus unsupported = TransactionStatus.ACTC;
-
-    EpcRequest request = new EpcRequest(rtp, null, null, unsupported);
+    TransactionStatus unsupportedStatus = TransactionStatus.ACTC;
+    EpcRequest request = new EpcRequest(rtp, null, null, unsupportedStatus);
 
     when(updater.triggerCancelRtp(rtp)).thenReturn(Mono.just(rtp));
 
     StepVerifier.create(handler.handle(request))
-            .expectErrorMatches(err ->
-                    err instanceof RtpInvalidStateTransition
-                            && err.getMessage().contains("Cannot transition RTP from SENT to CANCELLED"))
+            .expectErrorMatches(err -> err instanceof IllegalStateException &&
+                    err.getMessage().contains("TransactionStatus not supported"))
             .verify();
+
+    verify(updater).triggerCancelRtp(rtp);
   }
 
   private Rtp createRtpWithStatus() {
