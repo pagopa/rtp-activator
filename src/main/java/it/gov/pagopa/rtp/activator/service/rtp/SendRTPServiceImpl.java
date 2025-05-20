@@ -14,6 +14,7 @@ import it.gov.pagopa.rtp.activator.domain.errors.RtpNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.Rtp;
 import it.gov.pagopa.rtp.activator.domain.rtp.RtpRepository;
+import it.gov.pagopa.rtp.activator.domain.rtp.RtpStatus;
 import it.gov.pagopa.rtp.activator.epcClient.model.ActiveOrHistoricCurrencyAndAmountEPC25922V30DS02WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalOrganisationIdentification1CodeEPC25922V30DS022WrapperDto;
 import it.gov.pagopa.rtp.activator.epcClient.model.ExternalPersonIdentification1CodeEPC25922V30DS02WrapperDto;
@@ -129,6 +130,7 @@ public class SendRTPServiceImpl implements SendRTPService {
         .doOnNext(rtp -> LoggingUtils.logAsJson(
             () -> sepaRequestToPayMapper.toEpcRequestToCancel(rtp), objectMapper))
         .flatMap(this.sendRtpProcessor::sendRtpCancellationToServiceProviderDebtor)
+        .doOnNext(rtp -> log.debug("Setting status of RTP with id {} to {}", rtp.resourceID().getId(), RtpStatus.CANCELLED))
         .flatMap(rtpRepository::save)
         .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
         .doOnError(error -> log.error("Error cancel RTP: {}", error.getMessage(), error))

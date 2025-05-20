@@ -128,11 +128,10 @@ class CancelRtpResponseHandlerTest {
     when(updater.triggerCancelRtp(rtp)).thenReturn(Mono.just(rtp));
 
     StepVerifier.create(handler.handle(request))
-        .expectErrorMatches(
-            err ->
-                err instanceof IllegalStateException
-                    && err.getMessage().contains("TransactionStatus not supported"))
-        .verify();
+            .expectErrorMatches(err ->
+                    err instanceof RtpInvalidStateTransition
+                            && err.getMessage().contains("Cannot transition RTP from SENT to CANCELLED"))
+            .verify();
   }
 
   private Rtp createRtpWithStatus() {

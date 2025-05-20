@@ -73,10 +73,11 @@ public class CancelRtpHandler extends EpcApiInvokerHandler implements RequestHan
                   request.rtpToSend().resourceID().getId().toString(),
                   sepaRequest))
               .doFirst(() -> log.info("Sending RTP cancellation request to {}", rtpToSend.serviceProviderDebtor()))
-              .thenReturn(request.withResponse(TransactionStatus.CNCL))
-              .doOnNext(resp -> log.info("Mapping sent RFC to {}", TransactionStatus.CNCL))
               .retryWhen(sendRetryPolicy());
         })
+        .map(resp -> request.withResponse(TransactionStatus.CNCL))
+        .doOnNext(resp -> log.info("Mapping sent RFC to {}", TransactionStatus.CNCL))
+        .switchIfEmpty(Mono.just(request))
         .onErrorResume(IllegalStateException.class, ex -> this.handleRetryError(ex, request))
         .doOnNext(resp -> log.info("Response: {}", resp.response()));
   }
