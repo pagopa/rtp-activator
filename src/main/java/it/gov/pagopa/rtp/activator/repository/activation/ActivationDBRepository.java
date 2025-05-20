@@ -68,11 +68,14 @@ public class ActivationDBRepository implements PayerRepository {
         .doFirst(() -> log.debug("Deactivating payer: {}", payer))
         .doOnNext(payerToDeactivate -> log.debug("Mapping payer to deleted entity."))
         .map(payerToDeactivate -> this.activationMapper.toDeletedDbEntity(payerToDeactivate, deactivationReason))
+
         .doOnNext(deletedActivationEntity -> log.debug("Saving deleted entity: {}", deletedActivationEntity))
         .flatMap(this.deletedActivationDB::save)
+
         .doOnNext(deletedActivationEntity -> log.debug("Deleting activation"))
         .map(DeletedActivationEntity::getId)
         .flatMap(this.activationDB::deleteById)
+
         .doOnSuccess(id -> log.debug("Deleted activation with id: {}", payer.activationID().getId()))
         .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));
   }
