@@ -21,6 +21,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -74,7 +75,7 @@ class CancelRtpHandlerTest {
 
   @Test
   void givenValidRequest_whenHandleRtpCancellation_thenCancelRtp() {
-    final var transactionStatus = TransactionStatus.ACTC;
+    final var transactionStatus = TransactionStatus.CNCL;
     final var resourceId = ResourceID.createNew();
     final var request = mock(EpcRequest.class);
     final var rtpToCancel = mock(Rtp.class);
@@ -122,7 +123,7 @@ class CancelRtpHandlerTest {
 
   @Test
   void givenRequestWithoutCertificate_whenHandleRtpCancellation_thenUseSimpleWebClient() {
-    final var transactionStatus = TransactionStatus.ACTC;
+    final var transactionStatus = TransactionStatus.CNCL;
     final var resourceId = ResourceID.createNew();
     final var request = mock(EpcRequest.class);
     final var rtpToCancel = mock(Rtp.class);
@@ -193,7 +194,7 @@ class CancelRtpHandlerTest {
     when(sepaRequestToPayMapper.toEpcRequestToCancel(rtpToCancel))
         .thenReturn(sepaRequest);
     when(epcClient.postRequestToPayCancellationRequest(any(), any(), any(), any()))
-        .thenReturn(Mono.error(new RuntimeException("Simulated Failure")));
+        .thenThrow(WebClientResponseException.create(500, "Simulated Failure", null, null, null));
 
     final var result = cancelRtpHandler.handle(request);
 
@@ -212,7 +213,7 @@ class CancelRtpHandlerTest {
 
   @Test
   void givenValidRequest_whenCancellationFailsOnce_thenRetriesAndSucceeds() {
-    final var transactionStatus = TransactionStatus.ACTC;
+    final var transactionStatus = TransactionStatus.CNCL;
     final var resourceId = ResourceID.createNew();
     final var request = mock(EpcRequest.class);
     final var rtpToCancel = mock(Rtp.class);
@@ -264,7 +265,7 @@ class CancelRtpHandlerTest {
 
   @Test
   void givenPartiallyFailingRtpSend_whenHandleRtpCancellation_thenRequestIdShouldChange() {
-    final var transactionStatus = TransactionStatus.ACTC;
+    final var transactionStatus = TransactionStatus.CNCL;
     final var numRetries = MAX_ATTEMPTS;
     final var resourceId = ResourceID.createNew();
     final var request = mock(EpcRequest.class);
@@ -320,5 +321,73 @@ class CancelRtpHandlerTest {
     final var capturedRequestIds = requestIdCaptor.getAllValues();
     assertEquals(numRetries, capturedRequestIds.size());
     assertEquals(numRetries, new HashSet<>(capturedRequestIds).size());
+  }
+
+  @Test
+  void givenBadRequestResponse_whenHandleRtpCancellation_thenReturnRJCRStatus() {
+    final var resourceId = ResourceID.createNew();
+    final var request = mock(EpcRequest.class);
+    final var rtpToCancel = mock(Rtp.class);
+    final var providerData = mock(ServiceProviderFullData.class);
+    final var tsp = mock(TechnicalServiceProvider.class);
+    final var sepaRequest = mock(SepaRequestToPayCancellationRequestResourceDto.class);
+    final var webClient = mock(WebClient.class);
+
+    when(rtpToCancel.resourceID()).thenReturn(resourceId);
+    when(request.rtpToSend()).thenReturn(rtpToCancel);
+    when(request.serviceProviderFullData()).thenReturn(providerData);
+    when(providerData.tsp()).thenReturn(tsp);
+    when(tsp.serviceEndpoint()).thenReturn("https://example.com");
+    when(webClientFactory.createSimpleWebClient()).thenReturn(webClient);
+    when(epcClientFactory.createClient(webClient)).thenReturn(epcClient);
+    when(epcClient.getApiClient()).thenReturn(apiClient);
+    when(sepaRequestToPayMapper.toEpcRequestToCancel(rtpToCancel)).thenReturn(sepaRequest);
+
+    WebClientResponseException cause = WebClientResponseException.create(
+            400, "Bad Request", null, null, null);
+    IllegalStateException retryExhausted = new IllegalStateException("Retry exhausted", cause);
+    retryExhausted.addSuppressed(new RuntimeException("Retries finished"));
+
+    when(epcClient.postRequestToPayCancellationRequest(any(), any(), any(), any()))
+            .thenThrow(retryExhausted);
+    when(request.withResponse(TransactionStatus.ERROR)).thenReturn(request);
+
+    StepVerifier.create(cancelRtpHandler.handle(request))
+            .expectNext(request)
+            .verifyComplete();
+  }
+
+  @Test
+  void givenGenericErrorResponse_whenHandleRtpCancellation_thenReturnErrorStatus() {
+    final var resourceId = ResourceID.createNew();
+    final var request = mock(EpcRequest.class);
+    final var rtpToCancel = mock(Rtp.class);
+    final var providerData = mock(ServiceProviderFullData.class);
+    final var tsp = mock(TechnicalServiceProvider.class);
+    final var sepaRequest = mock(SepaRequestToPayCancellationRequestResourceDto.class);
+    final var webClient = mock(WebClient.class);
+
+    when(rtpToCancel.resourceID()).thenReturn(resourceId);
+    when(request.rtpToSend()).thenReturn(rtpToCancel);
+    when(request.serviceProviderFullData()).thenReturn(providerData);
+    when(providerData.tsp()).thenReturn(tsp);
+    when(tsp.serviceEndpoint()).thenReturn("https://example.com");
+    when(webClientFactory.createSimpleWebClient()).thenReturn(webClient);
+    when(epcClientFactory.createClient(webClient)).thenReturn(epcClient);
+    when(epcClient.getApiClient()).thenReturn(apiClient);
+    when(sepaRequestToPayMapper.toEpcRequestToCancel(rtpToCancel)).thenReturn(sepaRequest);
+
+    WebClientResponseException cause = WebClientResponseException.create(
+            500, "Internal Server Error", null, null, null);
+    IllegalStateException retryExhausted = new IllegalStateException("Retry exhausted", cause);
+    retryExhausted.addSuppressed(new RuntimeException("Retries finished"));
+
+    when(epcClient.postRequestToPayCancellationRequest(any(), any(), any(), any()))
+            .thenThrow(retryExhausted);
+    when(request.withResponse(TransactionStatus.ERROR)).thenReturn(request);
+
+    StepVerifier.create(cancelRtpHandler.handle(request))
+            .expectNext(request)
+            .verifyComplete();
   }
 }
