@@ -56,7 +56,7 @@ class SendRtpProcessorImplTest {
     final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null);
     final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null);
     final var epcRequestWithToken = new EpcRequest(rtpToSend, serviceProviderData, token, null);
-    final var epcRequestWithResponse = new EpcRequest(rtpToSend, serviceProviderData, token, TransactionStatus.CNCL);
+    final var epcRequestWithResponse = new EpcRequest(rtpToSend, serviceProviderData, token, TransactionStatus.ACTC);
 
     when(rtpToSend.resourceID())
         .thenReturn(resourceId);

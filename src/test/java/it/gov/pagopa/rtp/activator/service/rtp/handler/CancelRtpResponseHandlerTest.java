@@ -35,8 +35,8 @@ class CancelRtpResponseHandlerTest {
     TransactionStatus status = TransactionStatus.CNCL;
     EpcRequest request = new EpcRequest(rtp, null, null, status);
 
-    Rtp updated = cloneWithSameEvents(rtp);
-    Rtp finalUpdated = cloneWithSameEvents(updated);
+    Rtp updated = cancelRtpWithSameEvents(rtp);
+    Rtp finalUpdated = cancelRtpWithSameEvents(updated);
 
     when(updater.triggerCancelRtp(rtp)).thenReturn(Mono.just(updated));
     when(updater.triggerCancelRtpAccr(updated)).thenReturn(Mono.just(finalUpdated));
@@ -55,8 +55,8 @@ class CancelRtpResponseHandlerTest {
     TransactionStatus status = TransactionStatus.RJCR;
     EpcRequest request = new EpcRequest(rtp, null, null, status);
 
-    Rtp updated = cloneWithSameEvents(rtp);
-    Rtp finalUpdated = cloneWithSameEvents(updated);
+    Rtp updated = cancelRtpWithSameEvents(rtp);
+    Rtp finalUpdated = cancelRtpWithSameEvents(updated);
 
     when(updater.triggerCancelRtp(rtp)).thenReturn(Mono.just(updated));
     when(updater.triggerCancelRtpRejected(updated)).thenReturn(Mono.just(finalUpdated));
@@ -74,7 +74,7 @@ class CancelRtpResponseHandlerTest {
     Rtp rtp = createRtpWithStatus();
     EpcRequest request = new EpcRequest(rtp, null, null, null);
 
-    Rtp updated = cloneWithSameEvents(rtp);
+    Rtp updated = cancelRtpWithSameEvents(rtp);
 
     when(updater.triggerCancelRtp(rtp)).thenReturn(Mono.just(updated));
 
@@ -104,8 +104,8 @@ class CancelRtpResponseHandlerTest {
     TransactionStatus status = TransactionStatus.ERROR;
     EpcRequest request = new EpcRequest(rtp, null, null, status);
 
-    Rtp updated = cloneWithSameEvents(rtp);
-    Rtp finalUpdated = cloneWithSameEvents(updated);
+    Rtp updated = cancelRtpWithSameEvents(rtp);
+    Rtp finalUpdated = cancelRtpWithSameEvents(updated);
 
     when(updater.triggerCancelRtp(rtp)).thenReturn(Mono.just(updated));
     when(updater.triggerErrorCancelRtp(updated)).thenReturn(Mono.just(finalUpdated));
@@ -156,26 +156,9 @@ class CancelRtpResponseHandlerTest {
         new ArrayList<>());
   }
 
-  private Rtp cloneWithSameEvents(Rtp original) {
-
-    return new Rtp(
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        new ResourceID(original.resourceID().getId()),
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-            RtpStatus.CANCELLED,
-        null,
-        new ArrayList<>(original.events()));
+  private Rtp cancelRtpWithSameEvents(Rtp original) {
+    return original
+            .withStatus(RtpStatus.CANCELLED)
+            .withEvents(new ArrayList<>(original.events()));
   }
 }
