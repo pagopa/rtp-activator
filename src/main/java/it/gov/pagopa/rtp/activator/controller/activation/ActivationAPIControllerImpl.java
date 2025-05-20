@@ -4,7 +4,9 @@ import static it.gov.pagopa.rtp.activator.utils.Authorizations.verifySubjectRequ
 
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.CreateApi;
+import it.gov.pagopa.rtp.activator.controller.generated.activate.DeleteApi;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.ReadApi;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
@@ -14,7 +16,9 @@ import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 import java.net.URI;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +28,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @Validated
 @Slf4j
-public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
+public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteApi {
 
   private final ActivationPayerService activationPayerService;
 
@@ -88,4 +92,28 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi {
     throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
   }
 
+
+  @Override
+  @PreAuthorize("hasAnyRole('write_rtp_activations')")
+  public Mono<ResponseEntity<Void>> deleteActivation(UUID requestId, UUID activationId,
+      String version, ServerWebExchange exchange) {
+
+    return Mono.just(activationId)
+        .doFirst(() -> log.info("Received request to deactivate payer with id: {}", activationId))
+        .flatMap(activationPayerService::findPayerById)
+
+        .doOnNext(payer -> MDC.put("service_provider", payer.serviceProviderDebtor()))
+        .doOnNext(payer -> MDC.put("debtor", payer.fiscalCode()))
+        .doOnNext(payer -> log.info("Verifying token subject"))
+        .flatMap(payer -> verifySubjectRequest(Mono.just(payer), Payer::serviceProviderDebtor))
+
+        .doOnNext(payer -> log.info("Deactivating payer with id: {}", payer.activationID().getId()))
+        .flatMap(activationPayerService::deactivatePayer)
+
+        .then(Mono.just(ResponseEntity.noContent().<Void>build()))
+        .onErrorReturn(AccessDeniedException.class,
+            ResponseEntity.notFound().build())
+        .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()))
+        .doFinally(f -> MDC.clear());
+  }
 }
