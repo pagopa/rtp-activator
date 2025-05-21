@@ -125,16 +125,16 @@ class ActivationPayerServiceImplTest {
   void givenValidPayer_whenDeactivatePayer_thenCompletesSuccessfully() {
 
     final var activationId = UUID.randomUUID();
-    final var payer = new Payer(new ActivationID(activationId), rtpSpId, fiscalCode, Instant.now());
+    final var payerToDeactivate = new Payer(new ActivationID(activationId), rtpSpId, fiscalCode, Instant.now());
 
-    when(activationDBRepository.deactivate(payer, DeactivationReason.DELETE))
+    when(activationDBRepository.deactivate(payerToDeactivate, DeactivationReason.DELETE))
         .thenReturn(Mono.empty());
 
-    StepVerifier.create(activationPayerService.deactivatePayer(payer))
-        .expectNext(payer)
+    StepVerifier.create(activationPayerService.deactivatePayer(payerToDeactivate))
+        .expectNext(payerToDeactivate)
         .verifyComplete();
 
-    verify(activationDBRepository).deactivate(payer, DeactivationReason.DELETE);
+    verify(activationDBRepository).deactivate(payerToDeactivate, DeactivationReason.DELETE);
   }
 
   @Test
@@ -147,15 +147,15 @@ class ActivationPayerServiceImplTest {
   void givenDeactivateFails_whenDeactivatePayer_thenErrorIsPropagated() {
 
     final var activationId = UUID.randomUUID();
-    final var payer = new Payer(new ActivationID(activationId), rtpSpId, fiscalCode, Instant.now());
+    final var payerToDeactivate = new Payer(new ActivationID(activationId), rtpSpId, fiscalCode, Instant.now());
 
-    when(activationDBRepository.deactivate(payer, DeactivationReason.DELETE))
+    when(activationDBRepository.deactivate(payerToDeactivate, DeactivationReason.DELETE))
         .thenReturn(Mono.error(new RuntimeException("deactivation error")));
 
-    StepVerifier.create(activationPayerService.deactivatePayer(payer))
+    StepVerifier.create(activationPayerService.deactivatePayer(payerToDeactivate))
         .expectErrorMessage("deactivation error")
         .verify();
 
-    verify(activationDBRepository).deactivate(payer, DeactivationReason.DELETE);
+    verify(activationDBRepository).deactivate(payerToDeactivate, DeactivationReason.DELETE);
   }
 }
