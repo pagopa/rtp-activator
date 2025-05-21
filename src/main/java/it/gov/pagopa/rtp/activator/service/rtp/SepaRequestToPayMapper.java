@@ -283,7 +283,7 @@ public class SepaRequestToPayMapper {
                 )));
 
     final var GenericOrganisationIdentification1EPC25922V30DS04b2Dto = new GenericOrganisationIdentification1EPC25922V30DS04b2Dto()
-            .id("")
+            .id(this.pagoPaConfigProperties.details().fiscalCode())
             .schmeNm(new OrganisationIdentificationSchemeName1ChoiceEPC25922V30DS04b2Dto()
                     .cd(ExternalOrganisationIdentification1CodeEPC25922V30DS02Dto.BOID));
 
@@ -293,7 +293,6 @@ public class SepaRequestToPayMapper {
 
     final var party40ChoiceEPC25922V30DS113Dto = new Party40ChoiceEPC25922V30DS113Dto()
             .pty(new PartyIdentification135EPC25922V30DS04b3Dto()
-                    .nm("")
                     .id(party38ChoiceEPC25922V30DS04b2Dto));
 
     final var originalTransactionReference28EPC25922V30DS11Dto = new OriginalTransactionReference28EPC25922V30DS11Dto() //OrgnlTxRef
