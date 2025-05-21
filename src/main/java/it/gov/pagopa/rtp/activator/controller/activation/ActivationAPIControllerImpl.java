@@ -99,21 +99,31 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
       String version, ServerWebExchange exchange) {
 
     return Mono.just(activationId)
-        .doFirst(() -> log.info("Received request to deactivate payer with id: {}", activationId))
+        .doFirst(() -> log.info("Received request to deactivate payer. Id: {}", activationId))
         .flatMap(activationPayerService::findPayerById)
 
         .doOnNext(payer -> MDC.put("service_provider", payer.serviceProviderDebtor()))
         .doOnNext(payer -> MDC.put("debtor", payer.fiscalCode()))
+        .doOnNext(payer -> MDC.put("activation_id", payer.activationID().getId().toString()))
+
         .doOnNext(payer -> log.info("Verifying token subject"))
         .flatMap(payer -> verifySubjectRequest(Mono.just(payer), Payer::serviceProviderDebtor))
 
-        .doOnNext(payer -> log.info("Deactivating payer with id: {}", payer.activationID().getId()))
+        .doOnNext(payer -> log.info("Deactivating payer"))
         .flatMap(activationPayerService::deactivatePayer)
 
+        .doOnNext(deactivatedPayer -> log.info("Payer deactivated"))
         .map(deactivatedPayer -> ResponseEntity.noContent().<Void>build())
+
+        .doOnError(ex -> log.error("Error deactivating payer {}", ex.getMessage(), ex))
         .onErrorReturn(AccessDeniedException.class,
             ResponseEntity.notFound().build())
-        .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()))
+
+        .switchIfEmpty(Mono.fromSupplier(() -> {
+          log.error("Payer not found");
+          return ResponseEntity.notFound().build();
+        }))
+
         .doFinally(f -> MDC.clear());
   }
 }
