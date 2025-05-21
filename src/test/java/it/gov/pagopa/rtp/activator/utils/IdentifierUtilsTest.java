@@ -26,11 +26,14 @@ class IdentifierUtilsTest {
     }
 
     @Test
-    void givenEmptyUuid_whenUuidFormatter_thenFormattedEmptyString() {
-        UUID uuid = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    void givenEmptyString_whenUuidFormatter_thenThrowIllegalArgumentException() {
+        String emptyString = "";
 
-        String result = IdentifierUtils.uuidFormatter(uuid);
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
+            UUID uuid = UUID.fromString(emptyString);
+            IdentifierUtils.uuidFormatter(uuid);
+        });
 
-        assertEquals("00000000000000000000000000000000", result);
+        assertEquals("Invalid UUID string: ", thrown.getMessage());
     }
 }
