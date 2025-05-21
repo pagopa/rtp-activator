@@ -8,5 +8,5 @@ public interface ActivationPayerService {
    Mono<Payer> activatePayer(String payer, String fiscalCode);
    Mono<Payer> findPayerById(UUID id);
    Mono<Payer> findPayer(String payer);
-   Mono<Void> deactivatePayer(Payer payer);
+   Mono<Payer> deactivatePayer(Payer payer);
 }

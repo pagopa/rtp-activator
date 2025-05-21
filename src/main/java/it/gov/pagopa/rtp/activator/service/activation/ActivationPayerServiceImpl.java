@@ -62,7 +62,7 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
 
     @NonNull
     @Override
-    public Mono<Void> deactivatePayer(@NonNull final Payer payerToDeactivate) {
+    public Mono<Payer> deactivatePayer(@NonNull final Payer payerToDeactivate) {
         Objects.requireNonNull(payerToDeactivate, "Payer cannot be null");
 
         return Mono.just(payerToDeactivate)
@@ -70,6 +70,7 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
                 payer.activationID().getId(), payer.fiscalCode()))
             .flatMap(payer ->
                 this.activationDBRepository.deactivate(payer, DeactivationReason.DELETE))
+            .thenReturn(payerToDeactivate)
             .doOnSuccess(id -> log.info("Payer deactivated with id {} and fiscal code {}",
                 payerToDeactivate.activationID().getId(), payerToDeactivate.fiscalCode()))
             .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));

@@ -131,6 +131,7 @@ class ActivationPayerServiceImplTest {
         .thenReturn(Mono.empty());
 
     StepVerifier.create(activationPayerService.deactivatePayer(payer))
+        .expectNext(payer)
         .verifyComplete();
 
     verify(activationDBRepository).deactivate(payer, DeactivationReason.DELETE);
