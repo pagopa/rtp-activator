@@ -125,21 +125,17 @@ public class SendRTPServiceImpl implements SendRTPService {
                 rtp.status()))
         .doOnError(error -> log.error("Error retrieving RTP: {}", error.getMessage(), error));
 
-    final var cancellationRequest = rtpToCancel
+    return rtpToCancel
         .doOnError(error -> log.error(error.getMessage(), error))
         .doOnNext(rtp -> LoggingUtils.logAsJson(
             () -> sepaRequestToPayMapper.toEpcRequestToCancel(rtp), objectMapper))
-        .flatMap(this.sendRtpProcessor::sendRtpCancellationToServiceProviderDebtor);
-
-    return cancellationRequest
-        .doOnNext(
-            rtp -> log.debug("Setting status of RTP with id {} to {}", rtp.resourceID().getId(),
-                RtpStatus.CANCELLED))
-        .map(rtp -> rtp.withStatus(RtpStatus.CANCELLED))
-        .doOnNext(
-            rtp -> log.info("Saving {} RTP with id {}", rtp.status(), rtp.resourceID().getId()))
-        .flatMap(this.rtpRepository::save)
+        .flatMap(this.sendRtpProcessor::sendRtpCancellationToServiceProviderDebtor)
+        .doOnNext(rtp -> log.debug("Setting status of RTP with id {} to {}", rtp.resourceID().getId(), RtpStatus.CANCELLED))
+        .flatMap(rtpRepository::save)
+        .doOnSuccess(rtpSaved -> log.info("RTP saved with id: {}", rtpSaved.resourceID().getId()))
+        .doOnError(error -> log.error("Error cancel RTP: {}", error.getMessage(), error))
         .doFinally(f -> MDC.clear());
+
   }
 
 

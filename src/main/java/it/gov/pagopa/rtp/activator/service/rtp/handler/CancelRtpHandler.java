@@ -6,10 +6,15 @@ import it.gov.pagopa.rtp.activator.configuration.mtlswebclient.WebClientFactory;
 import it.gov.pagopa.rtp.activator.domain.rtp.TransactionStatus;
 import it.gov.pagopa.rtp.activator.epcClient.api.DefaultApi;
 import it.gov.pagopa.rtp.activator.service.rtp.SepaRequestToPayMapper;
+
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
 
@@ -70,7 +75,37 @@ public class CancelRtpHandler extends EpcApiInvokerHandler implements RequestHan
               .doFirst(() -> log.info("Sending RTP cancellation request to {}", rtpToSend.serviceProviderDebtor()))
               .retryWhen(sendRetryPolicy());
         })
-        .map(resp -> request.withResponse(TransactionStatus.ACTC));
+        .map(resp -> request.withResponse(TransactionStatus.CNCL))
+        .doOnNext(resp -> log.info("Mapping sent RFC to {}", TransactionStatus.CNCL))
+        .switchIfEmpty(Mono.just(request))
+        .onErrorResume(IllegalStateException.class, ex -> this.handleRetryError(ex, request))
+        .doOnNext(resp -> log.info("Response: {}", resp.response()));
+  }
+
+  /**
+   * Handles errors that occur during the retry process of sending an RTP cancellation request. It
+   * distinguishes between different types of errors and returns the appropriate transaction status.
+   *
+   * @param ex The exception thrown during the retry process.
+   * @param request The original EPC request.
+   * @return A {@code Mono} containing the EPC request with an updated status based on the error
+   *     type.
+   */
+  @NonNull
+  private Mono<EpcRequest> handleRetryError(
+      @NonNull final IllegalStateException ex, @NonNull final EpcRequest request) {
+
+    log.warn("Handling error upon sending RFC to {}", request.serviceProviderFullData().tsp().serviceEndpoint());
+
+    return Optional.of(ex)
+        .filter(Exceptions::isRetryExhausted)
+        .map(Throwable::getCause)
+        .filter(WebClientResponseException.class::isInstance)
+        .map(WebClientResponseException.class::cast)
+        .map(WebClientResponseException::getStatusCode)
+        .filter(httpStatusCode -> httpStatusCode.isSameCodeAs(HttpStatus.BAD_REQUEST))
+        .map(statusCode -> Mono.just(request.withResponse(TransactionStatus.RJCR)))
+        .orElse(Mono.just(request.withResponse(TransactionStatus.ERROR)));
   }
 }
 

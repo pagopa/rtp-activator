@@ -37,6 +37,9 @@ class SendRtpProcessorImplTest {
   @Mock
   private SendRtpResponseHandler sendRtpResponseHandler;
 
+  @Mock
+  private CancelRtpResponseHandler cancelRtpResponseHandler;
+
   @InjectMocks
   private SendRtpProcessorImpl sendRtpProcessor;
 
@@ -205,7 +208,7 @@ class SendRtpProcessorImplTest {
     final var inputEpcRequest = new EpcRequest(rtpToSend, null, null, null);
     final var epcRequestWithRegistryData = new EpcRequest(rtpToSend, serviceProviderData, null, null);
     final var epcRequestWithToken = new EpcRequest(rtpToSend, serviceProviderData, token, null);
-    final var epcRequestWithResponse = new EpcRequest(rtpToSend, serviceProviderData, token, TransactionStatus.ACTC);
+    final var epcRequestWithResponse = new EpcRequest(rtpToSend, serviceProviderData, token, TransactionStatus.CNCL);
 
     when(rtpToSend.resourceID())
         .thenReturn(resourceId);
@@ -217,6 +220,8 @@ class SendRtpProcessorImplTest {
         .thenReturn(Mono.just(epcRequestWithToken));
     when(cancelRtpHandler.handle(epcRequestWithToken))
         .thenReturn(Mono.just(epcRequestWithResponse));
+    when(cancelRtpResponseHandler.handle(epcRequestWithResponse))
+        .thenReturn(Mono.just(epcRequestWithResponse));
 
     final var resultMono = sendRtpProcessor.sendRtpCancellationToServiceProviderDebtor(rtpToSend);
 
@@ -227,6 +232,7 @@ class SendRtpProcessorImplTest {
     verify(registryDataHandler).handle(inputEpcRequest);
     verify(oauth2Handler).handle(epcRequestWithRegistryData);
     verify(cancelRtpHandler).handle(epcRequestWithToken);
+    verify(cancelRtpResponseHandler).handle(epcRequestWithResponse);
   }
 
 
@@ -246,6 +252,7 @@ class SendRtpProcessorImplTest {
 
     verify(registryDataHandler).handle(inputEpcRequest);
     verifyNoInteractions(oauth2Handler, cancelRtpHandler);
+    verifyNoInteractions(cancelRtpResponseHandler);
   }
 
 
@@ -275,6 +282,7 @@ class SendRtpProcessorImplTest {
     verify(registryDataHandler).handle(inputEpcRequest);
     verify(oauth2Handler).handle(epcRequestWithRegistryData);
     verifyNoInteractions(cancelRtpHandler);
+    verifyNoInteractions(cancelRtpResponseHandler);
   }
 
 
@@ -308,6 +316,7 @@ class SendRtpProcessorImplTest {
     verify(registryDataHandler).handle(inputEpcRequest);
     verify(oauth2Handler).handle(epcRequestWithRegistryData);
     verify(cancelRtpHandler).handle(epcRequestWithToken);
+    verifyNoInteractions(cancelRtpResponseHandler);
   }
 
   @Test
@@ -342,6 +351,7 @@ class SendRtpProcessorImplTest {
     verify(registryDataHandler).handle(inputEpcRequest);
     verify(oauth2Handler).handle(epcRequestWithRegistryData);
     verify(cancelRtpHandler).handle(epcRequestWithToken);
+    verifyNoInteractions(cancelRtpResponseHandler);
   }
 
 }

@@ -209,10 +209,11 @@ class SendRTPServiceTest {
   void givenExistingCreatedRtp_whenCancelRtp_thenShouldSetCancelledStatusAndSave() {
     final var rtpId = ResourceID.createNew();
     final var createdRtp = mockRtp(RtpStatus.CREATED, rtpId, LocalDateTime.now());
+    final var cancelRtp = mockRtp(RtpStatus.CANCELLED, rtpId, LocalDateTime.now());
 
     when(rtpRepository.findById(rtpId)).thenReturn(Mono.just(createdRtp));
     when(sendRtpProcessor.sendRtpCancellationToServiceProviderDebtor(createdRtp))
-        .thenReturn(Mono.just(createdRtp));
+        .thenReturn(Mono.just(cancelRtp));
     when(rtpRepository.save(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
     final var result = sendRTPService.cancelRtp(rtpId);
