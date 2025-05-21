@@ -221,7 +221,7 @@ class SepaRequestToPayMapperTest {
     String payeeName = "Comune di Bugliano";
     String iban = "IT60X0542811101000000123456";
     BigDecimal amount = new BigDecimal("99999999999");
-    LocalDateTime savingDateTime = LocalDateTime.now();
+    LocalDateTime savingDateTime = LocalDateTime.of(2025, 1,1,12,31,20,11).atZone(ZoneId.systemDefault()).toLocalDateTime();
     LocalDate expiryDate = LocalDate.now().plusDays(5);
     String description = "Pagamento TARI";
     String noticeNumber = "123456";
@@ -231,6 +231,7 @@ class SepaRequestToPayMapperTest {
     String subject = "subject";
     String serviceProviderCreditor = "serviceProviderCreditor";
     String serviceProviderDebtor = "serviceProviderDebtor";
+    String expectedDate = "2025-01-01T12:31:20+01:00";
 
     final var nRtp = Rtp.builder()
         .resourceID(resourceId)
@@ -257,17 +258,17 @@ class SepaRequestToPayMapperTest {
     assertEquals(resourceId.getId().toString(), result.getResourceId());
 
     final var originalPaymentInstruction = result.getDocument().getCstmrPmtCxlReq().getUndrlyg().getOrgnlPmtInfAndCxl().getFirst();
-    assertEquals(resourceId.getId().toString(),
+    assertEquals(resourceId.getId().toString().replace("-",""),
         originalPaymentInstruction.getPmtCxlId());
-    assertEquals(resourceId.getId().toString(),
+    assertEquals(resourceId.getId().toString().replace("-",""),
         originalPaymentInstruction.getOrgnlPmtInfId());
     assertEquals(resourceId.getId().toString().replace("-",""),
         originalPaymentInstruction.getOrgnlGrpInf().getOrgnlMsgId());
-    assertEquals(savingDateTime.toString(),
+    assertEquals(expectedDate,
         originalPaymentInstruction.getOrgnlGrpInf().getOrgnlCreDtTm());
 
     final var paymentTransaction = originalPaymentInstruction.getTxInf().getFirst();
-    assertEquals(resourceId.getId().toString(),
+    assertEquals(resourceId.getId().toString().replace("-",""),
         paymentTransaction.getCxlId());
     assertEquals(noticeNumber, paymentTransaction.getOrgnlEndToEndId());
     assertEquals(amount,
@@ -296,9 +297,9 @@ class SepaRequestToPayMapperTest {
         branchAndFinancialInstitutionIdentification.getFinInstnId().getOthr().getId());
 
     final var caseAssignment = result.getDocument().getCstmrPmtCxlReq().getAssgnmt();
-    assertEquals(resourceId.getId().toString(),
+    assertEquals(resourceId.getId().toString().replace("-",""),
         caseAssignment.getId());
-    assertEquals(savingDateTime.toString(),
+    assertEquals(expectedDate,
         caseAssignment.getCreDtTm());
     assertEquals(pagoPaConfigProperties.details().fiscalCode(),
         caseAssignment.getAssgnr().getPty().getId().getOrgId().getOthr().getId());
