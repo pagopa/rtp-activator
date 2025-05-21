@@ -110,7 +110,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
         .doOnNext(payer -> log.info("Deactivating payer with id: {}", payer.activationID().getId()))
         .flatMap(activationPayerService::deactivatePayer)
 
-        .then(Mono.just(ResponseEntity.noContent().<Void>build()))
+        .map(deactivatedPayer -> ResponseEntity.noContent().<Void>build())
         .onErrorReturn(AccessDeniedException.class,
             ResponseEntity.notFound().build())
         .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()))
