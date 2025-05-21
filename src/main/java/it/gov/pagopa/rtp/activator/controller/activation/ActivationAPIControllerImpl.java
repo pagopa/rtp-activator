@@ -14,6 +14,7 @@ import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 
 
 import java.net.URI;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -166,7 +167,10 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
         .doOnNext(payer -> MDC.put("activation_id", payer.activationID().getId().toString()))
 
         .doOnNext(payer -> log.info("Verifying token subject"))
-        .flatMap(payer -> verifySubjectRequest(Mono.just(payer), Payer::serviceProviderDebtor))
+        .flatMap(payer -> verifySubjectRequest(Mono.just(payer),
+            payerToVerify -> Optional.of(payerToVerify)
+                .map(Payer::serviceProviderDebtor)
+                .orElse("")))
 
         .doOnNext(payer -> log.info("Deactivating payer"))
         .flatMap(activationPayerService::deactivatePayer)

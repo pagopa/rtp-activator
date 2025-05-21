@@ -312,6 +312,32 @@ class ActivationAPIControllerImplTest {
   }
 
 
+  @Test
+  @Users.RtpWriter
+  void givenPayerWithNullServiceProviderDebtor_whenDeleteActivation_thenReturnsNotFound() {
+    final var activationId = ActivationID.createNew();
+    final var samplePayer = new Payer(
+        activationId,
+        null,
+        "INVALID",
+        Instant.now()
+    );
+
+    when(activationPayerService.findPayerById(activationId.getId()))
+        .thenReturn(Mono.just(samplePayer));
+
+    webTestClient
+        .delete()
+        .uri(uriBuilder -> uriBuilder
+            .path("/activations/{activationId}")
+            .build(activationId.getId().toString()))
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().isNotFound();
+  }
+
+
   private ActivationReqDto generateActivationRequest() {
     return new ActivationReqDto(new PayerDto("RSSMRA85T10A562S", SERVICE_PROVIDER_ID));
   }
