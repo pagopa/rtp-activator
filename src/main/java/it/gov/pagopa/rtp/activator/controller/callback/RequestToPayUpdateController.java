@@ -2,6 +2,7 @@ package it.gov.pagopa.rtp.activator.controller.callback;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
+import it.gov.pagopa.rtp.activator.service.callback.CallbackHandler;
 import it.gov.pagopa.rtp.activator.utils.PayloadInfoExtractor;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -20,10 +21,13 @@ import reactor.core.publisher.Mono;
 public class RequestToPayUpdateController implements RequestToPayUpdateApi {
 
   private final CertificateChecker certificateChecker;
+  private final CallbackHandler callbackHandler;
 
   public RequestToPayUpdateController(
-      CertificateChecker certificateChecker) {
+          CertificateChecker certificateChecker,
+          CallbackHandler callbackHandler) {
     this.certificateChecker = certificateChecker;
+    this.callbackHandler = callbackHandler;
   }
 
   @Override
@@ -35,12 +39,12 @@ public class RequestToPayUpdateController implements RequestToPayUpdateApi {
     return requestBody
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
         .flatMap(s -> certificateChecker.verifyRequestCertificate(s, clientCertificateSerialNumber))
+        .flatMap(callbackHandler::handle)
         .doOnNext(PayloadInfoExtractor::populateMdc)
         .<ResponseEntity<Void>>map(s -> ResponseEntity.ok().build())
         .doOnSuccess(resp -> log.info("Send callback processed successfully"))
         .doOnError(err -> log.error("Error receiving the update callback {}", err.getMessage()))
-        .onErrorReturn(
-            IncorrectCertificate.class, ResponseEntity.status(HttpStatus.FORBIDDEN).build())
+        .onErrorReturn(IncorrectCertificate.class, ResponseEntity.status(HttpStatus.FORBIDDEN).build())
         .onErrorReturn(ServiceProviderNotFoundException.class, ResponseEntity.badRequest().build())
         .onErrorReturn(IllegalArgumentException.class, ResponseEntity.badRequest().build())
         .doFinally(sig -> MDC.clear());
