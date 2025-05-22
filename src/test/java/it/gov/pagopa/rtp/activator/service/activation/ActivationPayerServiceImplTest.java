@@ -1,5 +1,7 @@
 package it.gov.pagopa.rtp.activator.service.activation;
 
+import it.gov.pagopa.rtp.activator.domain.payer.DeactivationReason;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +19,9 @@ import reactor.test.StepVerifier;
 
 import java.time.Instant;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -94,5 +98,64 @@ class ActivationPayerServiceImplTest {
     StepVerifier.create(activationPayerService.findPayer(notExFiscalCode)).verifyComplete();
 
     verify(activationDBRepository).findByFiscalCode(notExFiscalCode);
+  }
+
+  @Test
+  void givenValidId_whenFindPayerById_thenReturnsPayer() {
+
+    final var id = UUID.randomUUID();
+    final var expectedPayer = new Payer(new ActivationID(id), rtpSpId, fiscalCode, Instant.now());
+
+    when(activationDBRepository.findById(id)).thenReturn(Mono.just(expectedPayer));
+
+    StepVerifier.create(activationPayerService.findPayerById(id))
+        .expectNext(expectedPayer)
+        .verifyComplete();
+
+    verify(activationDBRepository).findById(id);
+  }
+
+  @Test
+  void givenNullId_whenFindPayerById_thenThrowsNullPointerException() {
+    assertThrows(NullPointerException.class, () -> activationPayerService.findPayerById(null));
+    verify(activationDBRepository, never()).findById(any());
+  }
+
+  @Test
+  void givenValidPayer_whenDeactivatePayer_thenCompletesSuccessfully() {
+
+    final var activationId = UUID.randomUUID();
+    final var payerToDeactivate = new Payer(new ActivationID(activationId), rtpSpId, fiscalCode, Instant.now());
+
+    when(activationDBRepository.deactivate(payerToDeactivate, DeactivationReason.DELETE))
+        .thenReturn(Mono.empty());
+
+    StepVerifier.create(activationPayerService.deactivatePayer(payerToDeactivate))
+        .expectNext(payerToDeactivate)
+        .verifyComplete();
+
+    verify(activationDBRepository).deactivate(payerToDeactivate, DeactivationReason.DELETE);
+  }
+
+  @Test
+  void givenNullPayer_whenDeactivatePayer_thenThrowsNullPointerException() {
+    assertThrows(NullPointerException.class, () -> activationPayerService.deactivatePayer(null));
+    verify(activationDBRepository, never()).deactivate(any(), any());
+  }
+
+  @Test
+  void givenDeactivateFails_whenDeactivatePayer_thenErrorIsPropagated() {
+
+    final var activationId = UUID.randomUUID();
+    final var payerToDeactivate = new Payer(new ActivationID(activationId), rtpSpId, fiscalCode, Instant.now());
+
+    when(activationDBRepository.deactivate(payerToDeactivate, DeactivationReason.DELETE))
+        .thenReturn(Mono.error(new RuntimeException("deactivation error")));
+
+    StepVerifier.create(activationPayerService.deactivatePayer(payerToDeactivate))
+        .expectErrorMessage("deactivation error")
+        .verify();
+
+    verify(activationDBRepository).deactivate(payerToDeactivate, DeactivationReason.DELETE);
   }
 }

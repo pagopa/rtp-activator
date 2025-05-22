@@ -238,6 +238,106 @@ class ActivationAPIControllerImplTest {
         .value(body -> assertThat(body.getErrors()).hasSize(1));
   }
 
+
+
+  @Test
+  @Users.RtpWriter
+  void givenValidId_whenDeleteActivation_thenReturnsNoContent() {
+    final var activationId = ActivationID.createNew();
+    final var samplePayer = new Payer(
+        activationId,
+        SERVICE_PROVIDER_ID,
+        "FISCAL_CODE",
+        Instant.now()
+    );
+
+    when(activationPayerService.findPayerById(activationId.getId()))
+        .thenReturn(Mono.just(samplePayer));
+    when(activationPayerService.deactivatePayer(samplePayer))
+        .thenReturn(Mono.just(samplePayer));
+
+    webTestClient
+        .delete()
+        .uri(uriBuilder -> uriBuilder
+            .path("/activations/{activationId}")
+            .build(activationId.getId().toString()))
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().isNoContent();
+  }
+
+  @Test
+  @Users.RtpWriter
+  void givenMissingActivation_whenDeleteActivation_thenReturnsNotFound() {
+    final var activationId = ActivationID.createNew();
+
+    when(activationPayerService.findPayerById(activationId.getId()))
+        .thenReturn(Mono.empty());
+
+    webTestClient
+        .delete()
+        .uri(uriBuilder -> uriBuilder
+            .path("/activations/{activationId}")
+            .build(activationId.getId().toString()))
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().isNotFound();
+  }
+
+  @Test
+  @Users.RtpWriter
+  void givenInvalidFiscalCode_whenDeleteActivation_thenReturnsNotFound() {
+    final var activationId = ActivationID.createNew();
+    final var samplePayer = new Payer(
+        activationId,
+        "SP1",
+        "INVALID",
+        Instant.now()
+    );
+
+    when(activationPayerService.findPayerById(activationId.getId()))
+        .thenReturn(Mono.just(samplePayer));
+
+    webTestClient
+        .delete()
+        .uri(uriBuilder -> uriBuilder
+            .path("/activations/{activationId}")
+            .build(activationId.getId().toString()))
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().isNotFound();
+  }
+
+
+  @Test
+  @Users.RtpWriter
+  void givenPayerWithNullServiceProviderDebtor_whenDeleteActivation_thenReturnsNotFound() {
+    final var activationId = ActivationID.createNew();
+    final var samplePayer = new Payer(
+        activationId,
+        null,
+        "INVALID",
+        Instant.now()
+    );
+
+    when(activationPayerService.findPayerById(activationId.getId()))
+        .thenReturn(Mono.just(samplePayer));
+
+    webTestClient
+        .delete()
+        .uri(uriBuilder -> uriBuilder
+            .path("/activations/{activationId}")
+            .build(activationId.getId().toString()))
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().isNotFound();
+  }
+
+
   private ActivationReqDto generateActivationRequest() {
     return new ActivationReqDto(new PayerDto("RSSMRA85T10A562S", SERVICE_PROVIDER_ID));
   }
