@@ -163,7 +163,6 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
         .flatMap(activationPayerService::findPayerById)
 
         .doOnNext(payer -> MDC.put("service_provider", payer.serviceProviderDebtor()))
-        .doOnNext(payer -> MDC.put("debtor", payer.fiscalCode()))
         .doOnNext(payer -> MDC.put("activation_id", payer.activationID().getId().toString()))
 
         .doOnNext(payer -> log.info("Verifying token subject"))
