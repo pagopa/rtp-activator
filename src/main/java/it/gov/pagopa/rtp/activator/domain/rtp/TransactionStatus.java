@@ -1,6 +1,7 @@
 package it.gov.pagopa.rtp.activator.domain.rtp;
 
-import lombok.NonNull;
+import org.springframework.lang.NonNull;
+
 import java.util.Arrays;
 
 public enum TransactionStatus {
@@ -19,7 +20,8 @@ public enum TransactionStatus {
     this.value = value;
   }
 
-  public static TransactionStatus fromString(@NonNull final String text) {
+  @NonNull
+  public static TransactionStatus fromString(final String text) {
     return Arrays.stream(TransactionStatus.values())
             .filter(b -> b.value.equals(text))
             .findFirst()
