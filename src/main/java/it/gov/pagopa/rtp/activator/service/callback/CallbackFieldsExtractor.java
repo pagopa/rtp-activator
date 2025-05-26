@@ -12,10 +12,9 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component("callbackFieldsExtractor")
@@ -23,50 +22,44 @@ import java.util.stream.Collectors;
 public class CallbackFieldsExtractor {
 
   @NonNull
-  public List<TransactionStatus> extractTransactionStatusSend(@NonNull final JsonNode responseNode) {
-
-      final var orgnlPmtInfAndSts = Optional.of(responseNode)
-              .map(node -> node.path("AsynchronousSepaRequestToPayResponse"))
-              .map(node -> node.path("Document"))
-              .map(node -> node.path("CdtrPmtActvtnReqStsRpt"))
-              .map(node -> node.path("OrgnlPmtInfAndSts"))
+  public Flux<TransactionStatus> extractTransactionStatusSend(@NonNull final JsonNode responseNode) {
+      return Mono.justOrEmpty(responseNode)
+              .map(node -> node.path("AsynchronousSepaRequestToPayResponse")
+                      .path("Document")
+                      .path("CdtrPmtActvtnReqStsRpt")
+                      .path("OrgnlPmtInfAndSts"))
               .filter(node -> !node.isMissingNode())
-              .orElseThrow(() -> new IllegalArgumentException("Missing field"));
-
-      final var transactionStatusList = JsonNodeUtils.nodeToCollection(orgnlPmtInfAndSts).stream()
-              .flatMap(node -> JsonNodeUtils.nodeToCollection(node.path("TxInfAndSts")).stream())
-              .flatMap(node -> JsonNodeUtils.nodeToCollection(node.path("TxSts")).stream())
-              .map(node -> node.asText(null))
-              .map(StringUtils::trimToNull)
-              .map(txtSt ->{
+              .switchIfEmpty(Mono.error(new IllegalArgumentException("Missing field")))
+              .flatMapMany(JsonNodeUtils::nodeToFlux)
+              .flatMap(node -> JsonNodeUtils.nodeToFlux(node.path("TxInfAndSts")))
+              .flatMap(node -> JsonNodeUtils.nodeToFlux(node.path("TxSts")))
+              .map(JsonNode::asText)
+              .map(StringUtils::trim)
+              .map(txtSt -> {
                   try {
                       return TransactionStatus.fromString(txtSt);
                   } catch (IllegalArgumentException e) {
                       return TransactionStatus.ERROR;
                   }
               })
-              .collect(Collectors.toList());
-
-      return transactionStatusList.isEmpty() ? List.of(TransactionStatus.ERROR) : transactionStatusList;
+              .switchIfEmpty(Flux.just(TransactionStatus.ERROR));
   }
 
   @NonNull
-  public ResourceID exstractResourceIDSend(@NonNull final JsonNode responseNode) {
+  public Mono<ResourceID> exstractResourceIDSend(@NonNull final JsonNode responseNode) {
 
-        final var orgnlMsgId = Optional.of(responseNode)
-                .map(node -> node.path("AsynchronousSepaRequestToPayResponse"))
-                .map(node -> node.path("Document"))
-                .map(node -> node.path("CdtrPmtActvtnReqStsRpt"))
-                .map(node -> node.path("OrgnlGrpInfAndSts"))
-                .map(node -> node.path("OrgnlMsgId"))
-                .filter(node -> !node.isMissingNode())
-                .orElseThrow(() -> new IllegalArgumentException("Missing field"));
-
-        return Optional.of(orgnlMsgId)
-                .map(JsonNode::asText)
-                .map(StringUtils::trimToNull)
-                .map(IdentifierUtils::uuidRebuilder)
-                .map(ResourceID::new)
-                .orElseThrow(() -> new IllegalArgumentException("Resource id is invalid"));
-    }
+      return Mono.justOrEmpty(responseNode)
+              .map(node -> node.path("AsynchronousSepaRequestToPayResponse")
+                      .path("Document")
+                      .path("CdtrPmtActvtnReqStsRpt")
+                      .path("OrgnlGrpInfAndSts")
+                      .path("OrgnlMsgId"))
+              .filter(node -> !node.isMissingNode())
+              .switchIfEmpty(Mono.error(new IllegalArgumentException("Missing field")))
+              .map(JsonNode::asText)
+              .map(StringUtils::trim)
+              .map(IdentifierUtils::uuidRebuilder)
+              .map(ResourceID::new)
+              .switchIfEmpty(Mono.error(new IllegalArgumentException("Resource id is invalid")));
+  }
 }

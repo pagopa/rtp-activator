@@ -10,7 +10,6 @@ import it.gov.pagopa.rtp.activator.utils.RetryPolicyUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
@@ -40,14 +39,15 @@ public class CallbackHandler {
     final var transactionStatus = callbackFieldsExtractor.extractTransactionStatusSend(requestBody);
     final var resourceId = callbackFieldsExtractor.exstractResourceIDSend(requestBody);
 
-    return rtpRepository.findById(resourceId)
-            .doOnNext( rtp -> log.info("Retrieved RTP with id {}", rtp.resourceID().getId()))
-            .flatMap(rtpToUpdate -> Flux.fromIterable(transactionStatus)
-                            .concatMap(status -> triggerStatus(status, rtpToUpdate))
-                            .then(Mono.just(rtpToUpdate))
-            )
-            .doOnSuccess(r -> log.info("Completed handling callback response"))
-            .thenReturn(requestBody);
+      return resourceId
+              .flatMap(rtpRepository::findById)
+              .doOnNext(rtp -> log.info("Retrieved RTP with id {}", rtp.resourceID().getId()))
+              .flatMap(rtpToUpdate -> transactionStatus
+                      .concatMap(status -> triggerStatus(status, rtpToUpdate))
+                      .then(Mono.just(rtpToUpdate))
+              )
+              .doOnSuccess(r -> log.info("Completed handling callback response"))
+              .thenReturn(requestBody);
   }
 
   private Mono<Rtp> triggerStatus(
@@ -69,7 +69,6 @@ public class CallbackHandler {
 
     return transitionFunction.apply(rtpToUpdate)
             .flatMap(rtpToSave -> rtpRepository.save(rtpToSave)
-                    .doOnNext(r -> log.info("Saved RTP with id {} and status {}", r.resourceID().getId(),rtpToSave.status()))
                     .retryWhen(RetryPolicyUtils.sendRetryPolicy(serviceProviderConfig.send().retry()))
                     .doOnError(ex -> log.error("Failed after retries", ex))
             );
