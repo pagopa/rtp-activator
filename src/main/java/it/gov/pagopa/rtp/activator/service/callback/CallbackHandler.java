@@ -37,7 +37,7 @@ public class CallbackHandler {
 
   public Mono<JsonNode> handle(@NonNull final JsonNode requestBody) {
     final var transactionStatus = callbackFieldsExtractor.extractTransactionStatusSend(requestBody);
-    final var resourceId = callbackFieldsExtractor.exstractResourceIDSend(requestBody);
+    final var resourceId = callbackFieldsExtractor.extractResourceIDSend(requestBody);
 
       return resourceId
               .flatMap(rtpRepository::findById)

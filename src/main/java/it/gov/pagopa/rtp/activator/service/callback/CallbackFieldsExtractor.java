@@ -6,8 +6,6 @@ import it.gov.pagopa.rtp.activator.domain.rtp.ResourceID;
 import it.gov.pagopa.rtp.activator.domain.rtp.TransactionStatus;
 import it.gov.pagopa.rtp.activator.utils.IdentifierUtils;
 import it.gov.pagopa.rtp.activator.utils.JsonNodeUtils;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -18,7 +16,6 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component("callbackFieldsExtractor")
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CallbackFieldsExtractor {
 
   @NonNull
@@ -46,8 +43,7 @@ public class CallbackFieldsExtractor {
   }
 
   @NonNull
-  public Mono<ResourceID> exstractResourceIDSend(@NonNull final JsonNode responseNode) {
-
+  public Mono<ResourceID> extractResourceIDSend(@NonNull final JsonNode responseNode) {
       return Mono.justOrEmpty(responseNode)
               .map(node -> node.path("AsynchronousSepaRequestToPayResponse")
                       .path("Document")
