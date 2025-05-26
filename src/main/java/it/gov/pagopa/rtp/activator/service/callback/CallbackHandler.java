@@ -23,19 +23,22 @@ public class CallbackHandler {
   private final RtpRepository rtpRepository;
   private final RtpStatusUpdater rtpStatusUpdater;
   private final ServiceProviderConfig serviceProviderConfig;
+  private final CallbackFieldsExtractor callbackFieldsExtractor;
 
   public CallbackHandler(
           @NonNull RtpRepository rtpRepository,
           @NonNull RtpStatusUpdater rtpStatusUpdater,
-          @NonNull ServiceProviderConfig serviceProviderConfig) {
+          @NonNull ServiceProviderConfig serviceProviderConfig,
+          @NonNull CallbackFieldsExtractor callbackFieldsExtractor) {
     this.rtpRepository = Objects.requireNonNull(rtpRepository);
     this.rtpStatusUpdater = Objects.requireNonNull(rtpStatusUpdater);
     this.serviceProviderConfig = Objects.requireNonNull(serviceProviderConfig);
+    this.callbackFieldsExtractor = Objects.requireNonNull(callbackFieldsExtractor);
   }
 
   public Mono<JsonNode> handle(@NonNull final JsonNode requestBody) {
-    final var transactionStatus = CallbackFieldsExtractor.exstractTransactionStatusSend(requestBody);
-    final var resourceId = CallbackFieldsExtractor.exstractResourceIDSend(requestBody);
+    final var transactionStatus = callbackFieldsExtractor.extractTransactionStatusSend(requestBody);
+    final var resourceId = callbackFieldsExtractor.exstractResourceIDSend(requestBody);
 
     return rtpRepository.findById(resourceId)
             .doOnNext( rtp -> log.info("Retrieved RTP with id {}", rtp.resourceID().getId()))
@@ -55,7 +58,7 @@ public class CallbackHandler {
 
       return switch (transactionStatus) {
           case ACCP, ACWC -> this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerAcceptRtp);
-          case RJCR -> this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerRejectRtp);
+          case RJCT -> this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerRejectRtp);
           case ERROR -> this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerErrorSendRtp);
           default -> Mono.error(new IllegalStateException("Unsupported TransactionStatus: " + transactionStatus));
       };
@@ -63,6 +66,7 @@ public class CallbackHandler {
 
   private Mono<Rtp> triggerAndSave(@NonNull final Rtp rtpToUpdate,
                                    @NonNull final Function<Rtp, Mono<Rtp>> transitionFunction) {
+
     return transitionFunction.apply(rtpToUpdate)
             .flatMap(rtpToSave -> rtpRepository.save(rtpToSave)
                     .doOnNext(r -> log.info("Saved RTP with id {} and status {}", r.resourceID().getId(),rtpToSave.status()))
