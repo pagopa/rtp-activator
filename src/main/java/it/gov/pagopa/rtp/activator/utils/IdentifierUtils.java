@@ -53,6 +53,16 @@ public class IdentifierUtils {
         .orElseThrow(() -> new IllegalArgumentException("uuid cannot be null"));
   }
 
+  /**
+   * Reconstructs a {@link UUID} from a compact string without dashes.
+   *
+   * <p>This method takes a UUID string in the compact format (i.e., without dashes) and converts
+   * it to the standard UUID format by inserting dashes at the appropriate positions.
+   *
+   * @param uuidString the UUID string without dashes (must not be null and must match a valid UUID format)
+   * @return the reconstructed {@link UUID} object
+   * @throws IllegalArgumentException if the input is null or does not conform to a valid UUID format
+   */
   @NonNull
   public static UUID uuidRebuilder(@NonNull final String uuidString) {
     return Optional.of(uuidString)
