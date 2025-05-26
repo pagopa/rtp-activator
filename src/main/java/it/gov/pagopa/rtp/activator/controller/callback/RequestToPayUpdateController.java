@@ -38,8 +38,11 @@ public class RequestToPayUpdateController implements RequestToPayUpdateApi {
 
     return requestBody
         .switchIfEmpty(Mono.error(new IllegalArgumentException("Request body cannot be empty")))
+        .doOnNext(body -> log.info("Received callback request"))
         .flatMap(callbackHandler::handle)
+        .doOnSuccess(r -> log.info("CallbackHandler completed successfully"))
         .flatMap(s -> certificateChecker.verifyRequestCertificate(s, clientCertificateSerialNumber))
+        .doOnSuccess(r -> log.info("Certificate verification successful"))
         .doOnNext(PayloadInfoExtractor::populateMdc)
         .<ResponseEntity<Void>>map(s -> ResponseEntity.ok().build())
         .doOnSuccess(resp -> log.info("Send callback processed successfully"))

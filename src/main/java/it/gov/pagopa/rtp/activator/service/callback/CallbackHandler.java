@@ -43,6 +43,7 @@ public class CallbackHandler {
               .flatMap(rtpRepository::findById)
               .doOnNext(rtp -> log.info("Retrieved RTP with id {}", rtp.resourceID().getId()))
               .flatMap(rtpToUpdate -> transactionStatus
+                      .doOnNext(status -> log.debug("Processing transaction status: {}", status))
                       .concatMap(status -> triggerStatus(status, rtpToUpdate))
                       .then(Mono.just(rtpToUpdate))
               )
@@ -57,10 +58,22 @@ public class CallbackHandler {
       log.debug("Handling TransactionStatus: {}", transactionStatus);
 
       return switch (transactionStatus) {
-          case ACCP, ACWC -> this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerAcceptRtp);
-          case RJCT -> this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerRejectRtp);
-          case ERROR -> this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerErrorSendRtp);
-          default -> Mono.error(new IllegalStateException("Unsupported TransactionStatus: " + transactionStatus));
+          case ACCP, ACWC -> {
+              log.debug("Triggering ACCEPT transition for RTP {}", rtpToUpdate.resourceID().getId());
+              yield this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerAcceptRtp);
+          }
+          case RJCT -> {
+              log.debug("Triggering REJECT transition for RTP {}", rtpToUpdate.resourceID().getId());
+              yield this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerRejectRtp);
+          }
+          case ERROR -> {
+              log.debug("Triggering ERROR transition for RTP {}", rtpToUpdate.resourceID().getId());
+              yield this.triggerAndSave(rtpToUpdate, this.rtpStatusUpdater::triggerErrorSendRtp);
+          }
+          default -> {
+              log.warn("Received unsupported TransactionStatus: {}", transactionStatus);
+              yield Mono.error(new IllegalStateException("Unsupported TransactionStatus: " + transactionStatus));
+          }
       };
   }
 
@@ -70,7 +83,7 @@ public class CallbackHandler {
     return transitionFunction.apply(rtpToUpdate)
             .flatMap(rtpToSave -> rtpRepository.save(rtpToSave)
                     .retryWhen(RetryPolicyUtils.sendRetryPolicy(serviceProviderConfig.send().retry()))
-                    .doOnError(ex -> log.error("Failed after retries", ex))
+                    .doOnError(ex -> log.error("Failed after retries while saving RTP {}", rtpToSave.resourceID().getId(), ex))
             );
   }
 }
