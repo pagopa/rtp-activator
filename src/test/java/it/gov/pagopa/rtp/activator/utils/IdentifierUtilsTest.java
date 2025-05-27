@@ -1,6 +1,9 @@
 package it.gov.pagopa.rtp.activator.utils;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.UUID;
 
@@ -28,25 +31,21 @@ class IdentifierUtilsTest {
     void givenEmptyString_whenUuidFormatter_thenThrowIllegalArgumentException() {
         String emptyString = "";
 
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
-            UUID uuid = UUID.fromString(emptyString);
-            IdentifierUtils.uuidFormatter(uuid);
-        });
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> IdentifierUtils.uuidFormatter(UUID.fromString(emptyString))
+        );
 
         assertEquals("Invalid UUID string: ", thrown.getMessage());
     }
 
     @Test
     void givenValidUuidWithoutDashes_whenUuidRebuilder_thenReturnsProperUuid() {
-        // Given
         String uuidWithoutDashes = "123e4567e89b12d3a456426614174000";
         String expectedFormatted = "123e4567-e89b-12d3-a456-426614174000";
         UUID expectedUuid = UUID.fromString(expectedFormatted);
 
-        // When
         UUID result = IdentifierUtils.uuidRebuilder(uuidWithoutDashes);
 
-        // Then
         assertEquals(expectedUuid, result);
     }
 
@@ -80,27 +79,14 @@ class IdentifierUtilsTest {
         assertTrue(IdentifierUtils.isValidUuid(input));
     }
 
-    @Test
-    void givenUuidWithDashes_whenIsValidUuid_thenReturnsFalse() {
-        String input = "123e4567-e89b-12d3-a456-426614174000";
-        assertFalse(IdentifierUtils.isValidUuid(input));
-    }
-
-    @Test
-    void givenBlankString_whenIsValidUuid_thenReturnsFalse() {
-        String input = " ";
-        assertFalse(IdentifierUtils.isValidUuid(input));
-    }
-
-    @Test
-    void givenNull_whenIsValidUuid_thenReturnsFalse() {
-        String input = null;
-        assertFalse(IdentifierUtils.isValidUuid(input));
-    }
-
-    @Test
-    void givenStringWithInvalidCharacters_whenIsValidUuid_thenReturnsFalse() {
-        String input = "123e4567e89b12d3a45642661417zzzz";
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {
+            "123e4567-e89b-12d3-a456-426614174000",
+            " ",
+            "123e4567e89b12d3a45642661417zzzz"
+    })
+    void givenInvalidUuidInputs_whenIsValidUuid_thenReturnsFalse(String input) {
         assertFalse(IdentifierUtils.isValidUuid(input));
     }
 }
