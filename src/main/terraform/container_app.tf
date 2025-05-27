@@ -72,18 +72,6 @@ resource "azurerm_container_app" "rtp-activator" {
           secret_name = replace(lower(env.key), "_", "-")
         }
       }
-      
-       volume_mounts {
-        name    = "jks-volume"
-        path    = "/mnt/jks"
-      }
-
-    }
-
-    volume {
-      name         = "jks-volume"
-      storage_type = "AzureFile"
-      storage_name = azurerm_container_app_environment_storage.rtp_file_share_storage.name    
     }
 
     max_replicas = var.rtp_activator_max_replicas
@@ -93,16 +81,6 @@ resource "azurerm_container_app" "rtp-activator" {
   secret {
     name  = "identity-client-id"
     value = "${data.azurerm_user_assigned_identity.rtp-activator.client_id}"
-  }
-
-  secret {
-    name = "azure-file-account-name"
-    value = data.azurerm_storage_account.rtp_files_storage_account.name
-  }
-
-  secret {
-    name = "azure-file-account-key" 
-    value = data.azurerm_storage_account.rtp_files_storage_account.primary_access_key
   }
 
   dynamic "secret" {
@@ -132,13 +110,4 @@ resource "azurerm_container_app" "rtp-activator" {
   }
 
   tags = var.tags
-}
-
-resource "azurerm_container_app_environment_storage" "rtp_file_share_storage" {
-  name                         = "${local.project}-fss"
-  container_app_environment_id = data.azurerm_container_app_environment.rtp-cae.id
-  account_name                 = data.azurerm_storage_account.rtp_files_storage_account.name
-  share_name                   = data.azurerm_storage_share.rtp_jks_file_share.name
-  access_key                   = data.azurerm_storage_account.rtp_files_storage_account.primary_access_key
-  access_mode                  = "ReadWrite"
 }

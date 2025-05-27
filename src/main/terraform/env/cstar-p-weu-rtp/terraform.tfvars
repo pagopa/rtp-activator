@@ -46,8 +46,6 @@ rtp_environment_secrets = {
   APPLICATIONINSIGHTS_CONNECTION_STRING : "appinsights-connection-string"
   CLIENT_CERTIFICATE                    : "client-certificate"
   CLIENT_SECRET_CBI                     : "client-secret-cbi"
-  JKS_TRUST_STORE_PATH                  : "jks-trust-store-path"
-  JKS_TRUST_STORE_PASSWORD              : "jks-trust-store-password"
 }
 
 rtp_environment_configs = {
