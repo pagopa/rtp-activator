@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.rtp.activator.domain.errors.ServiceProviderNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.errors.IncorrectCertificate;
+import it.gov.pagopa.rtp.activator.service.callback.CallbackHandler;
 import it.gov.pagopa.rtp.activator.utils.PayloadInfoExtractor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,7 @@ import it.gov.pagopa.rtp.activator.utils.CertificateChecker;
 class RequestToPayUpdateControllerTest {
 
   @Mock private CertificateChecker certificateChecker;
+  @Mock private CallbackHandler callbackHandler;
 
   private RequestToPayUpdateController controller;
   private MockedStatic<PayloadInfoExtractor> extractorMock;
@@ -40,7 +42,7 @@ class RequestToPayUpdateControllerTest {
     extractorMock.when(() -> PayloadInfoExtractor.populateMdc(any(JsonNode.class)))
             .thenAnswer(invocation -> null);
 
-    controller = new RequestToPayUpdateController(certificateChecker);
+    controller = new RequestToPayUpdateController(certificateChecker, callbackHandler);
     requestBody = createMockRequestBody("ABCDITMMXXX");
   }
 
@@ -52,6 +54,8 @@ class RequestToPayUpdateControllerTest {
   @Test
   void handleRequestToPayUpdateWithValidCertificateShouldReturnOkAndPopulateMdc() {
     when(certificateChecker.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
+            .thenReturn(Mono.just(requestBody));
+    when(callbackHandler.handle(any()))
             .thenReturn(Mono.just(requestBody));
 
     StepVerifier.create(
@@ -68,6 +72,8 @@ class RequestToPayUpdateControllerTest {
     String invalid = "INVALID";
     when(certificateChecker.verifyRequestCertificate(any(), eq(invalid)))
             .thenReturn(Mono.error(new IncorrectCertificate()));
+    when(callbackHandler.handle(any()))
+            .thenReturn(Mono.just(requestBody));
 
     StepVerifier.create(
                     controller.handleRequestToPayUpdate(invalid, Mono.just(requestBody))
@@ -82,6 +88,8 @@ class RequestToPayUpdateControllerTest {
   void handleRequestToPayUpdateWithNonExistingSpIdShouldReturnBadRequestWithoutPopulateMdc() {
     when(certificateChecker.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
             .thenReturn(Mono.error(new ServiceProviderNotFoundException("Not found")));
+    when(callbackHandler.handle(any()))
+            .thenReturn(Mono.just(requestBody));
 
     StepVerifier.create(
                     controller.handleRequestToPayUpdate(validCertificateSerialNumber, Mono.just(requestBody))
@@ -96,6 +104,8 @@ class RequestToPayUpdateControllerTest {
   void handleRequestToPayUpdateWithOtherErrorShouldPropagateErrorWithoutPopulateMdc() {
     when(certificateChecker.verifyRequestCertificate(any(), eq(validCertificateSerialNumber)))
             .thenReturn(Mono.error(new IllegalStateException("Error")));
+    when(callbackHandler.handle(any()))
+            .thenReturn(Mono.just(requestBody));
 
     StepVerifier.create(
                     controller.handleRequestToPayUpdate(validCertificateSerialNumber, Mono.just(requestBody))
