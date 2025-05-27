@@ -14,13 +14,6 @@ spring:
       monitor:
         connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:}
 
-activation.base-url: ${BASE_URL:http://localhost}
-
-pagopa:
-  details:
-    iban: IT96K999999999900SRTPPAGOPA
-    fiscal-code: 15376371009
-
 # enable spring boot actuator health endpoint
 management:
   endpoints:
@@ -38,18 +31,6 @@ management:
   #repository
   health.mongo.enabled: false
 
-service-provider:
-  base-url: ${SP_BASE_URL:http://localhost:8080/rtps/}
-  activation:
-    api-version: v1
-  send:
-    epc-mock-url: ${EPC_MOCK_URL:https://api-rtp.dev.cstar.pagopa.it/rtp/mock}
-    timeout: ${EPC_SEND_TIMEOUT_MS:10000}
-    retry:
-      max-attempts: ${EPC_SEND_RETRY_MAX_ATTEMPTS:3}
-      backoff-min-duration: ${EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS:1000}
-      backoff-jitter: ${EPC_SEND_RETRY_BACKOFF_JITTER:0.75}
-
 otel:
   instrumentation:
     mongo:
@@ -57,29 +38,3 @@ otel:
     logback-appender:
       experimental:
         capture-mdc-attributes: "*"
-
-cache:
-  params:
-    - name: registry-data
-      maximum-size: 1
-      expire-after-write: 1d
-
-blob-storage:
-  storage-account-name: ${AZURE_STORAGE_ACCOUNT_NAME:cstardweurtpblobstorage}
-  container-name: ${AZURE_STORAGE_CONTAINER_NAME:rtp-debtor-service-provider}
-  blob-name: ${AZURE_BLOB_NAME:serviceregistry.json}
-  managed-identity: ${IDENTITY_CLIENT_ID:}
-
-client:
-  client-secret-cbi: ${CLIENT_SECRET_CBI:test}
-  ssl:
-    pfx-file: ${CLIENT_CERTIFICATE}
-    pfx-password: ${CLIENT_CERTIFICATE_PASSWORD:}
-    pfx-type: PKCS12
-    jks-trust-store-path: ${JKS_TRUST_STORE_PATH:}
-    jks-trust-store-password: ${JKS_TRUST_STORE_PASSWORD:}
-
-callback:
-  url:
-    send: ${CALLBACK_BASE_URL:https://spsrtp.api.cstar.pagopa.it}/send
-    cancel: ${CALLBACK_BASE_URL:https://spsrtp.api.cstar.pagopa.it}/cancel
