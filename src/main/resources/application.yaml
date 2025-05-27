@@ -7,7 +7,7 @@ spring:
   data:
     mongodb:
       uri: ${COSMOS_ACCOUNT_RTP_CONNECTION_STRING:mongodb://localhost:27017}
-      database: ${DB_NAME:rtp}
+      database: ${DB_NAME:activation}
       uuid-representation: standard
   cloud:
     azure:
