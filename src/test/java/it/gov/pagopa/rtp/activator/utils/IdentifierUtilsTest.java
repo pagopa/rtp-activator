@@ -28,15 +28,23 @@ class IdentifierUtilsTest {
     }
 
     @Test
-    void givenEmptyString_whenUuidFormatter_thenThrowIllegalArgumentException() {
-        String emptyString = "";
+    void givenValidUpperCaseUuid_whenUuidFormatter_thenFormattedToLowerCaseWithoutHyphens() {
+        UUID uuid = UUID.fromString("123E4567-E89B-12D3-A456-426614174000");
 
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-                () -> IdentifierUtils.uuidFormatter(UUID.fromString(emptyString))
-        );
+        String result = IdentifierUtils.uuidFormatter(uuid);
 
-        assertEquals("Invalid UUID string: ", thrown.getMessage());
+        assertEquals("123e4567e89b12d3a456426614174000", result);
     }
+
+    @Test
+    void givenFormattedUuid_whenRebuilt_thenEqualsOriginal() {
+        UUID originalUuid = UUID.randomUUID();
+        String formatted = IdentifierUtils.uuidFormatter(originalUuid);
+        UUID rebuilt = IdentifierUtils.uuidRebuilder(formatted);
+
+        assertEquals(originalUuid, rebuilt);
+    }
+
 
     @Test
     void givenValidUuidWithoutDashes_whenUuidRebuilder_thenReturnsProperUuid() {
@@ -48,6 +56,14 @@ class IdentifierUtilsTest {
 
         assertEquals(expectedUuid, result);
     }
+
+    @Test
+    void givenNonHexUuidWithoutDashes_whenUuidRebuilder_thenThrowsException() {
+        String invalidHex = "123e4567e89b12d3a45642661417400g"; // 'g' è fuori dal range esadecimale
+
+        assertThrows(IllegalArgumentException.class, () -> IdentifierUtils.uuidRebuilder(invalidHex));
+    }
+
 
     @Test
     void givenUuidWithDashes_whenUuidRebuilder_thenReturnsSameUuid() {
@@ -89,4 +105,14 @@ class IdentifierUtilsTest {
     void givenInvalidUuidInputs_whenIsValidUuid_thenReturnsFalse(String input) {
         assertFalse(IdentifierUtils.isValidUuid(input));
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "123e4567e89b12d3a45642661417400",
+            "123e4567e89b12d3a4564266141740000"
+    })
+    void givenUuidWithWrongLength_whenIsValidUuid_thenReturnsFalse(String input) {
+        assertFalse(IdentifierUtils.isValidUuid(input));
+    }
+
 }
