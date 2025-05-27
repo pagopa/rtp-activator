@@ -14,6 +14,9 @@ spring:
       monitor:
         connection-string: ${APPLICATIONINSIGHTS_CONNECTION_STRING:}
 
+activation:
+  base-url: ${BASE_URL:http://localhost}
+
 # enable spring boot actuator health endpoint
 management:
   endpoints:
