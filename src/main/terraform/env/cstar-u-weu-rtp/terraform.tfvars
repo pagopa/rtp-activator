@@ -47,13 +47,11 @@ rtp_environment_secrets = {
   APPLICATIONINSIGHTS_CONNECTION_STRING : "appinsights-connection-string"
   CLIENT_CERTIFICATE                    : "client-certificate"
   CLIENT_SECRET_CBI                     : "client-secret-cbi"
-  JKS_TRUST_STORE_PATH                  : "jks-trust-store-path"
-  JKS_TRUST_STORE_PASSWORD              : "jks-trust-store-password"
 }
 
 
 rtp_environment_configs = {
-  DB_NAME                                 : "rtp"
+  DB_NAME                                 : "activation"
   BASE_URL                                : "https://api-rtp.uat.cstar.pagopa.it/rtp/activation/activations/"
   SP_BASE_URL                             : "https://api-rtp.uat.cstar.pagopa.it/rtp/rtps/"
   OTEL_TRACES_SAMPLER                     : "always_on"
