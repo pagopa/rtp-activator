@@ -219,9 +219,9 @@ jobs:
       #
       - name: Write certificate files
         run: |
-          echo “${{ secrets.CERT_FILE }}” | base64 --decode > certs/certificate.crt
-          echo “${{ secrets.KEY_FILE }}” | base64 --decode > certs/private.key
-          chmod 600 certs/private.key
+          echo “${{ secrets.CERT_FILE }}” | base64 --decode > certs/certificate.pem
+          echo “${{ secrets.KEY_FILE }}” | base64 --decode > certs/private.pem
+          chmod 600 certs/private.pem
 
       #
       # Run Postman collection.
@@ -232,5 +232,5 @@ jobs:
             -e src/test/postman/uat.postman_environment.json \
             --env-var "payer-sp-client-secret=${{ secrets.PAYER_SP_CLIENT_SECRET }}" \
             --env-var "pagopa-sp-client-secret=${{ secrets.PAGOPA_SP_CLIENT_SECRET }}" \
-            --ssl-client-cert certs/certificate.crt \
-            --ssl-client-key certs/private.key
+            --ssl-client-cert certs/certificate.pem \
+            --ssl-client-key certs/private.pem
