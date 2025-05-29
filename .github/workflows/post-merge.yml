@@ -219,8 +219,8 @@ jobs:
       #
       - name: Write certificate files
         run: |
-          echo “${{ secrets.CERT_FILE }}” | base64 --decode > certs/certificate.pem
-          echo “${{ secrets.KEY_FILE }}” | base64 --decode > certs/private.pem
+          echo ${{ secrets.CERT_FILE }} | base64 --decode > certs/certificate.pem
+          echo ${{ secrets.KEY_FILE }} | base64 --decode > certs/private.pem
           chmod 600 certs/private.pem
 
       #
