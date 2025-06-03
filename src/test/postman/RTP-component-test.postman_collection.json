@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "5c8e61ba-fcdd-4ddc-b41e-4e0206e4ec64",
+		"_postman_id": "40d4c0ce-1d15-460b-8631-107ecd57b78b",
 		"name": "RTP Component test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "45360221",
-		"_collection_link": "https://davide-1352118.postman.co/workspace/Davide's-Workspace~0b6e2c3a-f80e-43a2-8f3a-b557928674b9/collection/45360221-5c8e61ba-fcdd-4ddc-b41e-4e0206e4ec64?action=share&source=collection_link&creator=45360221"
+		"_exporter_id": "45360221"
 	},
 	"item": [
 		{
@@ -434,7 +433,7 @@
 							"response": []
 						},
 						{
-							"name": "Send RTP for cancel",
+							"name": "Send RTP",
 							"event": [
 								{
 									"listen": "test",
@@ -573,7 +572,7 @@
 							"response": []
 						},
 						{
-							"name": "Send RTP for callback",
+							"name": "Send RTP for Callback Send",
 							"event": [
 								{
 									"listen": "test",
