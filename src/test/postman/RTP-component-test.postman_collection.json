@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "5c073595-fef1-403f-9ddb-7c1814f9ef39",
+		"_postman_id": "40d4c0ce-1d15-460b-8631-107ecd57b78b",
 		"name": "RTP Component test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "40899591"
+		"_exporter_id": "45360221"
 	},
 	"item": [
 		{
@@ -572,6 +572,85 @@
 							"response": []
 						},
 						{
+							"name": "Send RTP for Callback Send",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {",
+											"  pm.response.to.have.status(201);",
+											"});",
+											"",
+											"const locationUrl = pm.response.headers.get(\"Location\");",
+											"console.log(\"locationUrl:\", locationUrl);",
+											"",
+											"if (locationUrl) {",
+											"    let parts = locationUrl.split('/');",
+											"    let rtpIdWithDashes = parts[parts.length - 1];",
+											"    let orgnlMsgId = rtpIdWithDashes.replace(/-/g, '');",
+											"",
+											"    pm.environment.set(\"originalMessageId\", orgnlMsgId);",
+											"}"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Version",
+										"value": "{{send_rtp_api_version}}",
+										"type": "text"
+									},
+									{
+										"key": "RequestId",
+										"value": "{{$randomUUID}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"payee\": {\n        \"name\": \"Comune di Smartino\",\n        \"payeeId\": \"77777777777\",\n        \"payTrxRef\": \"ABC/124\"\n    },\n    \"payer\": {\n        \"name\": \"Pigrolo\",\n        \"payerId\": \"{{fakeFiscalCode}}\"\n    },\n    \"paymentNotice\": {\n        \"noticeNumber\": \"311111111112222129\",\n        \"description\": \"Paga questo avviso\",\n        \"subject\": \"TARI 2025\",\n        \"amount\": 40,\n        \"expiryDate\": \"2025-12-31\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{rtp-api-url}}{{send}}",
+									"host": [
+										"{{rtp-api-url}}{{send}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Callback Send",
 							"event": [
 								{
@@ -598,7 +677,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"resourceId\": \"456789123-rtp-response-001\",\n  \"AsynchronousSepaRequestToPayResponse\": {\n    \"CdtrPmtActvtnReqStsRpt\": {\n      \"GrpHdr\": {\n        \"MsgId\": \"RESPONSE-MSG-001\",\n        \"CreDtTm\": \"2025-03-21T10:15:30\",\n        \"InitgPty\": {\n          \"Id\": {\n            \"OrgId\": {\n              \"AnyBIC\": \"MOCKSP04\"\n            }\n          }\n        }\n      },\n      \"OrgnlGrpInfAndSts\": {\n        \"OrgnlMsgId\": \"ORIGINAL-REQ-001\",\n        \"OrgnlMsgNmId\": \"pain.013.001.08\",\n        \"OrgnlCreDtTm\": \"2025-03-20T14:30:00\"\n      }\n    }\n  },\n  \"_links\": {\n    \"initialSepaRequestToPayUri\": {\n      \"href\": \"https://api-rtp-cb.cstar.pagopa.it/rtp/cb/requests/123456789-original-req-001\",\n      \"templated\": false\n    }\n  }\n}",
+									"raw": "{\n    \"resourceId\": \"456789123-rtp-response-001\",\n    \"AsynchronousSepaRequestToPayResponse\": {\n        \"Document\": {\n            \"CdtrPmtActvtnReqStsRpt\": {\n                \"GrpHdr\": {\n                    \"MsgId\": \"RESPONSE-MSG-001\",\n                    \"CreDtTm\": \"2025-03-21T10:15:30\",\n                    \"InitgPty\": {\n                        \"Id\": {\n                            \"OrgId\": {\n                                \"AnyBIC\": \"MOCKSP04\"\n                            }\n                        }\n                    }\n                },\n                \"OrgnlGrpInfAndSts\": {\n                    \"OrgnlMsgId\": \"{{originalMessageId}}\",\n                    \"OrgnlMsgNmId\": \"pain.013.001.08\",\n                    \"OrgnlCreDtTm\": \"2025-03-20T14:30:00\"\n                },\n                \"OrgnlPmtInfAndSts\": {\n                    \"TxInfAndSts\": [\n                        {\n                            \"TxSts\": [\"ACCP\"]\n                        }\n                    ]\n                }\n            }\n        }\n    },\n    \"_links\": {\n        \"initialSepaRequestToPayUri\": {\n            \"href\": \"https://api-rtp-cb.cstar.pagopa.it/rtp/cb/requests/123456789-original-req-001\",\n            \"templated\": false\n        }\n    }\n}",
 									"options": {
 										"raw": {
 											"language": "json"
