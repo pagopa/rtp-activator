@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
-import it.gov.pagopa.rtp.activator.domain.payer.DeactivationReason;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -102,55 +101,46 @@ class ActivationDBRepositoryTest {
   void givenValidPayerAndReason_whenDeactivate_thenSaveToDeletedDbAndDeleteFromActivationDb() {
     final var payer = mock(Payer.class);
     final var activationId = UUID.randomUUID();
-    final var reason = DeactivationReason.DELETE;
 
     final var deletedEntity = new DeletedActivationEntity();
     deletedEntity.setId(activationId);
 
     when(payer.activationID())
         .thenReturn(new ActivationID(activationId));
-    when(activationMapper.toDeletedDbEntity(payer, reason))
+    when(activationMapper.toDeletedDbEntity(payer))
         .thenReturn(deletedEntity);
     when(deletedActivationDB.save(deletedEntity))
         .thenReturn(Mono.just(deletedEntity));
     when(activationDB.deleteById(activationId))
         .thenReturn(Mono.empty());
 
-    StepVerifier.create(repository.deactivate(payer, reason))
+    StepVerifier.create(repository.deactivate(payer))
         .verifyComplete();
 
-    verify(activationMapper).toDeletedDbEntity(payer, reason);
+    verify(activationMapper).toDeletedDbEntity(payer);
     verify(deletedActivationDB).save(deletedEntity);
     verify(activationDB).deleteById(activationId);
   }
 
   @Test
   void givenNullPayer_whenDeactivate_thenThrowNullPointerException() {
-    assertThrows(NullPointerException.class, () -> repository.deactivate(null, DeactivationReason.DELETE));
-  }
-
-  @Test
-  void givenNullReason_whenDeactivate_thenThrowNullPointerException() {
-    final var payer = mock(Payer.class);
-
-    assertThrows(NullPointerException.class, (() -> repository.deactivate(payer, null)));
+    assertThrows(NullPointerException.class, () -> repository.deactivate(null));
   }
 
   @Test
   void givenValidPayer_whenSaveToDeletedDbFails_thenErrorIsPropagated() {
     final var payer = mock(Payer.class);
     final var activationId = UUID.randomUUID();
-    final var reason = DeactivationReason.TAKEOVER;
 
     final var deletedEntity = new DeletedActivationEntity();
     deletedEntity.setId(activationId);
 
-    when(activationMapper.toDeletedDbEntity(payer, reason))
+    when(activationMapper.toDeletedDbEntity(payer))
         .thenReturn(deletedEntity);
     when(deletedActivationDB.save(deletedEntity))
         .thenReturn(Mono.error(new IllegalArgumentException("DB save error")));
 
-    StepVerifier.create(repository.deactivate(payer, reason))
+    StepVerifier.create(repository.deactivate(payer))
         .expectErrorMessage("DB save error")
         .verify();
 
@@ -162,19 +152,18 @@ class ActivationDBRepositoryTest {
   void givenValidPayer_whenDeleteFromActivationDbFails_thenErrorIsPropagated() {
     final var payer = mock(Payer.class);
     final var activationId = UUID.randomUUID();
-    final var reason = DeactivationReason.TAKEOVER;
 
     final var deletedEntity = new DeletedActivationEntity();
     deletedEntity.setId(activationId);
 
-    when(activationMapper.toDeletedDbEntity(payer, reason))
+    when(activationMapper.toDeletedDbEntity(payer))
         .thenReturn(deletedEntity);
     when(deletedActivationDB.save(deletedEntity))
         .thenReturn(Mono.just(deletedEntity));
     when(activationDB.deleteById(activationId))
         .thenReturn(Mono.error(new IllegalArgumentException("Delete error")));
 
-    StepVerifier.create(repository.deactivate(payer, reason))
+    StepVerifier.create(repository.deactivate(payer))
         .expectErrorMessage("Delete error")
         .verify();
 

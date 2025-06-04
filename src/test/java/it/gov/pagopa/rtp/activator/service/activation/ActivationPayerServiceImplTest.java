@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.service.activation;
 
-import it.gov.pagopa.rtp.activator.domain.payer.DeactivationReason;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,20 +126,20 @@ class ActivationPayerServiceImplTest {
     final var activationId = UUID.randomUUID();
     final var payerToDeactivate = new Payer(new ActivationID(activationId), rtpSpId, fiscalCode, Instant.now());
 
-    when(activationDBRepository.deactivate(payerToDeactivate, DeactivationReason.DELETE))
+    when(activationDBRepository.deactivate(payerToDeactivate))
         .thenReturn(Mono.empty());
 
     StepVerifier.create(activationPayerService.deactivatePayer(payerToDeactivate))
         .expectNext(payerToDeactivate)
         .verifyComplete();
 
-    verify(activationDBRepository).deactivate(payerToDeactivate, DeactivationReason.DELETE);
+    verify(activationDBRepository).deactivate(payerToDeactivate);
   }
 
   @Test
   void givenNullPayer_whenDeactivatePayer_thenThrowsNullPointerException() {
     assertThrows(NullPointerException.class, () -> activationPayerService.deactivatePayer(null));
-    verify(activationDBRepository, never()).deactivate(any(), any());
+    verify(activationDBRepository, never()).deactivate(any());
   }
 
   @Test
@@ -149,13 +148,13 @@ class ActivationPayerServiceImplTest {
     final var activationId = UUID.randomUUID();
     final var payerToDeactivate = new Payer(new ActivationID(activationId), rtpSpId, fiscalCode, Instant.now());
 
-    when(activationDBRepository.deactivate(payerToDeactivate, DeactivationReason.DELETE))
+    when(activationDBRepository.deactivate(payerToDeactivate))
         .thenReturn(Mono.error(new RuntimeException("deactivation error")));
 
     StepVerifier.create(activationPayerService.deactivatePayer(payerToDeactivate))
         .expectErrorMessage("deactivation error")
         .verify();
 
-    verify(activationDBRepository).deactivate(payerToDeactivate, DeactivationReason.DELETE);
+    verify(activationDBRepository).deactivate(payerToDeactivate);
   }
 }
