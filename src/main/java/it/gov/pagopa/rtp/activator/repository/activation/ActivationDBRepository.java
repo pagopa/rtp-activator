@@ -105,7 +105,7 @@ public class ActivationDBRepository implements PayerRepository {
     return Mono.just(payer)
         .doFirst(() -> log.debug("Deactivating payer: {}", payer))
         .doOnNext(payerToDeactivate -> log.debug("Mapping payer to deleted entity."))
-        .map(payerToDeactivate -> this.activationMapper.toDeletedDbEntity(payerToDeactivate))
+        .map(this.activationMapper::toDeletedDbEntity)
 
         .doOnNext(deletedActivationEntity -> log.debug("Saving deleted entity: {}", deletedActivationEntity))
         .flatMap(this.deletedActivationDB::save)

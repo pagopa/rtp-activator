@@ -102,8 +102,7 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
 
         return Mono.just(payerToDeactivate)
             .doOnNext(payer -> log.info("Deactivating payer with id {}", payer.activationID().getId()))
-            .flatMap(payer ->
-                this.activationDBRepository.deactivate(payer))
+            .flatMap(this.activationDBRepository::deactivate)
             .thenReturn(payerToDeactivate)
             .doOnSuccess(id -> log.info("Payer deactivated with id {}", payerToDeactivate.activationID().getId()))
             .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));
