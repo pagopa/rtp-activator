@@ -1,7 +1,6 @@
 package it.gov.pagopa.rtp.activator.repository.activation;
 
 
-import it.gov.pagopa.rtp.activator.domain.payer.DeactivationReason;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
@@ -94,23 +93,19 @@ public class ActivationDBRepository implements PayerRepository {
    * Deactivates a given {@link Payer}, persisting the deletion reason and removing the active record.
    *
    * @param payer               the payer to deactivate
-   * @param deactivationReason the reason for deactivation
    * @return a {@link Mono<Void>} that completes when the operation finishes
-   * @throws NullPointerException if {@code payer} or {@code deactivationReason} is {@code null}
+   * @throws NullPointerException if {@code payer} is {@code null}
    */
   @NonNull
   @Override
-  public Mono<Void> deactivate(
-      @NonNull final Payer payer,
-      @NonNull final DeactivationReason deactivationReason) {
+  public Mono<Void> deactivate(@NonNull final Payer payer) {
 
     Objects.requireNonNull(payer, "Payer cannot be null");
-    Objects.requireNonNull(deactivationReason, "Deactivation reason cannot be null");
 
     return Mono.just(payer)
         .doFirst(() -> log.debug("Deactivating payer: {}", payer))
         .doOnNext(payerToDeactivate -> log.debug("Mapping payer to deleted entity."))
-        .map(payerToDeactivate -> this.activationMapper.toDeletedDbEntity(payerToDeactivate, deactivationReason))
+        .map(payerToDeactivate -> this.activationMapper.toDeletedDbEntity(payerToDeactivate))
 
         .doOnNext(deletedActivationEntity -> log.debug("Saving deleted entity: {}", deletedActivationEntity))
         .flatMap(this.deletedActivationDB::save)

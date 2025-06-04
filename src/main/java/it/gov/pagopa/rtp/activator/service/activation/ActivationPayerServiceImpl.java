@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.service.activation;
 
-import it.gov.pagopa.rtp.activator.domain.payer.DeactivationReason;
 import java.time.Instant;
 
 import io.opentelemetry.instrumentation.annotations.WithSpan;
@@ -104,9 +103,9 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
         return Mono.just(payerToDeactivate)
             .doOnNext(payer -> log.info("Deactivating payer with id {}", payer.activationID().getId()))
             .flatMap(payer ->
-                this.activationDBRepository.deactivate(payer, DeactivationReason.DELETE))
+                this.activationDBRepository.deactivate(payer)
             .thenReturn(payerToDeactivate)
             .doOnSuccess(id -> log.info("Payer deactivated with id {}", payerToDeactivate.activationID().getId()))
-            .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));
+            .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error)));
     }
 }
