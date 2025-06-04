@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.repository.activation;
 
-import it.gov.pagopa.rtp.activator.domain.payer.DeactivationReason;
 import java.time.Instant;
 import org.springframework.stereotype.Component;
 
@@ -50,16 +49,14 @@ public class ActivationMapper {
      * a deactivated payer in the database.
      *
      * @param payer the domain model of the payer being deactivated
-     * @param deactivationReason the reason for deactivation
      * @return the corresponding {@link DeletedActivationEntity}
      */
-    public DeletedActivationEntity toDeletedDbEntity(Payer payer, DeactivationReason deactivationReason) {
+    public DeletedActivationEntity toDeletedDbEntity(Payer payer) {
         return DeletedActivationEntity.builder()
             .id(payer.activationID().getId())
             .fiscalCode(payer.fiscalCode())
             .serviceProviderDebtor(payer.serviceProviderDebtor())
             .deactivationDate(Instant.now())
-            .reason(deactivationReason)
             .build();
     }
 }

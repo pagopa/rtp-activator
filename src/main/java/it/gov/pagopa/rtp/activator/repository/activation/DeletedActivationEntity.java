@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.repository.activation;
 
-import it.gov.pagopa.rtp.activator.domain.payer.DeactivationReason;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -32,6 +31,4 @@ public class DeletedActivationEntity {
   @Field(name = "fiscal_code", targetType = FieldType.STRING)
   private String fiscalCode;
 
-  @Field(name = "reason", targetType = FieldType.STRING)
-  private DeactivationReason reason;
 }

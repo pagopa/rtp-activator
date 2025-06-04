@@ -13,6 +13,6 @@ public interface PayerRepository {
     
     Mono<Payer> save(Payer payer);
 
-    Mono<Void> deactivate(Payer payer, DeactivationReason deactivationReason);
+    Mono<Void> deactivate(Payer payer);
     
 }

@@ -1,6 +1,5 @@
 package it.gov.pagopa.rtp.activator.repository.activation;
 
-import it.gov.pagopa.rtp.activator.domain.payer.DeactivationReason;
 import org.junit.jupiter.api.Test;
 
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
@@ -47,7 +46,7 @@ class ActivationMapperTest {
     }
 
     @Test
-    void givenValidPayerAndReason_whenToDeletedDbEntity_thenReturnsCorrectDeletedEntity() {
+    void givenValidPayer_whenToDeletedDbEntity_thenReturnsCorrectDeletedEntity() {
         final var activationId = UUID.randomUUID();
         final var activationID = new ActivationID(activationId);
         final var fiscalCode = "MOCKXX01D01H501W";
@@ -55,15 +54,13 @@ class ActivationMapperTest {
         final var activationDate = Instant.parse("2025-01-01T00:00:00Z");
 
         final var payer = new Payer(activationID, serviceProvider, fiscalCode, activationDate);
-        final var reason = DeactivationReason.DELETE;
 
-        final var result = mapper.toDeletedDbEntity(payer, reason);
+        final var result = mapper.toDeletedDbEntity(payer);
 
         assertNotNull(result);
         assertEquals(activationId, result.getId());
         assertEquals(fiscalCode, result.getFiscalCode());
         assertEquals(serviceProvider, result.getServiceProviderDebtor());
-        assertEquals(reason, result.getReason());
         assertNotNull(result.getDeactivationDate());
     }
 }
