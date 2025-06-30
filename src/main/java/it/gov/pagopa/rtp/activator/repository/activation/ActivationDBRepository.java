@@ -103,11 +103,11 @@ public class ActivationDBRepository implements PayerRepository {
     Objects.requireNonNull(payer, "Payer cannot be null");
 
     return Mono.just(payer)
-        .doFirst(() -> log.debug("Deactivating payer: {}", payer))
+        .doFirst(() -> log.debug("Deactivating payer with activationId: {}", payer.activationID().getId()))
         .doOnNext(payerToDeactivate -> log.debug("Mapping payer to deleted entity."))
         .map(this.activationMapper::toDeletedDbEntity)
 
-        .doOnNext(deletedActivationEntity -> log.debug("Saving deleted entity: {}", deletedActivationEntity))
+        .doOnNext(deletedActivationEntity -> log.debug("Saving deleted entity with id: {}", deletedActivationEntity.getId()))
         .flatMap(this.deletedActivationDB::save)
 
         .doOnNext(deletedActivationEntity -> log.debug("Deleting activation"))
