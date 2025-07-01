@@ -78,14 +78,18 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
       ServerWebExchange exchange) {
     log.info("Received request to activate a payer");
     return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
-        .flatMap(t -> activationPayerService.activatePayer(
-            t.getPayer().getRtpSpId(),
-            t.getPayer().getFiscalCode()))
-        .<ResponseEntity<Void>>map(payer -> ResponseEntity
-            .created(URI.create(activationPropertiesConfig.baseUrl()
-                + payer.activationID().getId().toString()))
-            .build())
-        .doOnError(a -> log.error("Error activating payer {}", a.getMessage()));
+            .flatMap(t -> {
+              String spId = t.getPayer().getRtpSpId();
+              return activationPayerService.activatePayer(spId, t.getPayer().getFiscalCode())
+                      .<ResponseEntity<Void>>map(payer -> ResponseEntity
+                              .created(URI.create(activationPropertiesConfig.baseUrl()
+                                      + payer.activationID().getId().toString()))
+                              .build())
+                      .doOnError(e -> {
+                        MDC.put("service_provider", spId);
+                        log.error("Error activating payer {}", e.getMessage());
+                      }).doFinally(f -> MDC.clear());
+            });
   }
 
 
