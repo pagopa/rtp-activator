@@ -135,6 +135,8 @@ class ActivationDBRepositoryTest {
     final var deletedEntity = new DeletedActivationEntity();
     deletedEntity.setId(activationId);
 
+    when(payer.activationID())
+            .thenReturn(new ActivationID(activationId));
     when(activationMapper.toDeletedDbEntity(payer))
         .thenReturn(deletedEntity);
     when(deletedActivationDB.save(deletedEntity))
@@ -156,6 +158,8 @@ class ActivationDBRepositoryTest {
     final var deletedEntity = new DeletedActivationEntity();
     deletedEntity.setId(activationId);
 
+    when(payer.activationID())
+        .thenReturn(new ActivationID(activationId));
     when(activationMapper.toDeletedDbEntity(payer))
         .thenReturn(deletedEntity);
     when(deletedActivationDB.save(deletedEntity))
