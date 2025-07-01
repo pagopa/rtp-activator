@@ -56,7 +56,6 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
         return activationDBRepository.save(payer)
             .onErrorMap(DuplicateKeyException.class, ex -> new PayerAlreadyExists())
             .doOnSuccess(newPayer -> MDC.put("service_provider", serviceProviderDebtor))
-            .doOnSuccess(newPayer -> MDC.put("debtor", fiscalCode))
             .doOnSuccess(newPayer -> log.info("Payer activated with id: {}", newPayer.activationID().getId()))
             .doFinally(f -> MDC.clear());
     }
