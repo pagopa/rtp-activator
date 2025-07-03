@@ -174,7 +174,9 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
             payerToVerify -> Optional.of(payerToVerify)
                 .map(Payer::serviceProviderDebtor)
                 .orElse(""))
+                .doOnError(ex -> log.error("Error deactivating payer {}", ex.getMessage(), ex))
         )
+
 
         .doOnNext(payer -> log.info("Deactivating payer"))
         .flatMap(activationPayerService::deactivatePayer)
@@ -182,13 +184,13 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
         .doOnNext(deactivatedPayer -> log.info("Payer deactivated"))
         .map(deactivatedPayer -> ResponseEntity.noContent().<Void>build())
 
-//        .doOnError(ex -> log.error("Error deactivating payer {}", ex.getMessage(), ex))
-//        .onErrorReturn(AccessDeniedException.class,
-//            ResponseEntity.notFound().build())
-        .onErrorResume(AccessDeniedException.class, ex -> {
-          log.error("Error deactivating payer {}", ex.getMessage(), ex);
-            return Mono.just(ResponseEntity.notFound().build());
-          })
+//      .doOnError(ex -> log.error("Error deactivating payer {}", ex.getMessage(), ex))
+      .onErrorReturn(AccessDeniedException.class,
+             ResponseEntity.notFound().build())
+//        .onErrorResume(AccessDeniedException.class, ex -> {
+//          log.error("Error deactivating payer {}", ex.getMessage(), ex);
+//            return Mono.just(ResponseEntity.notFound().build());
+//          })
 
             .switchIfEmpty(Mono.fromSupplier(() -> {
           log.error("Payer not found");
