@@ -16,6 +16,7 @@ import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
+
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
@@ -38,160 +39,163 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteApi {
 
-  private final ActivationPayerService activationPayerService;
-  private final ActivationPropertiesConfig activationPropertiesConfig;
-  private final ActivationDtoMapper activationDtoMapper;
+    private final ActivationPayerService activationPayerService;
+    private final ActivationPropertiesConfig activationPropertiesConfig;
+    private final ActivationDtoMapper activationDtoMapper;
 
 
-  /**
-   * Constructs a new {@code ActivationAPIControllerImpl}.
-   *
-   * @param activationPayerService the service handling activation logic
-   * @param activationPropertiesConfig the configuration providing base URLs
-   * @param activationDtoMapper the mapper for converting between DTOs and domain objects
-   */
-  public ActivationAPIControllerImpl(
-      ActivationPayerService activationPayerService,
-      ActivationPropertiesConfig activationPropertiesConfig,
-      ActivationDtoMapper activationDtoMapper) {
-    this.activationPayerService = activationPayerService;
-    this.activationPropertiesConfig = activationPropertiesConfig;
-    this.activationDtoMapper = activationDtoMapper;
-  }
+    /**
+     * Constructs a new {@code ActivationAPIControllerImpl}.
+     *
+     * @param activationPayerService     the service handling activation logic
+     * @param activationPropertiesConfig the configuration providing base URLs
+     * @param activationDtoMapper        the mapper for converting between DTOs and domain objects
+     */
+    public ActivationAPIControllerImpl(
+            ActivationPayerService activationPayerService,
+            ActivationPropertiesConfig activationPropertiesConfig,
+            ActivationDtoMapper activationDtoMapper) {
+        this.activationPayerService = activationPayerService;
+        this.activationPropertiesConfig = activationPropertiesConfig;
+        this.activationDtoMapper = activationDtoMapper;
+    }
 
 
-  /**
-   * Activates a new RTP payer using the provided activation request DTO.
-   *
-   * @param requestId the unique ID of the request
-   * @param version the API version
-   * @param activationReqDto the request payload containing payer information
-   * @param exchange the {@link ServerWebExchange} context
-   * @return a {@link Mono} emitting a 201 Created response or an error
-   */
-  @Override
-  @PreAuthorize("hasRole('write_rtp_activations')")
-  public Mono<ResponseEntity<Void>> activate(
-      UUID requestId,
-      String version,
-      Mono<ActivationReqDto> activationReqDto,
-      ServerWebExchange exchange) {
-    log.info("Received request to activate a payer");
-    return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
-            .flatMap(t -> {
-              String spId = t.getPayer().getRtpSpId();
-              return activationPayerService.activatePayer(spId, t.getPayer().getFiscalCode())
-                      .<ResponseEntity<Void>>map(payer -> ResponseEntity
-                              .created(URI.create(activationPropertiesConfig.baseUrl()
-                                      + payer.activationID().getId().toString()))
-                              .build())
-                      .doOnError(e -> {
-                        MDC.put("service_provider", spId);
-                        log.error("Error activating payer {}", e.getMessage());
-                      }).doFinally(f -> MDC.clear());
-            });
-  }
+    /**
+     * Activates a new RTP payer using the provided activation request DTO.
+     *
+     * @param requestId        the unique ID of the request
+     * @param version          the API version
+     * @param activationReqDto the request payload containing payer information
+     * @param exchange         the {@link ServerWebExchange} context
+     * @return a {@link Mono} emitting a 201 Created response or an error
+     */
+    @Override
+    @PreAuthorize("hasRole('write_rtp_activations')")
+    public Mono<ResponseEntity<Void>> activate(
+            UUID requestId,
+            String version,
+            Mono<ActivationReqDto> activationReqDto,
+            ServerWebExchange exchange) {
+        log.info("Received request to activate a payer");
+        return verifySubjectRequest(activationReqDto, it -> it.getPayer().getRtpSpId())
+                .flatMap(t -> {
+                    String spId = t.getPayer().getRtpSpId();
+                    return activationPayerService.activatePayer(spId, t.getPayer().getFiscalCode())
+                            .<ResponseEntity<Void>>map(payer -> ResponseEntity
+                                    .created(URI.create(activationPropertiesConfig.baseUrl()
+                                            + payer.activationID().getId().toString()))
+                                    .build())
+                            .doOnError(e -> {
+                                MDC.put("service_provider", spId);
+                                log.error("Error activating payer {}", e.getMessage());
+                            }).doFinally(f -> MDC.clear());
+                });
+    }
 
 
-  /**
-   * Retrieves an activation by payer fiscal code.
-   *
-   * @param requestId the request ID
-   * @param payerId the fiscal code of the payer
-   * @param version the API version
-   * @param exchange the exchange context
-   * @return a {@link Mono} emitting the activation DTO or 404 if not found
-   */
-  @Override
-  @PreAuthorize("hasAnyRole('write_rtp_send','read_rtp_activations')")
-  public Mono<ResponseEntity<ActivationDto>> findActivationByPayerId(
-      UUID requestId,
-      String payerId,
-      String version,
-      ServerWebExchange exchange) {
-    log.info("Received request to find activation by payer id");
-    return Mono.just(payerId)
-        .flatMap(activationPayerService::findPayer)
-        .map(activationDtoMapper::toActivationDto)
-        .map(ResponseEntity::ok)
-        .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
-  }
+    /**
+     * Retrieves an activation by payer fiscal code.
+     *
+     * @param requestId the request ID
+     * @param payerId   the fiscal code of the payer
+     * @param version   the API version
+     * @param exchange  the exchange context
+     * @return a {@link Mono} emitting the activation DTO or 404 if not found
+     */
+    @Override
+    @PreAuthorize("hasAnyRole('write_rtp_send','read_rtp_activations')")
+    public Mono<ResponseEntity<ActivationDto>> findActivationByPayerId(
+            UUID requestId,
+            String payerId,
+            String version,
+            ServerWebExchange exchange) {
+        log.info("Received request to find activation by payer id");
+        return Mono.just(payerId)
+                .flatMap(activationPayerService::findPayer)
+                .map(activationDtoMapper::toActivationDto)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+    }
 
 
-  /**
-   * Retrieves a single activation by its activation ID.
-   * <p>Currently not implemented.</p>
-   *
-   * @throws UnsupportedOperationException always
-   */
-  @Override
-  @PreAuthorize("hasRole('read_rtp_activations')")
-  public Mono<ResponseEntity<ActivationDto>> getActivation(
-      UUID requestId, UUID activationId,
-      String version, ServerWebExchange exchange) {
-    throw new UnsupportedOperationException("Unimplemented method 'getActivation'");
-  }
+    /**
+     * Retrieves a single activation by its activation ID.
+     * <p>Currently not implemented.</p>
+     *
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    @PreAuthorize("hasRole('read_rtp_activations')")
+    public Mono<ResponseEntity<ActivationDto>> getActivation(
+            UUID requestId, UUID activationId,
+            String version, ServerWebExchange exchange) {
+        throw new UnsupportedOperationException("Unimplemented method 'getActivation'");
+    }
 
 
-  /**
-   * Retrieves a paginated list of activations.
-   * <p>Currently not implemented.</p>
-   *
-   * @throws UnsupportedOperationException always
-   */
-  @Override
-  @PreAuthorize("hasRole('read_rtp_activations')")
-  public Mono<ResponseEntity<PageOfActivationsDto>> getActivations(
-      UUID requestId, Integer page, Integer size,
-      String version, ServerWebExchange exchange) {
-    throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
-  }
+    /**
+     * Retrieves a paginated list of activations.
+     * <p>Currently not implemented.</p>
+     *
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    @PreAuthorize("hasRole('read_rtp_activations')")
+    public Mono<ResponseEntity<PageOfActivationsDto>> getActivations(
+            UUID requestId, Integer page, Integer size,
+            String version, ServerWebExchange exchange) {
+        throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
+    }
 
 
-  /**
-   * Deletes (deactivates) a payer by activation ID.
-   *
-   * @param requestId the request ID
-   * @param activationId the ID of the activation to delete
-   * @param version the API version
-   * @param exchange the exchange context
-   * @return a {@link Mono} emitting 204 No Content if deactivation is successful, or 404 if not found or unauthorized
-   */
-  @Override
-  @PreAuthorize("hasAnyRole('write_rtp_activations')")
-  public Mono<ResponseEntity<Void>> deleteActivation(UUID requestId, UUID activationId,
-      String version, ServerWebExchange exchange) {
+    /**
+     * Deletes (deactivates) a payer by activation ID.
+     *
+     * @param requestId    the request ID
+     * @param activationId the ID of the activation to delete
+     * @param version      the API version
+     * @param exchange     the exchange context
+     * @return a {@link Mono} emitting 204 No Content if deactivation is successful, or 404 if not found or unauthorized
+     */
+    @Override
+    @PreAuthorize("hasAnyRole('write_rtp_activations')")
+    public Mono<ResponseEntity<Void>> deleteActivation(UUID requestId, UUID activationId,
+                                                       String version, ServerWebExchange exchange) {
 
-    return Mono.just(activationId)
-        .doFirst(() -> log.info("Received request to deactivate payer. Id: {}", activationId))
-        .flatMap(activationPayerService::findPayerById)
+        return Mono.just(activationId)
+                .doFirst(() -> log.info("Received request to deactivate payer. Id: {}", activationId))
+                .flatMap(activationPayerService::findPayerById)
 
-        .doOnNext(payer -> MDC.put("service_provider", payer.serviceProviderDebtor()))
-        .doOnNext(payer -> MDC.put("activation_id", payer.activationID().getId().toString()))
+                .doOnNext(payer -> MDC.put("service_provider", payer.serviceProviderDebtor()))
+                .doOnNext(payer -> MDC.put("activation_id", payer.activationID().getId().toString()))
 
-        .doOnNext(payer -> log.info("Verifying token subject"))
-        .flatMap(payer -> verifySubjectRequest(Mono.just(payer),
-            payerToVerify -> Optional.of(payerToVerify)
-                .map(Payer::serviceProviderDebtor)
-                .orElse(""))
-        )
+                .doOnNext(payer -> log.info("Verifying token subject"))
+                .flatMap(payer -> verifySubjectRequest(Mono.just(payer),
+                        payerToVerify -> Optional.of(payerToVerify)
+                                .map(Payer::serviceProviderDebtor)
+                                .orElse(""))
+                )
 
-        .doOnNext(payer -> log.info("Deactivating payer"))
-        .flatMap(activationPayerService::deactivatePayer)
+                .doOnNext(payer -> log.info("Deactivating payer"))
+                .flatMap(activationPayerService::deactivatePayer)
 
-        .doOnNext(deactivatedPayer -> log.info("Payer deactivated"))
-        .map(deactivatedPayer -> ResponseEntity.noContent().<Void>build())
+                .doOnNext(deactivatedPayer -> log.info("Payer deactivated"))
+                .map(deactivatedPayer -> ResponseEntity.noContent().<Void>build())
 
-        .onErrorResume(AccessDeniedException.class, ex -> {
-          log.error("Error deactivating payer {}", ex.getMessage(), ex);
-            return Mono.just(ResponseEntity.notFound().build());
-          })
+                .switchIfEmpty(Mono.fromSupplier(() -> {
+                    log.error("Payer with ID {} not found for deactivation.", activationId);
+                    return ResponseEntity.notFound().build();
+                }))
 
-            .switchIfEmpty(Mono.fromSupplier(() -> {
-          log.error("Payer not found");
-          return ResponseEntity.notFound().build();
-        }))
+                .onErrorResume(AccessDeniedException.class, ex -> {
+                    log.error("Error deactivating payer {}", ex.getMessage(), ex);
+                    return Mono.just(ResponseEntity.notFound().build());
+                })
 
-        .doFinally(f -> MDC.clear());
-  }
+                .doOnError(ex ->
+                        log.error("An unexpected error occurred during payer deactivation for ID {}: {}",
+                                activationId, ex.getMessage(), ex))
+                .doFinally(f -> MDC.clear());
+    }
 }
