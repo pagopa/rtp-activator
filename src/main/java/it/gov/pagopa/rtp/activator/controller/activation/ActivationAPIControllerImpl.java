@@ -188,14 +188,9 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
                     return ResponseEntity.notFound().build();
                 }))
 
-                .onErrorResume(AccessDeniedException.class, ex -> {
-                    log.error("Error deactivating payer {}", ex.getMessage(), ex);
-                    return Mono.just(ResponseEntity.notFound().build());
-                })
+                .onErrorResume(AccessDeniedException.class, ex -> Mono.<ResponseEntity<Void>>just(ResponseEntity.notFound().build())
+                        .doFirst(() -> log.error("Error deactivating payer {}", ex.getMessage(), ex)))
 
-                .doOnError(ex ->
-                        log.error("An unexpected error occurred during payer deactivation for ID {}: {}",
-                                activationId, ex.getMessage(), ex))
                 .doFinally(f -> MDC.clear());
     }
 }
