@@ -176,7 +176,6 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
                 .orElse(""))
         )
 
-
         .doOnNext(payer -> log.info("Deactivating payer"))
         .flatMap(activationPayerService::deactivatePayer)
 
