@@ -183,13 +183,15 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
                 .doOnNext(deactivatedPayer -> log.info("Payer deactivated"))
                 .map(deactivatedPayer -> ResponseEntity.noContent().<Void>build())
 
-                .onErrorResume(AccessDeniedException.class, ex -> Mono.<ResponseEntity<Void>>just(ResponseEntity.notFound().build())
-                        .doFirst(() -> log.error("Error deactivating payer {}", ex.getMessage(), ex)))
-
                 .switchIfEmpty(Mono.fromSupplier(() -> {
                     log.error("Payer with ID {} not found for deactivation.", activationId);
                     return ResponseEntity.notFound().build();
                 }))
+
+                .onErrorResume(AccessDeniedException.class, ex -> {
+                    log.error("Error deactivating payer {}", ex.getMessage(), ex);
+                    return Mono.just(ResponseEntity.notFound().build());
+                })
 
                 .doFinally(f -> MDC.clear());
     }
