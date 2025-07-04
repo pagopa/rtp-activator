@@ -1,5 +1,7 @@
 package it.gov.pagopa.rtp.activator.controller.activation;
 
+import static it.gov.pagopa.rtp.activator.utils.Authorizations.verifySubjectRequest;
+
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.CreateApi;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.DeleteApi;
@@ -9,20 +11,20 @@ import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
+
+
+import java.net.URI;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import java.net.URI;
-import java.util.Optional;
-import java.util.UUID;
-
-import static it.gov.pagopa.rtp.activator.utils.Authorizations.verifySubjectRequest;
 
 /**
  * REST controller for handling RTP payer activations.
@@ -179,7 +181,8 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
         .doOnNext(deactivatedPayer -> log.info("Payer deactivated"))
         .map(deactivatedPayer -> ResponseEntity.noContent().<Void>build())
 
-        .doOnError(ex -> log.error("Error deactivating payer {}", ex.getMessage(), ex))
+        .doOnError(ex -> log.error("Error deactivating payer {}", ex.getMessage()))
+        .onErrorReturn(AccessDeniedException.class, ResponseEntity.notFound().build())
 
         .switchIfEmpty(Mono.fromSupplier(() -> {
           log.error("Payer not found");
