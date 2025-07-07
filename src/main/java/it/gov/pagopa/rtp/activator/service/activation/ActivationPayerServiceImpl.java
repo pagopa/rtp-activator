@@ -5,6 +5,8 @@ import java.time.Instant;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.util.Objects;
 import java.util.UUID;
+
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.dao.DuplicateKeyException;
@@ -70,9 +72,12 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
     @NonNull
     @Override
     public Mono<Payer> findPayerById(@NonNull final UUID id) {
-        Objects.requireNonNull(id, "Id cannot be null");
 
-        return this.activationDBRepository.findById(id);
+        return Mono.just(id)
+                .doFirst(() -> log.info("Starting retrieval payer with id: {}", id))
+                .flatMap(this.activationDBRepository::findById)
+                .doOnNext(payer -> log.info("Payer retrieved with id: {}", payer.activationID().getId()))
+                .switchIfEmpty(Mono.error(new PayerNotFoundException(id)));
     }
 
 

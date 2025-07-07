@@ -6,6 +6,7 @@ import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.CreateApi;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.DeleteApi;
 import it.gov.pagopa.rtp.activator.controller.generated.activate.ReadApi;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
@@ -129,7 +130,20 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
   public Mono<ResponseEntity<ActivationDto>> getActivation(
       UUID requestId, UUID activationId,
       String version, ServerWebExchange exchange) {
-    throw new UnsupportedOperationException("Unimplemented method 'getActivation'");
+
+    return Mono.just(activationId)
+            .doFirst(()-> log.info("Received request to find payer by id. requestId: {}, activationId: {}", requestId, activationId))
+            .doOnNext(id -> log.debug("Processing findPayerById for id: {}", id))
+            .flatMap(activationPayerService::findPayerById)
+            .doOnNext(payer -> log.debug("Payer retrieved from activationPayerService" ))
+            .map(activationDtoMapper::toActivationDto)
+            .doOnNext(dto -> log.debug("Mapped payer with id {} to DTO", dto.getId()))
+            .map(ResponseEntity::ok)
+            .onErrorResume(PayerNotFoundException.class, ex -> {
+                log.warn(ex.getMessage(), ex);
+                return Mono.just(ResponseEntity.notFound().build());
+            })
+            .doOnError(ex -> log.error("Error retrieving payer {}", ex.getMessage()));
   }
 
 
