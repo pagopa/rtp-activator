@@ -1,15 +1,19 @@
 package it.gov.pagopa.rtp.activator.repository.activation;
 
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.domain.payer.PayerRepository;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 
 /**
@@ -116,6 +120,13 @@ public class ActivationDBRepository implements PayerRepository {
 
         .doOnSuccess(id -> log.debug("Deleted activation with id: {}", payer.activationID().getId()))
         .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));
+  }
+
+  public Mono<Tuple2<List<ActivationEntity>, Long>> getActivationsByServiceProvider(String rtpSpId, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    return activationDB.findByServiceProviderDebtor(rtpSpId, pageable)
+        .collectList()
+        .zipWith(activationDB.countByServiceProviderDebtor(rtpSpId));
   }
 }
 

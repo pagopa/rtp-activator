@@ -11,16 +11,17 @@ import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
-
-
+import it.gov.pagopa.rtp.activator.utils.Authorizations;
 import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
@@ -134,19 +135,46 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
 
 
   /**
-   * Retrieves a paginated list of activations.
-   * <p>Currently not implemented.</p>
+   * Retrieves a paginated list of activations for the authenticated service provider.
+   * <p>
+   * Only activations associated with the authenticated subject are returned.
+   * The result includes pagination metadata such as total elements and total pages.
+   * </p>
    *
-   * @throws UnsupportedOperationException always
+   * @param requestId requestId the request ID
+   * @param page      the page number to retrieve (zero-based)
+   * @param size      the number of elements per page
+   * @param version   the API version
+   * @param exchange  the exchange context
+   * @return a {@link Mono}  containing a {@link PageOfActivationsDto} if authorized,
+   * or {@code 404 Not Found} / {@code 500 Internal Server Error} in case of failure
    */
   @Override
   @PreAuthorize("hasRole('read_rtp_activations')")
   public Mono<ResponseEntity<PageOfActivationsDto>> getActivations(
       UUID requestId, Integer page, Integer size,
       String version, ServerWebExchange exchange) {
-    throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
-  }
 
+    log.info("Received request to fetch activations. Page: {}, Size: {}", page, size);
+
+    return ReactiveSecurityContextHolder.getContext()
+        .map(ctx -> ctx.getAuthentication().getName())
+        .as(dsp -> Authorizations.verifySubjectRequest(dsp, Function.identity()))
+        .flatMap(serviceProvider -> {
+          log.info("Fetching activations for serviceProvider: {}", serviceProvider);
+          return activationPayerService.getActivationsByServiceProvider(serviceProvider, page, size);
+        })
+        .map(result -> {
+          PageOfActivationsDto dto = activationDtoMapper.toPageDto(result.getT1(), result.getT2(), page, size);
+          log.info("Returning {} activations", dto.getActivations().size());
+          return ResponseEntity.ok(dto);
+        })
+        .onErrorReturn(AccessDeniedException.class, ResponseEntity.notFound().build())
+        .onErrorResume(ex -> {
+          log.error("Unexpected error fetching activations: {}", ex.getMessage(), ex);
+          return Mono.just(ResponseEntity.internalServerError().build());
+        });
+  }
 
   /**
    * Deletes (deactivates) a payer by activation ID.

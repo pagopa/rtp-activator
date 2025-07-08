@@ -128,7 +128,7 @@ class ActivationAPIControllerImplTest {
             .expectBody(ErrorsDto.class);
 
     verify(activationPayerService, times(0)).activatePayer(any(String.class), any(String.class));
-    verify(activationDtoMapper, times(0)).toActivationDto(any());
+    verify(activationDtoMapper, times(0)).toActivationDto((Payer) any());
   }
 
 
