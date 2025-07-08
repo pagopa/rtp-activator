@@ -66,8 +66,9 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
     /**
      * Retrieves a payer by their activation ID.
      *
-     * @param id the activation ID of the payer
-     * @return a {@link Mono} emitting the {@link Payer} if found, or empty if not
+     * @param id activation ID of the payer (non-null)
+     * @return {@link Mono} with the {@link Payer} if found, or error if not
+     * @throws PayerNotFoundException if no payer is found with the given ID
      */
     @NonNull
     @Override

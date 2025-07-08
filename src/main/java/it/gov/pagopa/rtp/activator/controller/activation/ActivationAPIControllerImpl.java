@@ -123,7 +123,11 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
    * Retrieves a single activation by its activation ID.
    * <p>Currently not implemented.</p>
    *
-   * @throws UnsupportedOperationException always
+   * @param requestId   unique ID for tracing the request
+   * @param activationId ID of the activation to retrieve
+   * @param version     API version string
+   * @param exchange    server web exchange context
+   * @return {@link Mono} with {@link ResponseEntity} containing {@link ActivationDto}, or 404 if not found
    */
   @Override
   @PreAuthorize("hasRole('read_rtp_activations')")
