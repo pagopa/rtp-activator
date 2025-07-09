@@ -110,14 +110,10 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
 
     @Override
     public Mono<Tuple2<List<ActivationEntity>, Long>> getActivationsByServiceProvider(String serviceProvider, int page, int size) {
-        log.info("Fetching activations for serviceProviderDebtor: {}, page: {}, size: {}",
-            serviceProvider, page, size);
-
         return activationDBRepository.getActivationsByServiceProvider(serviceProvider, page, size)
             .doOnSuccess(result -> log.info("Fetched {} activations (total count: {}) for serviceProviderDebtor: {}",
                 result.getT1().size(), result.getT2(), serviceProvider))
             .doOnError(error -> log.error("Error fetching activations for serviceProviderDebtor: {}",
                 serviceProvider, error));
     }
-
 }

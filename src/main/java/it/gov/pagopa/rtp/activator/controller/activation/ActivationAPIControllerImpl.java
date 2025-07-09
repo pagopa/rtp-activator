@@ -11,11 +11,9 @@ import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
-import it.gov.pagopa.rtp.activator.utils.Authorizations;
 import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +37,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteApi {
 
+  public static final String SERVICE_PROVIDER = "service_provider";
   private final ActivationPayerService activationPayerService;
   private final ActivationPropertiesConfig activationPropertiesConfig;
   private final ActivationDtoMapper activationDtoMapper;
@@ -87,7 +86,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
                                       + payer.activationID().getId().toString()))
                               .build())
                       .doOnError(e -> {
-                        MDC.put("service_provider", spId);
+                        MDC.put(SERVICE_PROVIDER, spId);
                         log.error("Error activating payer {}", e.getMessage());
                       }).doFinally(f -> MDC.clear());
             });
@@ -159,21 +158,20 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
 
     return ReactiveSecurityContextHolder.getContext()
         .map(ctx -> ctx.getAuthentication().getName())
-        .as(dsp -> Authorizations.verifySubjectRequest(dsp, Function.identity()))
-        .flatMap(serviceProvider -> {
-          log.info("Fetching activations for serviceProvider: {}", serviceProvider);
-          return activationPayerService.getActivationsByServiceProvider(serviceProvider, page, size);
-        })
+        .doOnNext(serviceProvider -> MDC.put(SERVICE_PROVIDER, serviceProvider))
+        .doOnNext(serviceProvider -> log.info("Fetching list of activations"))
+        .flatMap(serviceProvider ->
+            activationPayerService.getActivationsByServiceProvider(serviceProvider, page, size))
         .map(result -> {
           PageOfActivationsDto dto = activationDtoMapper.toPageDto(result.getT1(), result.getT2(), page, size);
           log.info("Returning {} activations", dto.getActivations().size());
           return ResponseEntity.ok(dto);
         })
-        .onErrorReturn(AccessDeniedException.class, ResponseEntity.notFound().build())
         .onErrorResume(ex -> {
-          log.error("Unexpected error fetching activations: {}", ex.getMessage(), ex);
+          log.error("Error fetching activations: {}", ex.getMessage());
           return Mono.just(ResponseEntity.internalServerError().build());
-        });
+        })
+        .doFinally(f -> MDC.clear());
   }
 
   /**
@@ -194,7 +192,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
         .doFirst(() -> log.info("Received request to deactivate payer. Id: {}", activationId))
         .flatMap(activationPayerService::findPayerById)
 
-        .doOnNext(payer -> MDC.put("service_provider", payer.serviceProviderDebtor()))
+        .doOnNext(payer -> MDC.put(SERVICE_PROVIDER, payer.serviceProviderDebtor()))
         .doOnNext(payer -> MDC.put("activation_id", payer.activationID().getId().toString()))
 
         .doOnNext(payer -> log.info("Verifying token subject"))

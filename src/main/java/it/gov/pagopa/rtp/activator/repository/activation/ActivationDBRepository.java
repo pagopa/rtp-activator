@@ -30,6 +30,7 @@ public class ActivationDBRepository implements PayerRepository {
   private final ActivationDB activationDB;
   private final DeletedActivationDB deletedActivationDB;
   private final ActivationMapper activationMapper;
+  private final ActivationRepositoryExtended activationRepositoryExtended;
 
 
   /**
@@ -42,11 +43,12 @@ public class ActivationDBRepository implements PayerRepository {
   public ActivationDBRepository(
       ActivationDB activationDB,
       DeletedActivationDB deletedActivationDB,
-      ActivationMapper activationMapper) {
+      ActivationMapper activationMapper, ActivationRepositoryExtended activationRepositoryExtended) {
 
     this.activationDB = activationDB;
     this.deletedActivationDB = deletedActivationDB;
     this.activationMapper = activationMapper;
+    this.activationRepositoryExtended = activationRepositoryExtended;
   }
 
 
@@ -122,11 +124,11 @@ public class ActivationDBRepository implements PayerRepository {
         .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));
   }
 
-  public Mono<Tuple2<List<ActivationEntity>, Long>> getActivationsByServiceProvider(String rtpSpId, int page, int size) {
+  public Mono<Tuple2<List<ActivationEntity>, Long>> getActivationsByServiceProvider(String serviceProvider, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
-    return activationDB.findByServiceProviderDebtor(rtpSpId, pageable)
+    return activationRepositoryExtended.findByServiceProviderDebtor(serviceProvider, pageable)
         .collectList()
-        .zipWith(activationDB.countByServiceProviderDebtor(rtpSpId));
+        .zipWith(activationRepositoryExtended.countByServiceProviderDebtor(serviceProvider));
   }
 }
 

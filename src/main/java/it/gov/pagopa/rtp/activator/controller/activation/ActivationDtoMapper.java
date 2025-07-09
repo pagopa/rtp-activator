@@ -30,19 +30,18 @@ public class ActivationDtoMapper {
     }
 
     public PageOfActivationsDto toPageDto(List<ActivationEntity> activationEntityList, Long totalElements, int page, int size) {
-        List<ActivationDto> dtos = activationEntityList.stream()
+        List<ActivationDto> activations = activationEntityList.stream()
             .map(this::toActivationDto)
             .toList();
 
         PageMetadataDto metadata = new PageMetadataDto();
-        metadata.setTotalElements(totalElements);
-        metadata.setTotalPages((long) Math.ceil((double) totalElements / size));
-        metadata.setPage(page);
-        metadata.setSize(size);
+        metadata.totalElements(totalElements);
+        metadata.totalPages((long) Math.ceil((double) totalElements / size));
+        metadata.page(page);
+        metadata.size(size);
 
-        PageOfActivationsDto pageDto = new PageOfActivationsDto();
-        pageDto.setActivations(dtos);
-        pageDto.setPage(metadata);
-        return pageDto;
+        return new PageOfActivationsDto()
+            .activations(activations)
+            .page(metadata);
     }
 }

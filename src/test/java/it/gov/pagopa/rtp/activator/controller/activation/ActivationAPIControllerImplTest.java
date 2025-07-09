@@ -8,10 +8,14 @@ import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
+import it.gov.pagopa.rtp.activator.model.generated.activate.PageMetadataDto;
+import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PayerDto;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
+import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 import it.gov.pagopa.rtp.activator.utils.Users;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +37,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.UUID;
+import reactor.util.function.Tuples;
 
 import static it.gov.pagopa.rtp.activator.utils.Users.SERVICE_PROVIDER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -205,21 +210,73 @@ class ActivationAPIControllerImplTest {
 
   @Test
   @Users.RtpReader
-  void getActivationsThrowsException() {
+  void testGetActivationsSuccess() {
+    int page = 0;
+    int size = 10;
+
+    List<ActivationEntity> entities = List.of(
+        ActivationEntity.builder()
+            .id(UUID.randomUUID())
+            .fiscalCode("FISCAL_CODE")
+            .serviceProviderDebtor(SERVICE_PROVIDER_ID)
+            .effectiveActivationDate(Instant.now())
+            .build()
+    );
+
+    ActivationDto activationDto = new ActivationDto()
+        .id(entities.getFirst().getId())
+        .payer(new PayerDto().fiscalCode("FISCAL_CODE").rtpSpId(SERVICE_PROVIDER_ID));
+
+    PageMetadataDto metadata = new PageMetadataDto();
+    metadata.setPage(page);
+    metadata.setSize(size);
+    metadata.setTotalElements(1L);
+    metadata.setTotalPages(1L);
+
+    PageOfActivationsDto expectedPage = new PageOfActivationsDto();
+    expectedPage.setActivations(List.of(activationDto));
+    expectedPage.setPage(metadata);
+
+    when(activationPayerService.getActivationsByServiceProvider(SERVICE_PROVIDER_ID, page, size))
+        .thenReturn(Mono.just(Tuples.of(entities, 1L)));
+    when(activationDtoMapper.toPageDto(entities, 1L, page, size))
+        .thenReturn(expectedPage);
 
     webTestClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/activations")
-            .queryParam("PageNumber", 0)
-            .queryParam("PageSize", 10)
+            .queryParam("page", page)
+            .queryParam("size", size)
             .build())
         .header("RequestId", UUID.randomUUID().toString())
         .header("Version", "v1")
         .exchange()
-        .expectStatus().is4xxClientError()
+        .expectStatus().isOk()
         .expectBody()
-        .jsonPath("$.status").isEqualTo(400)
-        .jsonPath("$.error").isEqualTo("Bad Request");
+        .jsonPath("$.activations.length()").isEqualTo(1)
+        .jsonPath("$.activations[0].payer.fiscalCode").isEqualTo("FISCAL_CODE")
+        .jsonPath("$.page.totalElements").isEqualTo(1)
+        .jsonPath("$.page.totalPages").isEqualTo(1)
+        .jsonPath("$.page.page").isEqualTo(page)
+        .jsonPath("$.page.size").isEqualTo(size);
+  }
+
+  @Test
+  @Users.RtpReader
+  void getActivationsThrowsException() {
+    when(activationPayerService.getActivationsByServiceProvider(any(), anyInt(), anyInt()))
+        .thenReturn(Mono.error(new RuntimeException("Something went wrong")));
+
+    webTestClient.get()
+        .uri(uriBuilder -> uriBuilder
+            .path("/activations")
+            .queryParam("page", 0)
+            .queryParam("size", 10)
+            .build())
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().is5xxServerError();
   }
 
   @ParameterizedTest
