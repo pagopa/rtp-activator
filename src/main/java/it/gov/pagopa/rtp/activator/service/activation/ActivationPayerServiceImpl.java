@@ -1,23 +1,22 @@
 package it.gov.pagopa.rtp.activator.service.activation;
 
-import java.time.Instant;
-
 import io.opentelemetry.instrumentation.annotations.WithSpan;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
+import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
+import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
+import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
-import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
-
-import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
-import it.gov.pagopa.rtp.activator.domain.payer.Payer;
-import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 
 /**
@@ -113,5 +112,14 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
             .thenReturn(payerToDeactivate)
             .doOnSuccess(id -> log.info("Payer deactivated with id {}", payerToDeactivate.activationID().getId()))
             .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));
+    }
+
+    @Override
+    public Mono<Tuple2<List<Payer>, Long>> getActivationsByServiceProvider(String serviceProvider, int page, int size) {
+        return activationDBRepository.getActivationsByServiceProvider(serviceProvider, page, size)
+            .doOnSuccess(result -> log.info("Fetched {} activations (total count: {}) for serviceProviderDebtor: {}",
+                result.getT1().size(), result.getT2(), serviceProvider))
+            .doOnError(error -> log.error("Error fetching activations for serviceProviderDebtor: {}",
+                serviceProvider, error));
     }
 }

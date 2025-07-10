@@ -1,5 +1,6 @@
 package it.gov.pagopa.rtp.activator.repository.activation;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -9,12 +10,16 @@ import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -29,6 +34,9 @@ class ActivationDBRepositoryTest {
 
   @Mock
   private ActivationMapper activationMapper;
+
+  @Mock
+  private ActivationRepositoryExtended activationRepositoryExtended;
 
   @InjectMocks
   private ActivationDBRepository repository;
@@ -175,4 +183,34 @@ class ActivationDBRepositoryTest {
     verify(activationDB).deleteById(activationId);
   }
 
+  @Test
+  void whenGetActivationsByServiceProvider_thenReturnTuple2OfActivationEntityAndLong() {
+    String serviceProvider = "serviceProvider";
+    String fiscalCode = "fiscalCode";
+    int page = 0;
+    int size = 10;
+
+    Payer payer = new Payer(new ActivationID(UUID.randomUUID()), serviceProvider, fiscalCode, Instant.now());
+
+    ActivationEntity activationEntity = new ActivationEntity();
+    List<ActivationEntity> activationEntityList = List.of(activationEntity, activationEntity);
+    List<Payer> payerList = List.of(payer, payer);
+    long expectedCount = 2L;
+
+    when(activationRepositoryExtended.findByServiceProviderDebtor(serviceProvider, PageRequest.of(page, size)))
+        .thenReturn(Flux.fromIterable(activationEntityList));
+    when(activationMapper.toDomain(activationEntity)).thenReturn(payer);
+    when(activationRepositoryExtended.countByServiceProviderDebtor(serviceProvider))
+        .thenReturn(Mono.just(expectedCount));
+
+    StepVerifier.create(repository.getActivationsByServiceProvider(serviceProvider, page, size))
+        .assertNext(result -> {
+          assertThat(result.getT1()).containsExactlyElementsOf(payerList);
+          assertThat(result.getT2()).isEqualTo(expectedCount);
+        })
+        .verifyComplete();
+
+    verify(activationRepositoryExtended).findByServiceProviderDebtor(serviceProvider, PageRequest.of(page, size));
+    verify(activationRepositoryExtended).countByServiceProviderDebtor(serviceProvider);
+  }
 }

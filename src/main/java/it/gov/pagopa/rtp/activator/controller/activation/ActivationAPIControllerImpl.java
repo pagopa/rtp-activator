@@ -12,8 +12,6 @@ import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
-
-
 import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +20,7 @@ import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
@@ -39,6 +38,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteApi {
 
+  public static final String SERVICE_PROVIDER = "service_provider";
   private final ActivationPayerService activationPayerService;
   private final ActivationPropertiesConfig activationPropertiesConfig;
   private final ActivationDtoMapper activationDtoMapper;
@@ -87,7 +87,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
                                       + payer.activationID().getId().toString()))
                               .build())
                       .doOnError(e -> {
-                        MDC.put("service_provider", spId);
+                        MDC.put(SERVICE_PROVIDER, spId);
                         log.error("Error activating payer {}", e.getMessage());
                       }).doFinally(f -> MDC.clear());
             });
@@ -153,19 +153,42 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
 
 
   /**
-   * Retrieves a paginated list of activations.
-   * <p>Currently not implemented.</p>
+   * Retrieves a paginated list of activations for the authenticated service provider.
+   * <p>
+   * Only activations associated with the authenticated subject are returned.
+   * The result includes pagination metadata such as total elements and total pages.
+   * </p>
    *
-   * @throws UnsupportedOperationException always
+   * @param requestId requestId the request ID
+   * @param page      the page number to retrieve (zero-based)
+   * @param size      the number of elements per page
+   * @param version   the API version
+   * @param exchange  the exchange context
+   * @return a {@link Mono}  containing a {@link PageOfActivationsDto} if authorized,
+   * or {@code 404 Not Found} / {@code 500 Internal Server Error} in case of failure
    */
   @Override
   @PreAuthorize("hasRole('read_rtp_activations')")
   public Mono<ResponseEntity<PageOfActivationsDto>> getActivations(
       UUID requestId, Integer page, Integer size,
       String version, ServerWebExchange exchange) {
-    throw new UnsupportedOperationException("Unimplemented method 'getActivations'");
-  }
 
+    log.info("Received request to fetch activations. Page: {}, Size: {}", page, size);
+
+    return ReactiveSecurityContextHolder.getContext()
+        .map(ctx -> ctx.getAuthentication().getName())
+        .doOnNext(serviceProvider -> MDC.put(SERVICE_PROVIDER, serviceProvider))
+        .doOnNext(serviceProvider -> log.info("Fetching list of activations"))
+        .flatMap(serviceProvider ->
+            activationPayerService.getActivationsByServiceProvider(serviceProvider, page, size))
+        .map(result -> {
+          PageOfActivationsDto dto = activationDtoMapper.toPageDto(result.getT1(), result.getT2(), page, size);
+          log.info("Returning {} activations", dto.getActivations().size());
+          return ResponseEntity.ok(dto);
+        })
+        .doOnError(ex -> log.error("Error fetching activations: {}", ex.getMessage()))
+        .doFinally(f -> MDC.clear());
+  }
 
   /**
    * Deletes (deactivates) a payer by activation ID.
@@ -185,7 +208,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
         .doFirst(() -> log.info("Received request to deactivate payer. Id: {}", activationId))
         .flatMap(activationPayerService::findPayerById)
 
-        .doOnNext(payer -> MDC.put("service_provider", payer.serviceProviderDebtor()))
+        .doOnNext(payer -> MDC.put(SERVICE_PROVIDER, payer.serviceProviderDebtor()))
         .doOnNext(payer -> MDC.put("activation_id", payer.activationID().getId().toString()))
 
         .doOnNext(payer -> log.info("Verifying token subject"))

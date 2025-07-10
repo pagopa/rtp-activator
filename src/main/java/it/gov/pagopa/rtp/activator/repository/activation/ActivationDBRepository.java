@@ -1,15 +1,19 @@
 package it.gov.pagopa.rtp.activator.repository.activation;
 
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.domain.payer.PayerRepository;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 
 /**
@@ -26,6 +30,7 @@ public class ActivationDBRepository implements PayerRepository {
   private final ActivationDB activationDB;
   private final DeletedActivationDB deletedActivationDB;
   private final ActivationMapper activationMapper;
+  private final ActivationRepositoryExtended activationRepositoryExtended;
 
 
   /**
@@ -38,11 +43,12 @@ public class ActivationDBRepository implements PayerRepository {
   public ActivationDBRepository(
       ActivationDB activationDB,
       DeletedActivationDB deletedActivationDB,
-      ActivationMapper activationMapper) {
+      ActivationMapper activationMapper, ActivationRepositoryExtended activationRepositoryExtended) {
 
     this.activationDB = activationDB;
     this.deletedActivationDB = deletedActivationDB;
     this.activationMapper = activationMapper;
+    this.activationRepositoryExtended = activationRepositoryExtended;
   }
 
 
@@ -116,6 +122,16 @@ public class ActivationDBRepository implements PayerRepository {
 
         .doOnSuccess(id -> log.debug("Deleted activation with id: {}", payer.activationID().getId()))
         .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));
+  }
+
+  @Override
+  public Mono<Tuple2<List<Payer>, Long>> getActivationsByServiceProvider(String serviceProvider, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size);
+    return activationRepositoryExtended.findByServiceProviderDebtor(serviceProvider, pageable)
+        .doOnNext(entity -> log.debug("Mapping ActivationEntity to Payer"))
+        .map(activationMapper::toDomain)
+        .collectList()
+        .zipWith(activationRepositoryExtended.countByServiceProviderDebtor(serviceProvider));
   }
 }
 

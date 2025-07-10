@@ -1,30 +1,30 @@
 package it.gov.pagopa.rtp.activator.service.activation;
 
-import java.util.UUID;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
+import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
+import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
-import it.gov.pagopa.rtp.activator.domain.payer.Payer;
-import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DuplicateKeyException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import java.time.Instant;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import reactor.util.function.Tuples;
 
 @ExtendWith(MockitoExtension.class)
 class ActivationPayerServiceImplTest {
@@ -194,5 +194,39 @@ class ActivationPayerServiceImplTest {
         .verify();
 
     verify(activationDBRepository).deactivate(payerToDeactivate);
+  }
+
+  @Test
+  void whenGetActivationsByServiceProvider_thenReturnsActivations() {
+    List<Payer> activations = List.of(payer, payer);
+    long totalCount = 2L;
+
+    when(activationDBRepository.getActivationsByServiceProvider(rtpSpId, 0, 10))
+        .thenReturn(Mono.just(Tuples.of(activations, totalCount)));
+
+    StepVerifier.create(activationPayerService.getActivationsByServiceProvider(rtpSpId, 0, 10))
+        .expectNextMatches(result ->
+            result.getT1().size() == 2 &&
+                result.getT2() == 2L
+        )
+        .verifyComplete();
+
+    verify(activationDBRepository).getActivationsByServiceProvider(rtpSpId, 0, 10);
+  }
+
+  @Test
+  void whenGetActivationsByServiceProviderFails_thenReturnsError() {
+    DataAccessResourceFailureException exception =
+        new DataAccessResourceFailureException("Database error");
+
+    when(activationDBRepository.getActivationsByServiceProvider(rtpSpId, 0, 10))
+        .thenReturn(Mono.error(exception));
+
+    StepVerifier.create(activationPayerService.getActivationsByServiceProvider(rtpSpId, 0, 10))
+        .expectErrorMatches(e -> e instanceof DataAccessResourceFailureException &&
+            e.getMessage().equals("Database error"))
+        .verify();
+
+    verify(activationDBRepository).getActivationsByServiceProvider(rtpSpId, 0, 10);
   }
 }

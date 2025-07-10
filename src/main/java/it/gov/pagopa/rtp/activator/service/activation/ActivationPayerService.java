@@ -1,8 +1,11 @@
 package it.gov.pagopa.rtp.activator.service.activation;
 
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
+import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
+import java.util.List;
 import java.util.UUID;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 /**
  * Service interface for managing payer activations, including creating, retrieving, and deactivating payers.
@@ -41,4 +44,16 @@ public interface ActivationPayerService {
     * @return a {@link Mono} emitting the same {@link Payer} after deactivation
     */
    Mono<Payer> deactivatePayer(Payer payer);
+
+   /**
+    * Retrieves a paginated list of activation entities for a given service provider.
+    *
+    * @param serviceProvider the service provider
+    * @param page the page number to retrieve (zero-based)
+    * @param size the number of elements per page
+    * @return a {@link Mono} emitting a {@link Tuple2} containing the list of {@link ActivationEntity} for the requested page
+    *         and the total number of matching elements
+    */
+   Mono<Tuple2<List<Payer>, Long>> getActivationsByServiceProvider(String serviceProvider,
+       int page, int size);
 }

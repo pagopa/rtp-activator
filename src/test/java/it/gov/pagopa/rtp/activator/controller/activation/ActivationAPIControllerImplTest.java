@@ -1,5 +1,14 @@
 package it.gov.pagopa.rtp.activator.controller.activation;
 
+import static it.gov.pagopa.rtp.activator.utils.Users.SERVICE_PROVIDER_ID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
+
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
@@ -9,10 +18,15 @@ import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationReqDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ErrorsDto;
+import it.gov.pagopa.rtp.activator.model.generated.activate.PageMetadataDto;
+import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PayerDto;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 import it.gov.pagopa.rtp.activator.utils.Users;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,15 +45,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
-
-import java.time.Instant;
-import java.util.UUID;
-
-import static it.gov.pagopa.rtp.activator.utils.Users.SERVICE_PROVIDER_ID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
+import reactor.util.function.Tuples;
 
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = { ActivationAPIControllerImpl.class })
@@ -48,6 +54,7 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
 @DisabledInAotMode
 class ActivationAPIControllerImplTest {
 
+  public static final String FISCAL_CODE = "FISCAL_CODE";
   @MockitoBean
   private ActivationDBRepository activationDBRepository;
 
@@ -74,7 +81,7 @@ class ActivationAPIControllerImplTest {
   @Test
   @Users.RtpWriter
   void testActivatePayerSuccessful() {
-    Payer payer = new Payer(ActivationID.createNew(), "RTP_SP_ID", "FISCAL_CODE", Instant.now());
+    Payer payer = new Payer(ActivationID.createNew(), "RTP_SP_ID", FISCAL_CODE, Instant.now());
 
     when(activationPayerService.activatePayer(any(String.class), any(String.class)))
         .thenReturn(Mono.just(payer));
@@ -191,21 +198,82 @@ class ActivationAPIControllerImplTest {
 
   @Test
   @Users.RtpReader
-  void getActivationsThrowsException() {
+  void getActivationThrowsException() {
 
     webTestClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .path("/activations")
-            .queryParam("PageNumber", 0)
-            .queryParam("PageSize", 10)
-            .build())
+        .uri("/activations/activation/{activationId}", UUID.randomUUID().toString())
         .header("RequestId", UUID.randomUUID().toString())
         .header("Version", "v1")
         .exchange()
         .expectStatus().is4xxClientError()
         .expectBody()
-        .jsonPath("$.status").isEqualTo(400)
-        .jsonPath("$.error").isEqualTo("Bad Request");
+        .jsonPath("$.status").isEqualTo(404)
+        .jsonPath("$.error").isEqualTo("Not Found");
+  }
+
+  @Test
+  @Users.RtpReader
+  void testGetActivationsSuccess() {
+    int page = 0;
+    int size = 10;
+
+    Payer payer = new Payer(ActivationID.createNew(), SERVICE_PROVIDER_ID, FISCAL_CODE, Instant.now());
+    List<Payer> payerList = List.of(payer, payer);
+
+    ActivationDto activationDto = new ActivationDto()
+        .id(UUID.randomUUID())
+        .payer(new PayerDto().fiscalCode(FISCAL_CODE).rtpSpId(SERVICE_PROVIDER_ID));
+
+    PageMetadataDto metadata = new PageMetadataDto();
+    metadata.setPage(page);
+    metadata.setSize(size);
+    metadata.setTotalElements(1L);
+    metadata.setTotalPages(1L);
+
+    PageOfActivationsDto expectedPage = new PageOfActivationsDto();
+    expectedPage.setActivations(List.of(activationDto));
+    expectedPage.setPage(metadata);
+
+    when(activationPayerService.getActivationsByServiceProvider(SERVICE_PROVIDER_ID, page, size))
+        .thenReturn(Mono.just(Tuples.of(payerList, 1L)));
+    when(activationDtoMapper.toPageDto(payerList, 1L, page, size))
+        .thenReturn(expectedPage);
+
+    webTestClient.get()
+        .uri(uriBuilder -> uriBuilder
+            .path("/activations")
+            .queryParam("page", page)
+            .queryParam("size", size)
+            .build())
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().isOk()
+        .expectBody()
+        .jsonPath("$.activations.length()").isEqualTo(1)
+        .jsonPath("$.activations[0].payer.fiscalCode").isEqualTo(FISCAL_CODE)
+        .jsonPath("$.page.totalElements").isEqualTo(1)
+        .jsonPath("$.page.totalPages").isEqualTo(1)
+        .jsonPath("$.page.page").isEqualTo(page)
+        .jsonPath("$.page.size").isEqualTo(size);
+  }
+
+  @Test
+  @Users.RtpReader
+  void getActivationsThrowsException() {
+    when(activationPayerService.getActivationsByServiceProvider(any(), anyInt(), anyInt()))
+        .thenReturn(Mono.error(new RuntimeException("Something went wrong")));
+
+    webTestClient.get()
+        .uri(uriBuilder -> uriBuilder
+            .path("/activations")
+            .queryParam("page", 0)
+            .queryParam("size", 10)
+            .build())
+        .header("RequestId", UUID.randomUUID().toString())
+        .header("Version", "v1")
+        .exchange()
+        .expectStatus().is5xxServerError();
   }
 
   @ParameterizedTest
@@ -233,7 +301,7 @@ class ActivationAPIControllerImplTest {
     final var samplePayer = new Payer(
         activationId,
         SERVICE_PROVIDER_ID,
-        "FISCAL_CODE",
+        FISCAL_CODE,
         Instant.now()
     );
 
