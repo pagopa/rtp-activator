@@ -124,9 +124,12 @@ public class ActivationDBRepository implements PayerRepository {
         .doOnError(error -> log.error("Error deactivating payer: {}", error.getMessage(), error));
   }
 
-  public Mono<Tuple2<List<ActivationEntity>, Long>> getActivationsByServiceProvider(String serviceProvider, int page, int size) {
+  @Override
+  public Mono<Tuple2<List<Payer>, Long>> getActivationsByServiceProvider(String serviceProvider, int page, int size) {
     Pageable pageable = PageRequest.of(page, size);
     return activationRepositoryExtended.findByServiceProviderDebtor(serviceProvider, pageable)
+        .doOnNext(entity -> log.debug("Mapping ActivationEntity to Payer"))
+        .map(activationMapper::toDomain)
         .collectList()
         .zipWith(activationRepositoryExtended.countByServiceProviderDebtor(serviceProvider));
   }

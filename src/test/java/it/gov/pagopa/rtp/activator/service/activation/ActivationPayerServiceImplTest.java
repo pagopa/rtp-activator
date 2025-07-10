@@ -1,34 +1,30 @@
 package it.gov.pagopa.rtp.activator.service.activation;
 
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
+import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
+import it.gov.pagopa.rtp.activator.domain.payer.Payer;
+import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
-import it.gov.pagopa.rtp.activator.domain.payer.Payer;
-import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DuplicateKeyException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
-import java.time.Instant;
 import reactor.util.function.Tuples;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ActivationPayerServiceImplTest {
@@ -202,11 +198,12 @@ class ActivationPayerServiceImplTest {
 
   @Test
   void whenGetActivationsByServiceProvider_thenReturnsActivations() {
-    List<ActivationEntity> activations = List.of(new ActivationEntity(), new ActivationEntity());
+    List<Payer> activations = List.of(payer, payer);
     long totalCount = 2L;
 
     when(activationDBRepository.getActivationsByServiceProvider(rtpSpId, 0, 10))
         .thenReturn(Mono.just(Tuples.of(activations, totalCount)));
+//    when()
 
     StepVerifier.create(activationPayerService.getActivationsByServiceProvider(rtpSpId, 0, 10))
         .expectNextMatches(result ->

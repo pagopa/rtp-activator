@@ -55,6 +55,7 @@ import reactor.util.function.Tuples;
 @DisabledInAotMode
 class ActivationAPIControllerImplTest {
 
+  public static final String FISCAL_CODE = "FISCAL_CODE";
   @MockitoBean
   private ActivationDBRepository activationDBRepository;
 
@@ -81,7 +82,7 @@ class ActivationAPIControllerImplTest {
   @Test
   @Users.RtpWriter
   void testActivatePayerSuccessful() {
-    Payer payer = new Payer(ActivationID.createNew(), "RTP_SP_ID", "FISCAL_CODE", Instant.now());
+    Payer payer = new Payer(ActivationID.createNew(), "RTP_SP_ID", FISCAL_CODE, Instant.now());
 
     when(activationPayerService.activatePayer(any(String.class), any(String.class)))
         .thenReturn(Mono.just(payer));
@@ -136,7 +137,7 @@ class ActivationAPIControllerImplTest {
             .expectBody(ErrorsDto.class);
 
     verify(activationPayerService, times(0)).activatePayer(any(String.class), any(String.class));
-    verify(activationDtoMapper, times(0)).toActivationDto((Payer) any());
+    verify(activationDtoMapper, times(0)).toActivationDto(any());
   }
 
 
@@ -217,10 +218,13 @@ class ActivationAPIControllerImplTest {
     int page = 0;
     int size = 10;
 
+    Payer payer = new Payer(ActivationID.createNew(), SERVICE_PROVIDER_ID, FISCAL_CODE, Instant.now());
+    List<Payer> payerList = List.of(payer, payer);
+
     List<ActivationEntity> entities = List.of(
         ActivationEntity.builder()
             .id(UUID.randomUUID())
-            .fiscalCode("FISCAL_CODE")
+            .fiscalCode(FISCAL_CODE)
             .serviceProviderDebtor(SERVICE_PROVIDER_ID)
             .effectiveActivationDate(Instant.now())
             .build()
@@ -228,7 +232,7 @@ class ActivationAPIControllerImplTest {
 
     ActivationDto activationDto = new ActivationDto()
         .id(entities.getFirst().getId())
-        .payer(new PayerDto().fiscalCode("FISCAL_CODE").rtpSpId(SERVICE_PROVIDER_ID));
+        .payer(new PayerDto().fiscalCode(FISCAL_CODE).rtpSpId(SERVICE_PROVIDER_ID));
 
     PageMetadataDto metadata = new PageMetadataDto();
     metadata.setPage(page);
@@ -241,8 +245,8 @@ class ActivationAPIControllerImplTest {
     expectedPage.setPage(metadata);
 
     when(activationPayerService.getActivationsByServiceProvider(SERVICE_PROVIDER_ID, page, size))
-        .thenReturn(Mono.just(Tuples.of(entities, 1L)));
-    when(activationDtoMapper.toPageDto(entities, 1L, page, size))
+        .thenReturn(Mono.just(Tuples.of(payerList, 1L)));
+    when(activationDtoMapper.toPageDto(payerList, 1L, page, size))
         .thenReturn(expectedPage);
 
     webTestClient.get()
@@ -257,7 +261,7 @@ class ActivationAPIControllerImplTest {
         .expectStatus().isOk()
         .expectBody()
         .jsonPath("$.activations.length()").isEqualTo(1)
-        .jsonPath("$.activations[0].payer.fiscalCode").isEqualTo("FISCAL_CODE")
+        .jsonPath("$.activations[0].payer.fiscalCode").isEqualTo(FISCAL_CODE)
         .jsonPath("$.page.totalElements").isEqualTo(1)
         .jsonPath("$.page.totalPages").isEqualTo(1)
         .jsonPath("$.page.page").isEqualTo(page)
@@ -307,7 +311,7 @@ class ActivationAPIControllerImplTest {
     final var samplePayer = new Payer(
         activationId,
         SERVICE_PROVIDER_ID,
-        "FISCAL_CODE",
+        FISCAL_CODE,
         Instant.now()
     );
 

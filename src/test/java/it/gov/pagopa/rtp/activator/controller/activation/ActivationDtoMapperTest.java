@@ -7,7 +7,6 @@ import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -37,22 +36,10 @@ class ActivationDtoMapperTest {
   }
 
   @Test
-  void testToActivationDtoFromEntity() {
-    ActivationEntity entity = buildActivationEntity();
-
-    ActivationDto dto = mapper.toActivationDto(entity);
-
-    assertThat(dto.getId()).isEqualTo(ID);
-    assertThat(dto.getPayer().getFiscalCode()).isEqualTo(FISCAL_CODE);
-    assertThat(dto.getPayer().getRtpSpId()).isEqualTo(SERVICE_PROVIDER_DEBTOR);
-    assertThat(dto.getEffectiveActivationDate()).isEqualTo(LocalDateTime.ofInstant(NOW, ZoneOffset.UTC));
-  }
-
-  @Test
   void testToPageDto() {
-    ActivationEntity entity = buildActivationEntity();
+    Payer payer = new Payer(new ActivationID(ID), SERVICE_PROVIDER_DEBTOR, FISCAL_CODE, NOW);
 
-    List<ActivationEntity> list = List.of(entity);
+    List<Payer> list = List.of(payer);
     long totalElements = 25;
     int page = 1;
     int size = 10;
@@ -64,14 +51,5 @@ class ActivationDtoMapperTest {
     assertThat(pageDto.getPage().getTotalPages()).isEqualTo(3L);
     assertThat(pageDto.getPage().getPage()).isEqualTo(page);
     assertThat(pageDto.getPage().getSize()).isEqualTo(size);
-  }
-
-  private ActivationEntity buildActivationEntity() {
-    return ActivationEntity.builder()
-        .id(ID)
-        .fiscalCode(FISCAL_CODE)
-        .serviceProviderDebtor(SERVICE_PROVIDER_DEBTOR)
-        .effectiveActivationDate(NOW)
-        .build();
   }
 }

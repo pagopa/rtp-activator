@@ -5,7 +5,6 @@ import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageMetadataDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PayerDto;
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -20,16 +19,7 @@ public class ActivationDtoMapper {
                 .effectiveActivationDate(LocalDateTime.ofInstant(payer.effectiveActivationDate(), ZoneOffset.UTC));
     }
 
-    public ActivationDto toActivationDto(ActivationEntity entity) {
-        return new ActivationDto()
-            .id(entity.getId())
-            .payer(new PayerDto()
-                .fiscalCode(entity.getFiscalCode())
-                .rtpSpId(entity.getServiceProviderDebtor()))
-            .effectiveActivationDate(LocalDateTime.ofInstant(entity.getEffectiveActivationDate(), ZoneOffset.UTC));
-    }
-
-    public PageOfActivationsDto toPageDto(List<ActivationEntity> activationEntityList, Long totalElements, int page, int size) {
+    public PageOfActivationsDto toPageDto(List<Payer> activationEntityList, Long totalElements, int page, int size){
         List<ActivationDto> activations = activationEntityList.stream()
             .map(this::toActivationDto)
             .toList();

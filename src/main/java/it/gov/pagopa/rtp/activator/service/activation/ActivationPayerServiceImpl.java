@@ -2,16 +2,14 @@ package it.gov.pagopa.rtp.activator.service.activation;
 
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
-import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.dao.DuplicateKeyException;
@@ -117,7 +115,7 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
     }
 
     @Override
-    public Mono<Tuple2<List<ActivationEntity>, Long>> getActivationsByServiceProvider(String serviceProvider, int page, int size) {
+    public Mono<Tuple2<List<Payer>, Long>> getActivationsByServiceProvider(String serviceProvider, int page, int size) {
         return activationDBRepository.getActivationsByServiceProvider(serviceProvider, page, size)
             .doOnSuccess(result -> log.info("Fetched {} activations (total count: {}) for serviceProviderDebtor: {}",
                 result.getT1().size(), result.getT2(), serviceProvider))

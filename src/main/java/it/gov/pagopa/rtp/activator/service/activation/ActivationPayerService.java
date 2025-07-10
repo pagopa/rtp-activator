@@ -54,6 +54,6 @@ public interface ActivationPayerService {
     * @return a {@link Mono} emitting a {@link Tuple2} containing the list of {@link ActivationEntity} for the requested page
     *         and the total number of matching elements
     */
-   Mono<Tuple2<List<ActivationEntity>, Long>> getActivationsByServiceProvider(String serviceProvider,
+   Mono<Tuple2<List<Payer>, Long>> getActivationsByServiceProvider(String serviceProvider,
        int page, int size);
 }
