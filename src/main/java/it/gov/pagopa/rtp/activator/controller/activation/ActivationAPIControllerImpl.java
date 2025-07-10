@@ -186,10 +186,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
           log.info("Returning {} activations", dto.getActivations().size());
           return ResponseEntity.ok(dto);
         })
-        .onErrorResume(ex -> {
-          log.error("Error fetching activations: {}", ex.getMessage());
-          return Mono.just(ResponseEntity.internalServerError().build());
-        })
+        .doOnError(ex -> log.error("Error fetching activations: {}", ex.getMessage()))
         .doFinally(f -> MDC.clear());
   }
 
