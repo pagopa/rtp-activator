@@ -22,7 +22,6 @@ import it.gov.pagopa.rtp.activator.model.generated.activate.PageMetadataDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PageOfActivationsDto;
 import it.gov.pagopa.rtp.activator.model.generated.activate.PayerDto;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
-import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 import it.gov.pagopa.rtp.activator.utils.Users;
 import java.time.Instant;
@@ -221,17 +220,8 @@ class ActivationAPIControllerImplTest {
     Payer payer = new Payer(ActivationID.createNew(), SERVICE_PROVIDER_ID, FISCAL_CODE, Instant.now());
     List<Payer> payerList = List.of(payer, payer);
 
-    List<ActivationEntity> entities = List.of(
-        ActivationEntity.builder()
-            .id(UUID.randomUUID())
-            .fiscalCode(FISCAL_CODE)
-            .serviceProviderDebtor(SERVICE_PROVIDER_ID)
-            .effectiveActivationDate(Instant.now())
-            .build()
-    );
-
     ActivationDto activationDto = new ActivationDto()
-        .id(entities.getFirst().getId())
+        .id(UUID.randomUUID())
         .payer(new PayerDto().fiscalCode(FISCAL_CODE).rtpSpId(SERVICE_PROVIDER_ID));
 
     PageMetadataDto metadata = new PageMetadataDto();
