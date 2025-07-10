@@ -3,6 +3,7 @@ package it.gov.pagopa.rtp.activator.controller.activation;
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import it.gov.pagopa.rtp.activator.domain.payer.ActivationID;
 import it.gov.pagopa.rtp.activator.domain.payer.Payer;
 import it.gov.pagopa.rtp.activator.model.generated.activate.ActivationDto;
@@ -190,21 +191,6 @@ class ActivationAPIControllerImplTest {
 
   @Test
   @Users.RtpReader
-  void getActivationThrowsException() {
-
-    webTestClient.get()
-        .uri("/activations/activation/{activationId}", UUID.randomUUID().toString())
-        .header("RequestId", UUID.randomUUID().toString())
-        .header("Version", "v1")
-        .exchange()
-        .expectStatus().is4xxClientError()
-        .expectBody()
-        .jsonPath("$.status").isEqualTo(404)
-        .jsonPath("$.error").isEqualTo("Not Found");
-  }
-
-  @Test
-  @Users.RtpReader
   void getActivationsThrowsException() {
 
     webTestClient.get()
@@ -335,6 +321,72 @@ class ActivationAPIControllerImplTest {
         .header("Version", "v1")
         .exchange()
         .expectStatus().isNotFound();
+  }
+
+  @Test
+  @Users.RtpReader
+  void givenValidActivationId_whenGetActivation_thenReturn200AndBody() {
+    ActivationID activationID = ActivationID.createNew();
+
+    Payer payer = new Payer(activationID, "testRtpSpId", "RSSMRA85T10A562S", Instant.now());
+
+    PayerDto payerDto = new PayerDto().fiscalCode(payer.fiscalCode()).rtpSpId(payer.serviceProviderDebtor());
+
+    ActivationDto activationDto = new ActivationDto();
+    activationDto.setId(activationID.getId());
+    activationDto.setPayer(payerDto);
+    activationDto.setEffectiveActivationDate(null);
+
+    when(activationPayerService.findPayerById(activationDto.getId())).thenReturn(Mono.just(payer));
+    when(activationDtoMapper.toActivationDto(payer)).thenReturn(activationDto);
+
+    webTestClient.get()
+            .uri("/activations/{activationId}", activationDto.getId())
+            .header("RequestId", UUID.randomUUID().toString())
+            .header("Version", "v1")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(ActivationDto.class)
+            .value(dto -> {
+              assertThat(dto.getId()).isEqualTo(activationID.getId());
+              assertThat(dto.getPayer().getFiscalCode()).isEqualTo("RSSMRA85T10A562S");
+            });
+  }
+
+  @Test
+  @Users.RtpReader
+  void givenUnknownActivationId_whenGetActivation_thenReturn404() {
+    UUID activationId = UUID.randomUUID();
+    UUID requestId = UUID.randomUUID();
+
+    when(activationPayerService.findPayerById(activationId))
+            .thenReturn(Mono.error(new PayerNotFoundException(activationId)));
+
+    webTestClient.get()
+            .uri("/activations/{activationId}", activationId)
+            .header("RequestId", requestId.toString())
+            .header("Version", "v1")
+            .exchange()
+            .expectStatus().isNotFound();
+  }
+
+  @Test
+  @Users.RtpReader
+  void givenGenericError_whenGetActivation_thenReturn500() {
+    UUID activationId = UUID.randomUUID();
+    UUID requestId = UUID.randomUUID();
+
+    when(activationPayerService.findPayerById(activationId))
+            .thenReturn(Mono.error(new RuntimeException("Unexpected failure")));
+
+    webTestClient.get()
+            .uri("/activations/{activationId}", activationId)
+            .header("RequestId", requestId.toString())
+            .header("Version", "v1")
+            .exchange()
+            .expectStatus().is5xxServerError()
+            .expectBody()
+            .jsonPath("$.error").exists();
   }
 
 
