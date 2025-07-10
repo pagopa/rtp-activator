@@ -3,6 +3,8 @@ package it.gov.pagopa.rtp.activator.service.activation;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
 import java.util.List;
 import java.util.UUID;
+
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -117,6 +119,42 @@ class ActivationPayerServiceImplTest {
 
     verify(activationDBRepository).findById(id);
   }
+
+  @Test
+  void givenUnknownId_whenFindPayerById_thenThrowsPayerNotFoundException() {
+
+    final UUID unknownId = UUID.randomUUID();
+
+    when(activationDBRepository.findById(unknownId)).thenReturn(Mono.empty());
+
+    StepVerifier.create(activationPayerService.findPayerById(unknownId))
+            .expectErrorMatches(throwable ->
+                    throwable instanceof PayerNotFoundException &&
+                            throwable.getMessage().contains(unknownId.toString())
+            )
+            .verify();
+
+    verify(activationDBRepository).findById(unknownId);
+  }
+
+  @Test
+  void givenGenericError_whenFindPayerById_thenErrorIsPropagated() {
+
+    final UUID id = UUID.randomUUID();
+    final RuntimeException genericError = new RuntimeException("Generic DB failure");
+
+    when(activationDBRepository.findById(id)).thenReturn(Mono.error(genericError));
+
+    StepVerifier.create(activationPayerService.findPayerById(id))
+            .expectErrorMatches(throwable ->
+                    throwable instanceof RuntimeException &&
+                            throwable.getMessage().equals("Generic DB failure")
+            )
+            .verify();
+
+    verify(activationDBRepository).findById(id);
+  }
+
 
   @Test
   void givenNullId_whenFindPayerById_thenThrowsNullPointerException() {

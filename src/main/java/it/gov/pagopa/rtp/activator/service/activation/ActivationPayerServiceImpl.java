@@ -10,6 +10,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
+import it.gov.pagopa.rtp.activator.domain.errors.PayerNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.dao.DuplicateKeyException;
@@ -65,15 +67,21 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
     /**
      * Retrieves a payer by their activation ID.
      *
-     * @param id the activation ID of the payer
-     * @return a {@link Mono} emitting the {@link Payer} if found, or empty if not
+     * @param id activation ID of the payer (non-null)
+     * @return {@link Mono} with the {@link Payer} if found, or error if not
+     * @throws PayerNotFoundException if no payer is found with the given ID
      */
     @NonNull
     @Override
     public Mono<Payer> findPayerById(@NonNull final UUID id) {
-        Objects.requireNonNull(id, "Id cannot be null");
 
-        return this.activationDBRepository.findById(id);
+        return Mono.just(id)
+                .doFirst(() -> log.debug("Starting retrieval payer with id: {}", id))
+                .flatMap(this.activationDBRepository::findById)
+                .doOnNext(payer -> MDC.put("activationId", payer.activationID().getId().toString()))
+                .doOnNext(payer -> log.debug("Payer retrieved with id: {}", payer.activationID().getId()))
+                .doFinally(signalType -> MDC.clear())
+                .switchIfEmpty(Mono.error(new PayerNotFoundException(id)));
     }
 
 
