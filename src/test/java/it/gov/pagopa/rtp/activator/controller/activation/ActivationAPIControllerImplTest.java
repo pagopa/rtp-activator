@@ -1,5 +1,14 @@
 package it.gov.pagopa.rtp.activator.controller.activation;
 
+import static it.gov.pagopa.rtp.activator.utils.Users.SERVICE_PROVIDER_ID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
+
 import it.gov.pagopa.rtp.activator.configuration.ActivationPropertiesConfig;
 import it.gov.pagopa.rtp.activator.configuration.SecurityConfig;
 import it.gov.pagopa.rtp.activator.domain.errors.PayerAlreadyExists;
@@ -16,7 +25,9 @@ import it.gov.pagopa.rtp.activator.repository.activation.ActivationDBRepository;
 import it.gov.pagopa.rtp.activator.repository.activation.ActivationEntity;
 import it.gov.pagopa.rtp.activator.service.activation.ActivationPayerService;
 import it.gov.pagopa.rtp.activator.utils.Users;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,16 +46,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
-
-import java.time.Instant;
-import java.util.UUID;
 import reactor.util.function.Tuples;
-
-import static it.gov.pagopa.rtp.activator.utils.Users.SERVICE_PROVIDER_ID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.springSecurity;
 
 @ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = { ActivationAPIControllerImpl.class })
