@@ -203,7 +203,6 @@ class ActivationPayerServiceImplTest {
 
     when(activationDBRepository.getActivationsByServiceProvider(rtpSpId, 0, 10))
         .thenReturn(Mono.just(Tuples.of(activations, totalCount)));
-//    when()
 
     StepVerifier.create(activationPayerService.getActivationsByServiceProvider(rtpSpId, 0, 10))
         .expectNextMatches(result ->
