@@ -137,12 +137,13 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
 
     return Mono.just(activationId)
             .doFirst(()-> log.info("Received request to find payer by id. requestId: {}, activationId: {}", requestId, activationId))
-            .doOnNext(id -> log.debug("Processing findPayerById for id: {}", id))
+            .doOnNext(id -> log.info("Processing findPayerById for id: {}", id))
             .flatMap(activationPayerService::findPayerById)
-            .doOnNext(payer -> log.debug("Payer retrieved from activationPayerService" ))
+            .doOnNext(payer -> log.info("Payer retrieved from activationPayerService"))
             .map(activationDtoMapper::toActivationDto)
-            .doOnNext(dto -> log.debug("Mapped payer with id {} to DTO", dto.getId()))
+            .doOnNext(dto -> log.info("Mapped payer with id {} to DTO", dto.getId()))
             .map(ResponseEntity::ok)
+            .doOnSuccess(response -> log.info("Successfully retrive payer with requestId: {}", requestId))
             .onErrorResume(PayerNotFoundException.class, ex -> {
                 log.warn(ex.getMessage(), ex);
                 return Mono.just(ResponseEntity.notFound().build());

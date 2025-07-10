@@ -75,9 +75,11 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
     public Mono<Payer> findPayerById(@NonNull final UUID id) {
 
         return Mono.just(id)
-                .doFirst(() -> log.info("Starting retrieval payer with id: {}", id))
+                .doFirst(() -> log.debug("Starting retrieval payer with id: {}", id))
                 .flatMap(this.activationDBRepository::findById)
-                .doOnNext(payer -> log.info("Payer retrieved with id: {}", payer.activationID().getId()))
+                .doOnNext(payer -> MDC.put("activationId", payer.activationID().getId().toString()))
+                .doOnNext(payer -> log.debug("Payer retrieved with id: {}", payer.activationID().getId()))
+                .doFinally(signalType -> MDC.clear())
                 .switchIfEmpty(Mono.error(new PayerNotFoundException(id)));
     }
 
