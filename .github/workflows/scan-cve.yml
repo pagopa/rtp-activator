@@ -10,6 +10,8 @@ name: Container Scan
 
 on:
   workflow_call:
+  pull_request:
+    branches: [ "main" ]
   schedule:
     - cron: '00 07 * * *'
   workflow_dispatch:

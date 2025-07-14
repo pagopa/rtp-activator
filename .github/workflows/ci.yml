@@ -54,6 +54,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  scan-cve:
-    uses: ./.github/workflows/scan-cve.yml
-    secrets: inherit
+#  scan-cve:
+#    uses: ./.github/workflows/scan-cve.yml
+#    secrets: inherit
