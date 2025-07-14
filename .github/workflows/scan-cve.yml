@@ -63,16 +63,46 @@ jobs:
           
           echo $SCAN_RESULTS
 
-      - name: "Print CVEs by severity"
+      - name: "Print CVEs grouped by severity"
         run: |
           echo "====== CRITICAL ======"
-          jq -r '.runs[].results[] | select(.level == "error") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
+          jq -r '
+            (
+              .runs[0].tool.driver.rules
+              | map({id: .id, severity: .properties.severity, description: .fullDescription.text})
+            ) as $rules
+            |
+            .runs[0].results[]
+            | .ruleId as $id
+            | $rules[] | select(.id == $id and .severity == "CRITICAL")
+            | "\(.id) - \(.description)"
+          ' results.sarif || echo "None"
 
           echo "====== HIGH ======"
-          jq -r '.runs[].results[] | select(.level == "warning") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
+          jq -r '
+            (
+              .runs[0].tool.driver.rules
+              | map({id: .id, severity: .properties.severity, description: .fullDescription.text})
+            ) as $rules
+            |
+            .runs[0].results[]
+            | .ruleId as $id
+            | $rules[] | select(.id == $id and .severity == "HIGH")
+            | "\(.id) - \(.description)"
+          ' results.sarif || echo "None"
 
           echo "====== MEDIUM ======"
-          jq -r '.runs[].results[] | select(.level == "note") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
+          jq -r '
+            (
+              .runs[0].tool.driver.rules
+              | map({id: .id, severity: .properties.severity, description: .fullDescription.text})
+            ) as $rules
+            |
+            .runs[0].results[]
+            | .ruleId as $id
+            | $rules[] | select(.id == $id and .severity == "MEDIUM")
+            | "\(.id) - \(.description)"
+          ' results.sarif || echo "None"
 
       - name: "Fails if CVE HIGH or CRITICAL are detected"
         id: cve-threshold
