@@ -63,22 +63,25 @@ jobs:
           
           echo $SCAN_RESULTS
 
-      - name: "Print CVEs by severity"
+      - name: "Print CVEs by severity (with bold CVE)"
         run: |
           BOLD_START="\033[1m"
           BOLD_END="\033[0m"
 
           echo -e "${BOLD_START}====== CRITICAL and HIGH ======${BOLD_END}"
-          jq -r --arg bs "$BOLD_START" --arg be "$BOLD_END" \
-            '.runs[].results[] | select(.level == "error") | "\($bs)\(.ruleId)\($be) - \(.message.text)"' results.sarif || echo "None"
+          jq -r '.runs[].results[] | select(.level == "error") | "\(.ruleId)|\(.message.text)"' results.sarif | while IFS="|" read -r id msg; do
+            echo -e "${BOLD_START}${id}${BOLD_END} - ${msg}"
+          done
 
           echo -e "${BOLD_START}====== MEDIUM ======${BOLD_END}"
-          jq -r --arg bs "$BOLD_START" --arg be "$BOLD_END" \
-            '.runs[].results[] | select(.level == "warning") | "\($bs)\(.ruleId)\($be) - \(.message.text)"' results.sarif || echo "None"
+          jq -r '.runs[].results[] | select(.level == "warning") | "\(.ruleId)|\(.message.text)"' results.sarif | while IFS="|" read -r id msg; do
+            echo -e "${BOLD_START}${id}${BOLD_END} - ${msg}"
+          done
 
           echo -e "${BOLD_START}====== LOW ======${BOLD_END}"
-          jq -r --arg bs "$BOLD_START" --arg be "$BOLD_END" \
-            '.runs[].results[] | select(.level == "note") | "\($bs)\(.ruleId)\($be) - \(.message.text)"' results.sarif || echo "None"
+          jq -r '.runs[].results[] | select(.level == "note") | "\(.ruleId)|\(.message.text)"' results.sarif | while IFS="|" read -r id msg; do
+            echo -e "${BOLD_START}${id}${BOLD_END} - ${msg}"
+          done
 
       - name: "Fails if CVE HIGH or CRITICAL are detected"
         id: cve-threshold
