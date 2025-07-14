@@ -65,14 +65,20 @@ jobs:
 
       - name: "Print CVEs by severity"
         run: |
-          echo "====== CRITICAL and HIGH ======"
-          jq -r '.runs[].results[] | select(.level == "error") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
+          BOLD_START="\033[1m"
+          BOLD_END="\033[0m"
 
-          echo "====== MEDIUM ======"
-          jq -r '.runs[].results[] | select(.level == "warning") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
+          echo -e "${BOLD_START}====== CRITICAL and HIGH ======${BOLD_END}"
+          jq -r --arg bs "$BOLD_START" --arg be "$BOLD_END" \
+            '.runs[].results[] | select(.level == "error") | "\($bs)\(.ruleId)\($be) - \(.message.text)"' results.sarif || echo "None"
 
-          echo "====== LOW ======"
-          jq -r '.runs[].results[] | select(.level == "note") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
+          echo -e "${BOLD_START}====== MEDIUM ======${BOLD_END}"
+          jq -r --arg bs "$BOLD_START" --arg be "$BOLD_END" \
+            '.runs[].results[] | select(.level == "warning") | "\($bs)\(.ruleId)\($be) - \(.message.text)"' results.sarif || echo "None"
+
+          echo -e "${BOLD_START}====== LOW ======${BOLD_END}"
+          jq -r --arg bs "$BOLD_START" --arg be "$BOLD_END" \
+            '.runs[].results[] | select(.level == "note") | "\($bs)\(.ruleId)\($be) - \(.message.text)"' results.sarif || echo "None"
 
       - name: "Fails if CVE HIGH or CRITICAL are detected"
         id: cve-threshold
