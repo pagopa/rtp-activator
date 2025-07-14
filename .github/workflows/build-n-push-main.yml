@@ -12,7 +12,7 @@ jobs:
   build_push_update:
     runs-on: ubuntu-22.04
 
-    environment: cstar-d-weu-rtp
+    environment: itn-dev
 
     permissions:
       id-token: write
@@ -64,5 +64,5 @@ jobs:
           ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
-          terraform init -backend-config="env/cstar-d-weu-rtp/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/cstar-d-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ github.ref_name }}@${{ steps.image.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform init -backend-config="env/itn-dev/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/itn-dev/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ github.ref_name }}@${{ steps.image.outputs.digest }}" -auto-approve -lock-timeout=300s
