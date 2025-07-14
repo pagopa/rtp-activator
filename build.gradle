@@ -2,7 +2,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.1'
+	id 'org.springframework.boot' version '2.6.0'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.graalvm.buildtools.native' version '0.10.4'
 	id("org.openapi.generator") version "7.11.0"
@@ -10,12 +10,9 @@ plugins {
 	id 'jacoco'
 }
 
-group = 'it.gov.pagopa'
-version = project.version
-
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(17)
 	}
 }
 
@@ -32,9 +29,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
-
-	//test high cve
-	implementation 'commons-beanutils:commons-beanutils:1.9.2'
 
 	//	spring security + oauth2 resource server
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -102,7 +96,7 @@ tasks.register('generateOpenAPIActivate', GenerateTask) {
 	library.set("spring-boot")
 	configOptions.set([
 			"dateLibrary"         : "java8",
-			"useSpringBoot3"      : "true",
+			"useSpringBoot3"      : "false",
 			"interfaceOnly"       : "true",
 			"useTags"             : "true",
 			"useSwaggerUI"        : "false",
@@ -127,10 +121,13 @@ graalvmNative {
 	}
 }
 
-bootRun {
-	jvmArgs = [
-			'-Djava.security.properties=src/main/resources/custom.security'
-	]
+//bootRun {
+//	jvmArgs = [
+//			'-Djava.security.properties=src/main/resources/custom.security'
+//	]
+//}
+tasks.withType(JavaExec).configureEach {
+	jvmArgs += '-Djava.security.properties=src/main/resources/custom.security'
 }
 
 tasks.withType(JavaExec).configureEach {
