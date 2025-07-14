@@ -20,7 +20,7 @@ jobs:
   Notify:
     name: Notify Slack
     runs-on: ubuntu-latest
-    environment: cstar-d-weu-rtp
+    environment: itn-dev
     steps:
       - name: Send notification to Slack
         id: slack
