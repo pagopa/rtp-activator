@@ -14,7 +14,7 @@ import reactor.core.publisher.Hooks;
 public class RtpActivatorApplication {
 
   public static void main(String[] args) {
-//    Hooks.enableAutomaticContextPropagation();
+    Hooks.enableAutomaticContextPropagation();
     SpringApplication.run(RtpActivatorApplication.class, args);
   }
 
