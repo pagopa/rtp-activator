@@ -9,7 +9,6 @@
 name: Container Scan
 
 on:
-  workflow_call:
   pull_request:
     branches: [ "main" ]
   schedule:
@@ -54,16 +53,7 @@ jobs:
         with:
           sarif_file: 'results.sarif'
 
-      - name: "CVE Description escaped extraction and print"
-        run: |
-          SCAN_RESULTS=$(jq -r 'try .runs[0].tool.driver.rules | map(.help.text) | join("\\n\\n********************\\n\\n")' results.sarif)
-          echo "CVE_CRITICAL=$(echo $SCAN_RESULTS | grep -o CRITICAL | wc -l)" >> $GITHUB_ENV
-          echo "CVE_HIGH=$(echo $SCAN_RESULTS | grep -o HIGH | wc -l)" >> $GITHUB_ENV
-          echo "CVE_MEDIUM=$(echo $SCAN_RESULTS | grep -o MEDIUM | wc -l)" >> $GITHUB_ENV
-          
-          echo $SCAN_RESULTS
-
-      - name: "Print CVEs by severity"
+      - name: "CVE Description extraction and print"
         run: |
           echo -e "\033[1m====== CRITICAL and HIGH ======\033[0m"
           jq -r '.runs[].results[] | select(.level == "error") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
@@ -88,4 +78,3 @@ jobs:
       CVE_HIGH: ${{needs.BuildAndScan.outputs.CVE_HIGH}}
       CVE_MEDIUM: ${{needs.BuildAndScan.outputs.CVE_MEDIUM}}
     secrets: inherit
-    
