@@ -9,9 +9,12 @@
 name: Container Scan
 
 on:
-  workflow_call:
+  pull_request:
+    branches: [ "main" ]
   schedule:
     - cron: '00 07 * * *'
+  workflow_dispatch:
+
 
 permissions:
   contents: read
@@ -27,9 +30,9 @@ jobs:
       actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
     runs-on: ubuntu-latest
     outputs:
-        CVE_CRITICAL: ${{env.CVE_CRITICAL}}
-        CVE_HIGH: ${{env.CVE_HIGH}}
-        CVE_MEDIUM: ${{env.CVE_MEDIUM}}
+      CVE_CRITICAL: ${{env.CVE_CRITICAL}}
+      CVE_HIGH: ${{env.CVE_HIGH}}
+      CVE_MEDIUM: ${{env.CVE_MEDIUM}}
     steps:
       - name: "Checkout the code"
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
@@ -39,25 +42,32 @@ jobs:
 
       - name: "Run the Trivy scan action itself with GitHub Advanced Security code scanning integration enabled"
         id: scan
-        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # v0.29.0
+        uses: aquasecurity/trivy-action@dc5a429b52fcf669ce959baa2c2dd26090d2a6c4 # v0.32.0
         with:
           image-ref: "localbuild/testimage:latest"
           format: 'sarif'
           output: 'results.sarif'
 
       - name: "Upload Anchore Scan Report"
-        uses: github/codeql-action/upload-sarif@cbe18979603527f12c7871a6eb04833ecf1548c7 # CodeQL Bundle v2.19.3
+        uses: github/codeql-action/upload-sarif@9b02dc2f60288b463e7a66e39c78829b62780db7 # CodeQL Bundle v2.22.1
         with:
           sarif_file: 'results.sarif'
 
-      - name: "CVE Description escaped extraction and print"
+      - name: "CVE Description extraction and print"
         run: |
+          echo -e "\033[1m====== CRITICAL and HIGH ======\033[0m"
+          jq -r '.runs[].results[] | select(.level == "error") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
+
+          echo -e "\033[1m====== MEDIUM ======\033[0m"
+          jq -r '.runs[].results[] | select(.level == "warning") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
+
+          echo -e "\033[1m====== LOW ======\033[0m"
+          jq -r '.runs[].results[] | select(.level == "note") | "\(.ruleId) - \(.message.text)"' results.sarif || echo "None"
+          
           SCAN_RESULTS=$(jq -r 'try .runs[0].tool.driver.rules | map(.help.text) | join("\\n")' results.sarif)
           echo "CVE_CRITICAL=$(echo $SCAN_RESULTS | grep -o CRITICAL | wc -l)" >> $GITHUB_ENV
           echo "CVE_HIGH=$(echo $SCAN_RESULTS | grep -o HIGH | wc -l)" >> $GITHUB_ENV
           echo "CVE_MEDIUM=$(echo $SCAN_RESULTS | grep -o MEDIUM | wc -l)" >> $GITHUB_ENV
-          
-          echo $SCAN_RESULTS
 
       - name: "Fails if CVE HIGH or CRITICAL are detected"
         id: cve-threshold
@@ -73,4 +83,3 @@ jobs:
       CVE_HIGH: ${{needs.BuildAndScan.outputs.CVE_HIGH}}
       CVE_MEDIUM: ${{needs.BuildAndScan.outputs.CVE_MEDIUM}}
     secrets: inherit
-    
