@@ -2,17 +2,17 @@
 # General variables.
 # ------------------------------------------------------------------------------
 prefix         = "cstar"
-env_short      = "p"
-env            = "prod"
-location       = "westeurope" # this will be "italynorth"
-location_short = "weu"        # this will be "itn"
-domain         = "rtp"
+env_short      = "u"
+env            = "uat"
+location       = "italynorth"
+location_short = "itn"
+domain         = "srtp"
 
 tags = {
   CreatedBy   = "Terraform"
-  Environment = "prod"
+  Environment = "uat"
   Owner       = "cstar"
-  Source      = "https://github.com/pagopa/rtp_activator/tree/main/src/main/terraform"
+  Source      = "https://github.com/pagopa/rtp-activator/tree/main/src/main/terraform"
   CostCenter  = "TS310 - PAGAMENTI & SERVIZI"
   Domain      = "rtp"
 }
@@ -20,15 +20,10 @@ tags = {
 # ------------------------------------------------------------------------------
 # External resources.
 # ------------------------------------------------------------------------------
-cae_name                       = "cstar-p-mcshared-cae"
-cae_resource_group_name        = "cstar-p-mcshared-app-rg"
-id_name                        = "cstar-p-weu-rtp-activator-id"
-id_resource_group_name         = "cstar-p-weu-rtp-identity-rg"
-
-# ------------------------------------------------------------------------------
-# Names of key vault secrets.
-# ------------------------------------------------------------------------------
-
+cae_name                       = "cstar-u-itn-srtp-cae"
+cae_resource_group_name        = "cstar-u-itn-srtp-compute-rg"
+id_name                        = "cstar-u-itn-srtp-activator-id"
+id_resource_group_name         = "cstar-u-itn-srtp-identity-rg"
 
 # ------------------------------------------------------------------------------
 # Configuration of the microservice.
@@ -39,27 +34,28 @@ rtp_activator_cpu                               = 0.25
 rtp_activator_memory                            = "0.5Gi"
 rtp_activator_max_replicas                      = 5
 rtp_activator_min_replicas                      = 1
-rtp_activator_base_url                          = "https://mil-d-apim.azure-api.net/rtp_activator"
 
 rtp_environment_secrets = {
-  COSMOS_ACCOUNT_RTP_CONNECTION_STRING  : "cosmosdb-account-rtp-connection-string"
+  COSMOS_ACCOUNT_RTP_CONNECTION_STRING  : "cosmosdb-account-rtp-primary-connection-string"
   APPLICATIONINSIGHTS_CONNECTION_STRING : "appinsights-connection-string"
   CLIENT_CERTIFICATE                    : "client-certificate"
   CLIENT_SECRET_CBI                     : "client-secret-cbi"
 }
 
+
 rtp_environment_configs = {
   DB_NAME                                 : "activation"
-  BASE_URL                                : "https://api-rtp.cstar.pagopa.it/rtp/activation/activations/"
-  SP_BASE_URL                             : "https://api-rtp.cstar.pagopa.it/rtp/rtps/"
+  BASE_URL                                : "https://api-rtp.uat.cstar.pagopa.it/rtp/activation/activations/"
+  SP_BASE_URL                             : "https://api-rtp.uat.cstar.pagopa.it/rtp/rtps/"
   OTEL_TRACES_SAMPLER                     : "always_on"
-  EPC_MOCK_URL                            : "https://api-rtp.cstar.pagopa.it/rtp/mock"
+  EPC_MOCK_URL                            : "https://api-rtp.uat.cstar.pagopa.it/rtp/mock"
   EPC_SEND_RETRY_MAX_ATTEMPTS             : 1
   EPC_SEND_RETRY_BACKOFF_MIN_DURATION_MS  : 1000
   EPC_SEND_RETRY_BACKOFF_JITTER           : 0.75
   EPC_SEND_TIMEOUT_MS                     : 6000
-  AZURE_STORAGE_ACCOUNT_NAME              : "cstarpweurtpblobstorage"
+  AZURE_STORAGE_ACCOUNT_NAME              : "cstaruitnsrtpsa"
   AZURE_STORAGE_CONTAINER_NAME            : "rtp-debtor-service-provider"
   AZURE_BLOB_NAME                         : "serviceregistry.json"
-  CALLBACK_BASE_URL                       : "https://api-rtp-cb.cstar.pagopa.it/rtp/cb"
+  CALLBACK_BASE_URL                       : "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb"
 }
+

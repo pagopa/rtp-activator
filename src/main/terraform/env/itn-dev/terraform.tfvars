@@ -34,8 +34,6 @@ rtp_activator_cpu                               = 0.25
 rtp_activator_memory                            = "0.5Gi"
 rtp_activator_max_replicas                      = 5
 rtp_activator_min_replicas                      = 1
-rtp_activator_base_url                          = "https://mil-d-apim.azure-api.net/rtp-activator"
-
 
 rtp_environment_secrets = {
   COSMOS_ACCOUNT_RTP_CONNECTION_STRING  : "cosmosdb-account-rtp-primary-connection-string"

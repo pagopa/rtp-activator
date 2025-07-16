@@ -165,7 +165,7 @@ jobs:
 
     runs-on: ubuntu-22.04
 
-    environment: cstar-u-weu-rtp
+    environment: itn-uat
 
     permissions:
       id-token: write
@@ -190,8 +190,8 @@ jobs:
           ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
-          terraform init -backend-config="env/cstar-u-weu-rtp/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/cstar-u-weu-rtp/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ needs.dev_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform init -backend-config="env/itn-uat/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/itn-uat/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ needs.dev_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
 
       #
       # Install Node

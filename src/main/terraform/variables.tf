@@ -90,10 +90,6 @@ variable "rtp_activator_min_replicas" {
   default = 1
 }
 
-variable "rtp_activator_base_url" {
-  type = string
-}
-
 variable "rtp_activator_cpu" {
   type    = number
   default = 1
