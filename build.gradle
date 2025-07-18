@@ -2,7 +2,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '2.6.0'
+	id 'org.springframework.boot' version '3.4.1'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.graalvm.buildtools.native' version '0.10.4'
 	id("org.openapi.generator") version "7.11.0"
@@ -15,7 +15,7 @@ version = project.version
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -99,7 +99,7 @@ tasks.register('generateOpenAPIActivate', GenerateTask) {
 	library.set("spring-boot")
 	configOptions.set([
 			"dateLibrary"         : "java8",
-			"useSpringBoot3"      : "false",
+			"useSpringBoot3"      : "true",
 			"interfaceOnly"       : "true",
 			"useTags"             : "true",
 			"useSwaggerUI"        : "false",
@@ -124,14 +124,10 @@ graalvmNative {
 	}
 }
 
-//bootRun {
-//	jvmArgs = [
-//			'-Djava.security.properties=src/main/resources/custom.security'
-//	]
-//}
-
-tasks.withType(JavaExec).configureEach {
-	jvmArgs += '-Djava.security.properties=src/main/resources/custom.security'
+bootRun {
+	jvmArgs = [
+			'-Djava.security.properties=src/main/resources/custom.security'
+	]
 }
 
 tasks.withType(JavaExec).configureEach {
