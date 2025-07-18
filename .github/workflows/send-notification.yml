@@ -37,4 +37,8 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: " `CRITICAL` : *${{ inputs.CVE_CRITICAL }}*\n\n`HIGH` : *${{ inputs.CVE_HIGH }}*\n\n`MEDIUM` : *${{ inputs.CVE_MEDIUM }}*\n\n<https://github.com/${{ github.repository }}/security/code-scanning |See details on GitHub>"
+                  text: |
+                    `CRITICAL` : *${{ inputs.CVE_CRITICAL }}*
+                    `HIGH` : *${{ inputs.CVE_HIGH }}*
+                    `MEDIUM` : *${{ inputs.CVE_MEDIUM }}*
+                    ${{ github.event_name == 'pull_request' && format("See PR diff → <https://github.com/{0}/pull/{1}/files>", github.repository, github.event.pull_request.number) || format("See details on GitHub → <https://github.com/{0}/security/code-scanning>", github.repository) }}
