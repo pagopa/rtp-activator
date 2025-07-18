@@ -18,7 +18,10 @@ on:
 
 jobs:
   Notify:
+    name: Notify Slack
     runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'itn-uat' || 'itn-dev' }}
+
     steps:
       - name: Notify Slack for PR
         if: github.event_name == 'pull_request'
@@ -42,7 +45,7 @@ jobs:
                     `MEDIUM` : *${{ inputs.CVE_MEDIUM }}*
                     <https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}/files|See PR diff>
 
-      - name: Notify for merged code
+      - name: Notify Slack for merged code
         if: github.ref == 'refs/heads/main'
         id: slack
         uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02dz #v2.0.0
