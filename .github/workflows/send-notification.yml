@@ -23,29 +23,8 @@ jobs:
     environment: ${{ github.ref == 'refs/heads/main' && 'itn-uat' || 'itn-dev' }}
 
     steps:
-      - name: Notify Slack for PR
-        if: github.event_name == 'pull_request'
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a #v2.1.1
-        with:
-          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            blocks:
-              - type: "header"
-                text:
-                  type: "plain_text"
-                  text: "[ ${{ github.event.repository.name }} ]"
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: |
-                    `CRITICAL` : *${{ inputs.CVE_CRITICAL }}*
-                    `HIGH` : *${{ inputs.CVE_HIGH }}*
-                    `MEDIUM` : *${{ inputs.CVE_MEDIUM }}*
-                    <https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}/files|See PR diff>
-
-      - name: Notify Slack for merged code
-        if: github.ref == 'refs/heads/main'
+      - name: Send notification to Slack
+        id: slack
         uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a #v2.1.1
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -64,3 +43,4 @@ jobs:
                     `HIGH` : *${{ inputs.CVE_HIGH }}*
                     `MEDIUM` : *${{ inputs.CVE_MEDIUM }}*
                     <https://github.com/${{ github.repository }}/security/code-scanning|See details on GitHub>
+                    <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|See this run>
