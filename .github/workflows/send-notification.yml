@@ -13,7 +13,7 @@ on:
         required: true
         type: string
     secrets:
-      CVE_SCAN_SLACK_WEBHOOK:
+      SLACK_WEBHOOK_URL:
         required: true
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
         id: slack
         uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a #v2.1.1
         with:
-          webhook: ${{ secrets.CVE_SCAN_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             blocks:
