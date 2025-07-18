@@ -77,7 +77,7 @@ jobs:
   SendSlackNotification:
     needs: BuildAndScan
     uses: ./.github/workflows/send-notification.yml
-    if: github.event_name == 'schedule' && needs.BuildAndScan.steps.cve-threshold.outcome == 'failure'
+    if: always() && (needs.BuildAndScan.outputs.CVE_HIGH > 0 || needs.BuildAndScan.outputs.CVE_CRITICAL > 0)
     with:
       CVE_CRITICAL: ${{needs.BuildAndScan.outputs.CVE_CRITICAL}}
       CVE_HIGH: ${{needs.BuildAndScan.outputs.CVE_HIGH}}
