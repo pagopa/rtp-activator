@@ -13,20 +13,21 @@ on:
         required: true
         type: string
     secrets:
-      CVE_SCAN_SLACK_WEBHOOK:
+      SLACK_WEBHOOK_URL:
         required: true
 
 jobs:
   Notify:
     name: Notify Slack
     runs-on: ubuntu-latest
-    environment: itn-dev
+    environment: itn-uat
+
     steps:
       - name: Send notification to Slack
         id: slack
-        uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02dz #v2.0.0
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a #v2.1.1
         with:
-          webhook: ${{ secrets.CVE_SCAN_SLACK_WEBHOOK }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             blocks:
@@ -37,4 +38,9 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: " `CRITICAL` : *${{ inputs.CVE_CRITICAL }}*\n\n`HIGH` : *${{ inputs.CVE_HIGH }}*\n\n`MEDIUM` : *${{ inputs.CVE_MEDIUM }}*\n\n<https://github.com/${{ github.repository }}/security/code-scanning |See details on GitHub>"
+                  text: |
+                    `CRITICAL` : *${{ inputs.CVE_CRITICAL }}*
+                    `HIGH` : *${{ inputs.CVE_HIGH }}*
+                    `MEDIUM` : *${{ inputs.CVE_MEDIUM }}*
+                    <https://github.com/${{ github.repository }}/security/code-scanning|See details on GitHub>
+                    <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|See this run>
