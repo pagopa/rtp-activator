@@ -234,3 +234,38 @@ jobs:
             --env-var "pagopa-sp-client-secret=${{ secrets.PAGOPA_SP_CLIENT_SECRET }}" \
             --ssl-client-cert certs/certificate.pem \
             --ssl-client-key certs/private.pem
+
+  prod_deployment:
+    needs: [ versioning, uat_deployment ]
+
+    if: needs.versioning.outputs.new_release_published == 'true'
+
+    runs-on: ubuntu-22.04
+
+    environment: itn-prod
+
+    permissions:
+      id-token: write
+
+    steps:
+      - name: "Checkout the source code"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+
+      #
+      # Update Container App.
+      #
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.9.7
+
+      - name: "STABLE - Update Container App"
+        shell: bash
+        working-directory: src/main/terraform
+        env:
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+          ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+        run: |
+          terraform init -backend-config="env/itn-prod/backend.tfvars" -reconfigure
+          terraform apply -var-file="env/itn-prod/terraform.tfvars" -var="rtp_sender_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ needs.dev_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
