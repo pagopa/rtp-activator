@@ -238,7 +238,8 @@ jobs:
   prod_deployment:
     needs: [ versioning, uat_deployment ]
 
-    if: needs.versioning.outputs.new_release_published == 'true'
+    if: true 
+    # needs.versioning.outputs.new_release_published == 'true'
 
     runs-on: ubuntu-22.04
 
