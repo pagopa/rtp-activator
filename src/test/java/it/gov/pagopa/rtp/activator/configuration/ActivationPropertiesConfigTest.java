@@ -15,12 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @TestPropertySource("classpath:application.yaml")
 class ActivationPropertiesConfigTest {
 
-    @Autowired
-    private ActivationPropertiesConfig activationPropertiesConfig;
+  @Autowired
+  private ActivationPropertiesConfig activationPropertiesConfig;
 
-    @Test
-    void testPropertiesLoaded() {
-        assertNotNull(activationPropertiesConfig);
-        assertEquals("http://localhost:8080/", activationPropertiesConfig.baseUrl());
-    }
+  @Test
+  void testPropertiesLoaded() {
+    assertNotNull(activationPropertiesConfig);
+    assertEquals("http://localhost:8080/", activationPropertiesConfig.baseUrl());
+  }
 }
