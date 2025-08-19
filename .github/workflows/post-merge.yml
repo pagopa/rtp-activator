@@ -274,4 +274,4 @@ jobs:
           ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
         run: |
           terraform init -backend-config="env/itn-prod/backend.tfvars" -reconfigure
-          terraform apply -var-file="env/itn-prod/terraform.tfvars" -var="rtp_sender_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ needs.uat_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
+          terraform apply -var-file="env/itn-prod/terraform.tfvars" -var="rtp_activator_image=ghcr.io/${{ github.repository }}:${{ needs.versioning.outputs.new_version }}@${{ needs.uat_deployment.outputs.digest }}" -auto-approve -lock-timeout=300s
