@@ -77,8 +77,20 @@ public class ActivationDBRepository implements PayerRepository {
    */
   @Override
   public Mono<Payer> findByFiscalCode(String fiscalCode) {
-    return activationDB.findByFiscalCode(fiscalCode)
-        .map(activationMapper::toDomain);
+    return Mono.just(fiscalCode)
+
+        .doFirst(() -> log.debug("Retrieving payer by fiscal code"))
+        .flatMap(this.activationDB::findByFiscalCode)
+        .doOnNext(activationEntity -> log.debug("Payer retrieved. Id: {}", activationEntity.getId()))
+
+        .doOnNext(activationEntity -> log.debug("Mapping activation to domain"))
+        .map(this.activationMapper::toDomain)
+        .doOnNext(payer -> log.debug("Mapped activation to domain"))
+
+        .switchIfEmpty(Mono.defer(() -> {
+          log.debug("No activation entity found by fiscal code");
+          return Mono.empty();
+        }));
   }
 
 
