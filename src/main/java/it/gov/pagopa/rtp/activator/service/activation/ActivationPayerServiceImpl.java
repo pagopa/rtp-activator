@@ -89,8 +89,9 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
    * @param fiscalCode the fiscal code of the payer
    * @return a {@link Mono} emitting the {@link Payer} if found, or empty if not
    */
+  @NonNull
   @Override
-  public Mono<Payer> findPayerByFiscalCode(String fiscalCode) {
+  public Mono<Payer> findPayerByFiscalCode(@NonNull final String fiscalCode) {
     return Mono.just(fiscalCode)
         .doFirst(() -> log.debug("Starting payer retrieval by fiscal code"))
 
