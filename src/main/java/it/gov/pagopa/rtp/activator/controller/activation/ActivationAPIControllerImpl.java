@@ -110,12 +110,27 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
       String payerId,
       String version,
       ServerWebExchange exchange) {
-    log.info("Received request to find activation by payer id");
+
     return Mono.just(payerId)
+        .doFirst(() -> log.info("Received request to find activation by fiscal code"))
+
         .flatMap(activationPayerService::findPayer)
+
+        .doOnNext(payer -> MDC.put(SERVICE_PROVIDER, payer.serviceProviderDebtor()))
+        .doOnNext(payer -> MDC.put("activation_id", payer.activationID().getId().toString()))
+        .doOnNext(payer -> log.info("Found activation. ID: {}", payer.activationID().getId()))
+
+        .doOnNext(payer -> log.debug("Mapping activation to DTO"))
         .map(activationDtoMapper::toActivationDto)
+        .doOnNext(activationDto -> log.debug("Mapped activation to DTO"))
+
         .map(ResponseEntity::ok)
-        .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+        .doOnNext(response -> log.info("Successfully found activation by fiscal code."))
+
+        .switchIfEmpty(Mono.fromSupplier(() -> {
+          log.warn("No activation found by fiscal code");
+          return ResponseEntity.notFound().build();
+        }));
   }
 
 
