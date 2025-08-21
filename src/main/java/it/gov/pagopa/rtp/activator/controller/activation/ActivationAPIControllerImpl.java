@@ -114,7 +114,7 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
     return Mono.just(payerId)
         .doFirst(() -> log.info("Received request to find activation by fiscal code"))
 
-        .flatMap(activationPayerService::findPayer)
+        .flatMap(activationPayerService::findPayerByFiscalCode)
 
         .doOnNext(payer -> MDC.put(SERVICE_PROVIDER, payer.serviceProviderDebtor()))
         .doOnNext(payer -> MDC.put("activation_id", payer.activationID().getId().toString()))

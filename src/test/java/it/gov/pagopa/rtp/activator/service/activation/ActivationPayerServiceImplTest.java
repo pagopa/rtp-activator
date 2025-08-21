@@ -79,10 +79,10 @@ class ActivationPayerServiceImplTest {
   }
 
   @Test
-  void testFindPayerSuccessful() {
+  void testFindPayerByFiscalCodeSuccessful() {
     when(activationDBRepository.findByFiscalCode(fiscalCode)).thenReturn(Mono.just(payer));
 
-    StepVerifier.create(activationPayerService.findPayer(fiscalCode))
+    StepVerifier.create(activationPayerService.findPayerByFiscalCode(fiscalCode))
         .expectNextMatches(pay -> pay.equals(payer))
         .verifyComplete();
 
@@ -90,13 +90,13 @@ class ActivationPayerServiceImplTest {
   }
 
   @Test
-  void testFindPayerNotFound() {
+  void testFindPayerByFiscalCodeNotFound() {
 
     String notExFiscalCode = "nonExistentPayerId";
 
     when(activationDBRepository.findByFiscalCode(notExFiscalCode)).thenReturn(Mono.empty());
 
-    StepVerifier.create(activationPayerService.findPayer(notExFiscalCode)).verifyComplete();
+    StepVerifier.create(activationPayerService.findPayerByFiscalCode(notExFiscalCode)).verifyComplete();
 
     verify(activationDBRepository).findByFiscalCode(notExFiscalCode);
   }

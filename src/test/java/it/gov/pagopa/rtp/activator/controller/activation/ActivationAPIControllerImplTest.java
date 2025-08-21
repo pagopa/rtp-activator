@@ -178,7 +178,7 @@ class ActivationAPIControllerImplTest {
     activationDto.setPayer(payerDto);
     activationDto.setEffectiveActivationDate(null);
 
-    when(activationPayerService.findPayer(payerDto.getFiscalCode()))
+    when(activationPayerService.findPayerByFiscalCode(payerDto.getFiscalCode()))
         .thenReturn(Mono.just(payer));
     when(activationDtoMapper.toActivationDto(payer))
         .thenReturn(activationDto);
