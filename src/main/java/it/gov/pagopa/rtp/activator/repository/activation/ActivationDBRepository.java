@@ -75,8 +75,9 @@ public class ActivationDBRepository implements PayerRepository {
    * @param fiscalCode the fiscal code of the payer
    * @return a {@link Mono} emitting the {@link Payer} if found, or empty if not
    */
+  @NonNull
   @Override
-  public Mono<Payer> findByFiscalCode(String fiscalCode) {
+  public Mono<Payer> findByFiscalCode(@NonNull final String fiscalCode) {
     return Mono.just(fiscalCode)
 
         .doFirst(() -> log.debug("Retrieving payer by fiscal code"))
