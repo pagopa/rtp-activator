@@ -32,10 +32,10 @@ public interface ActivationPayerService {
    /**
     * Finds an active payer by their fiscal code.
     *
-    * @param payer the fiscal code of the payer
+    * @param fiscalCode the fiscal code of the payer
     * @return a {@link Mono} emitting the {@link Payer} if found, or empty if not
     */
-   Mono<Payer> findPayer(String payer);
+   Mono<Payer> findPayer(String fiscalCode);
 
    /**
     * Deactivates the given payer.

@@ -86,12 +86,12 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
     /**
      * Retrieves a payer by their fiscal code.
      *
-     * @param payer the fiscal code of the payer
+     * @param fiscalCode the fiscal code of the payer
      * @return a {@link Mono} emitting the {@link Payer} if found, or empty if not
      */
     @Override
-    public Mono<Payer> findPayer(String payer) {
-        return activationDBRepository.findByFiscalCode(payer);
+    public Mono<Payer> findPayer(String fiscalCode) {
+        return activationDBRepository.findByFiscalCode(fiscalCode);
     }
 
 
