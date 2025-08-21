@@ -112,8 +112,9 @@ public class ActivationAPIControllerImpl implements CreateApi, ReadApi, DeleteAp
       ServerWebExchange exchange) {
 
     return Mono.just(payerId)
-        .doFirst(() -> log.info("Received request to find activation by fiscal code"))
+        .doFirst(() -> MDC.put("request_id", requestId.toString()))
 
+        .doOnNext(fiscalCode -> log.info("Received request to find activation by fiscal code"))
         .flatMap(activationPayerService::findPayerByFiscalCode)
 
         .doOnNext(payer -> MDC.put(SERVICE_PROVIDER, payer.serviceProviderDebtor()))
