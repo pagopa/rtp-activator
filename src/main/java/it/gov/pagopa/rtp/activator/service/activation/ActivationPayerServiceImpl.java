@@ -91,7 +91,16 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
    */
   @Override
   public Mono<Payer> findPayerByFiscalCode(String fiscalCode) {
-    return activationDBRepository.findByFiscalCode(fiscalCode);
+    return Mono.just(fiscalCode)
+        .doFirst(() -> log.debug("Starting payer retrieval by fiscal code"))
+
+        .flatMap(this.activationDBRepository::findByFiscalCode)
+        .doOnNext(payer -> log.debug("Payer retrieved by fiscal code"))
+
+        .switchIfEmpty(Mono.defer(() -> {
+          log.debug("Payer not found by fiscal code");
+          return Mono.empty();
+        }));
   }
 
 
