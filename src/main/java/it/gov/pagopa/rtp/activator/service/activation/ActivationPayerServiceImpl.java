@@ -83,16 +83,26 @@ public class ActivationPayerServiceImpl implements ActivationPayerService {
     }
 
 
-    /**
-     * Retrieves a payer by their fiscal code.
-     *
-     * @param payer the fiscal code of the payer
-     * @return a {@link Mono} emitting the {@link Payer} if found, or empty if not
-     */
-    @Override
-    public Mono<Payer> findPayer(String payer) {
-        return activationDBRepository.findByFiscalCode(payer);
-    }
+  /**
+   * Retrieves a payer by their fiscal code.
+   *
+   * @param fiscalCode the fiscal code of the payer
+   * @return a {@link Mono} emitting the {@link Payer} if found, or empty if not
+   */
+  @NonNull
+  @Override
+  public Mono<Payer> findPayerByFiscalCode(@NonNull final String fiscalCode) {
+    return Mono.just(fiscalCode)
+        .doFirst(() -> log.debug("Starting payer retrieval by fiscal code"))
+
+        .flatMap(this.activationDBRepository::findByFiscalCode)
+        .doOnNext(payer -> log.debug("Payer retrieved by fiscal code"))
+
+        .switchIfEmpty(Mono.defer(() -> {
+          log.debug("Payer not found by fiscal code");
+          return Mono.empty();
+        }));
+  }
 
 
     /**
